@@ -1,26 +1,106 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@layer base {
+  :root {
+    /* CCNetball brand palette */
+    --brand-raspberry: #E63B7A;
+    --brand-raspberry-dark: #B82A60;
+    --brand-navy: #1A1F36;
+    --brand-coral: #FFB4A2;
+    --brand-cream: #FDFAF7;
+    --brand-cream-warm: #F8F2EA;
+
+    /* Semantic tokens */
+    --background: var(--brand-cream);
+    --foreground: var(--brand-navy);
+    --card: #FFFFFF;
+    --card-foreground: var(--brand-navy);
+    --primary: var(--brand-raspberry);
+    --primary-foreground: #FFFFFF;
+    --secondary: var(--brand-navy);
+    --secondary-foreground: #FFFFFF;
+    --accent: var(--brand-coral);
+    --accent-foreground: var(--brand-navy);
+    --muted: var(--brand-cream-warm);
+    --muted-foreground: #5A6178;
+    --border: #EDE5DC;
+    --ring: var(--brand-raspberry);
+    --radius: 0.75rem;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --color-brand-raspberry: var(--brand-raspberry);
+  --color-brand-raspberry-dark: var(--brand-raspberry-dark);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-coral: var(--brand-coral);
+  --color-brand-cream: var(--brand-cream);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-jakarta);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .font-display {
+    font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-raspberry {
+    background-image: linear-gradient(135deg, #E63B7A 0%, #FF6B9D 50%, #FFB4A2 100%);
+  }
+
+  .gradient-text {
+    background-image: linear-gradient(135deg, #E63B7A 0%, #FF6B9D 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
