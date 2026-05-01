@@ -69,7 +69,7 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
               >
-                @coach_caitlyn
+                {SITE.instagramHandle}
               </a>
             </div>
           </Reveal>

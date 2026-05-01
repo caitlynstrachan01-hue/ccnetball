@@ -3,8 +3,9 @@ export const SITE = {
   tagline: "Netball coaching with Caitlyn Strachan",
   domain: "ccnetball.com",
   email: "hello@ccnetball.com",
-  instagram: "https://instagram.com/coach_caitlyn",
-  facebook: "https://facebook.com/caitlynstrachan4",
+  instagram: "https://instagram.com/ccnetball_",
+  facebook: "https://facebook.com/ccnetball_",
+  instagramHandle: "@ccnetball_",
 };
 
 export const CREDENTIALS = [

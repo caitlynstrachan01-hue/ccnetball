@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="CCNetball mark, navy">
+  <circle cx="256" cy="256" r="240" fill="#1A1F36"/>
+  <text x="256" y="256"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="270"
+        letter-spacing="-22"
+        fill="#FFFFFF">CC</text>
+</svg>

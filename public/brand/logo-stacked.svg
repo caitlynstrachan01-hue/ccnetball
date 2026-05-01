@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" width="600" height="700" role="img" aria-label="CCNetball logo, stacked">
+  <defs>
+    <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="60%" stop-color="#FF6B9D"/>
+      <stop offset="100%" stop-color="#FFB4A2"/>
+    </linearGradient>
+    <linearGradient id="ccGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="100%" stop-color="#FF6B9D"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(140,60)">
+    <circle cx="160" cy="160" r="160" fill="url(#markGrad)"/>
+    <text x="160" y="160"
+          text-anchor="middle"
+          dominant-baseline="central"
+          font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+          font-weight="800"
+          font-size="180"
+          letter-spacing="-15"
+          fill="#FFFFFF">CC</text>
+  </g>
+
+  <text x="300" y="500"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="100"
+        letter-spacing="-3"
+        fill="#1A1F36">
+    <tspan fill="url(#ccGrad)">CC</tspan><tspan>Netball</tspan>
+  </text>
+
+  <text x="300" y="600"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="600"
+        font-size="26"
+        letter-spacing="6"
+        fill="#5A6178">ELITE NETBALL COACHING</text>
+</svg>

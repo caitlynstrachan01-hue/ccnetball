@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="CCNetball Open Graph image">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FDFAF7"/>
+      <stop offset="100%" stop-color="#FFE5DC"/>
+    </linearGradient>
+    <linearGradient id="diamondGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="100%" stop-color="#FF6B9D"/>
+    </linearGradient>
+    <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="60%" stop-color="#FF6B9D"/>
+      <stop offset="100%" stop-color="#FFB4A2"/>
+    </linearGradient>
+    <radialGradient id="bloomLeft" cx="0.1" cy="0.9" r="0.6">
+      <stop offset="0%" stop-color="#E63B7A" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#E63B7A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bloomRight" cx="0.9" cy="0.1" r="0.6">
+      <stop offset="0%" stop-color="#FFB4A2" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FFB4A2" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <rect width="1200" height="630" fill="url(#bloomRight)"/>
+  <rect width="1200" height="630" fill="url(#bloomLeft)"/>
+
+  <g transform="translate(70,60)">
+    <circle cx="38" cy="38" r="38" fill="url(#markGrad)"/>
+    <text x="38" y="38"
+          text-anchor="middle"
+          dominant-baseline="central"
+          font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+          font-weight="800"
+          font-size="42"
+          letter-spacing="-3.5"
+          fill="#FFFFFF">CC</text>
+    <text x="92" y="42"
+          dominant-baseline="central"
+          font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+          font-weight="800"
+          font-size="36"
+          letter-spacing="-1"
+          fill="#1A1F36">CCNetball</text>
+  </g>
+
+  <text x="70" y="270"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="124"
+        letter-spacing="-4"
+        fill="#1A1F36">Train with a</text>
+
+  <text x="70" y="400"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="124"
+        letter-spacing="-4"
+        fill="url(#diamondGrad)">Diamond.</text>
+
+  <text x="70" y="490"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="500"
+        font-size="32"
+        letter-spacing="-0.5"
+        fill="#5A6178">Netball coaching with Caitlyn Strachan.</text>
+  <text x="70" y="535"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="500"
+        font-size="32"
+        letter-spacing="-0.5"
+        fill="#5A6178">Former Australian Diamond. 3× Premiership winner.</text>
+
+  <g transform="translate(70,580)">
+    <text x="0" y="0"
+          font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+          font-weight="700"
+          font-size="22"
+          letter-spacing="2"
+          fill="#E63B7A">CCNETBALL.COM</text>
+  </g>
+</svg>
