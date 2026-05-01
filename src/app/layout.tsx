@@ -7,6 +7,7 @@ import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { ScrollProgressBar } from "@/components/motion";
 import { StructuredData } from "@/components/structured-data";
+import { CookieConsent } from "@/components/cookie-consent";
 import "./globals.css";
 
 const inter = Inter({
@@ -66,6 +67,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <SiteFooter />
         </PostHogProvider>
+        <CookieConsent />
         <MetaPixel />
         <GoogleAnalytics />
       </body>

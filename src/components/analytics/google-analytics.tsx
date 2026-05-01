@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import { ANALYTICS, isTrackingEnabled } from "@/lib/analytics-config";
+import { useConsent } from "@/lib/use-consent";
 
 declare global {
   interface Window {
@@ -11,7 +12,9 @@ declare global {
 }
 
 export function GoogleAnalytics() {
+  const consent = useConsent();
   if (!isTrackingEnabled || !ANALYTICS.ga4MeasurementId) return null;
+  if (consent !== "all") return null;
 
   return (
     <>
