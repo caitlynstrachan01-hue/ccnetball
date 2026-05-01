@@ -1,6 +1,6 @@
 export const SITE = {
   name: "CCNetball",
-  tagline: "Elite netball coaching with Caitlyn Strachan",
+  tagline: "Netball coaching with Caitlyn Strachan",
   domain: "ccnetball.com",
   email: "hello@ccnetball.com",
   instagram: "https://instagram.com/coach_caitlyn",
@@ -8,10 +8,45 @@ export const SITE = {
 };
 
 export const CREDENTIALS = [
-  { label: "Australian Diamond", detail: "Debuted vs Silver Ferns, 2017" },
-  { label: "3× Premiership Winner", detail: "Vixens & Firebirds" },
-  { label: "Elite Coaching Accreditation", detail: "In progress" },
-  { label: "Coached Across Australia", detail: "Junior to Open grade" },
+  { label: "Australian Diamond", detail: "Debut vs Silver Ferns, Jan 2017" },
+  { label: "3× Premiership Winner", detail: "Melbourne Vixens, Queensland Firebirds" },
+  { label: "Elite Coaching Accreditation", detail: "Currently completing" },
+  { label: "Coached Across Australia", detail: "Junior to open grade" },
+];
+
+export const PROOF_TEAMS = [
+  "Australian Diamonds",
+  "Melbourne Vixens",
+  "Queensland Firebirds",
+  "Suncorp Super Netball",
+  "Australian Netball Championship",
+];
+
+export const RESULTS = [
+  {
+    value: "3",
+    suffix: "×",
+    label: "Premierships won",
+    detail: "Vixens & Firebirds",
+  },
+  {
+    value: "100",
+    suffix: "+",
+    label: "Athletes coached",
+    detail: "Across Australia",
+  },
+  {
+    value: "30",
+    suffix: " yrs",
+    label: "Inside the game",
+    detail: "Player and coach",
+  },
+  {
+    value: "5★",
+    suffix: "",
+    label: "Average rating",
+    detail: "From every program",
+  },
 ];
 
 export type Program = {
@@ -30,33 +65,33 @@ export const PROGRAMS: Program[] = [
   {
     id: "1on1",
     name: "1-on-1 / 2-on-1 Training",
-    short: "Individualised, high-touch coaching tailored to the athlete.",
+    short: "Built around one athlete. Or two.",
     description:
-      "Custom-built sessions for athletes ready to commit to elite development. Caitlyn personally designs every drill around your game — strengths, gaps, and the next level you're chasing.",
+      "A session designed for the player in front of Caitlyn. She maps your strengths, the gaps to close, and the next level you're chasing, then runs every drill against that brief. No filler.",
     price: 160,
     unit: "AUD per session",
     durationMinutes: 60,
-    capacity: "1–2 athletes",
+    capacity: "1 to 2 athletes",
     bestFor: "Reps, state pathway, premier league players",
   },
   {
     id: "small-group",
     name: "Small Group Training",
-    short: "Compete and grow alongside 3–6 athletes at the same level.",
+    short: "Compete inside a 3 to 6 athlete squad.",
     description:
-      "Small-group sessions that combine individual feedback with game-pace decision making. Built for athletes who want serious development with the energy of a competitive group.",
+      "Individual feedback at game pace. Built for athletes who want sharp, personal coaching without losing the energy of training alongside players at the same level.",
     price: 60,
     unit: "AUD per athlete",
     durationMinutes: 60,
-    capacity: "3–6 athletes",
+    capacity: "3 to 6 athletes",
     bestFor: "Friends training together, club athletes",
   },
   {
     id: "team",
     name: "Team Training",
-    short: "Strategic team sessions to install systems and plays.",
+    short: "Install the structures elite teams use.",
     description:
-      "Whole-team coaching that builds the structures, attacking plays and defensive systems used at the elite level — adapted to your squad. Includes pre-session planning with the head coach.",
+      "Whole squad coaching covering attacking plays, defensive systems, and the team patterns Caitlyn ran with the Vixens and Firebirds, adapted to your group. Includes pre-session planning with the head coach.",
     price: 250,
     unit: "AUD per session",
     durationMinutes: 60,
@@ -66,9 +101,9 @@ export const PROGRAMS: Program[] = [
   {
     id: "video-analysis",
     name: "Video Game Analysis",
-    short: "Frame-by-frame breakdown of your game footage.",
+    short: "See what an elite coach sees in your game.",
     description:
-      "Send your match film and receive an in-depth video review: movement patterns, positioning, decision-making, error detection and the exact corrections to drill next. The same lens elite coaches use.",
+      "Send your match footage. Caitlyn returns a frame-by-frame review covering movement patterns, positioning, decision-making, and the exact corrections to drill next. The same lens used inside Suncorp Super Netball.",
     price: 200,
     unit: "AUD per review",
     durationMinutes: 60,
@@ -78,9 +113,9 @@ export const PROGRAMS: Program[] = [
   {
     id: "online",
     name: "Online Mentoring",
-    short: "1-on-1 mentoring you can plug into from anywhere in Australia.",
+    short: "1-on-1 mentoring from anywhere in Australia.",
     description:
-      "Live online sessions covering technical, tactical, and the mental side of the game. Programming, accountability, and expert insight from a Diamond — without the travel.",
+      "Live online sessions covering technique, tactics, and the mental side. Programming, accountability, and direct feedback from a Diamond. No travel required.",
     price: 120,
     unit: "AUD per session",
     durationMinutes: 60,
@@ -90,13 +125,13 @@ export const PROGRAMS: Program[] = [
   {
     id: "coach-the-coaches",
     name: "Coach the Coaches",
-    short: "Mentoring for coaches building elite programs.",
+    short: "Develop the coach behind the squad.",
     description:
-      "Professional development for coaches: session design, drill libraries, athlete management, and the systems that produce premiership-level teams. Tailored to your level and squad.",
+      "Professional development for coaches: session design, drill libraries, athlete management, and the systems behind premiership-winning teams. Tailored to your level and the squad you're building.",
     price: 180,
     unit: "AUD per session",
     durationMinutes: 60,
-    capacity: "1–4 coaches",
+    capacity: "1 to 4 coaches",
     bestFor: "Club, school and rep coaches",
   },
 ];
@@ -107,7 +142,8 @@ export const TESTIMONIALS = [
     role: "Chinchilla Netball Association",
     program: "Specialist Team Training",
     quote:
-      "Chinchilla Netball Inc had an awesome coaching session with Coach Caitlyn. We've had coaching clinics before, but never anything even close to this standard.",
+      "Chinchilla Netball had an awesome coaching session with Caitlyn. We've had coaching clinics before, but never anything close to this standard.",
+    featured: true,
   },
   {
     name: "Kerry Nemcansky",
@@ -129,6 +165,7 @@ export const TESTIMONIALS = [
     program: "1-on-1 Training",
     quote:
       "Caitlyn has helped my daughter to gain better understanding and overcome the challenges that come with being a representative netball player.",
+    featured: true,
   },
   {
     name: "Lindy Burke",
@@ -140,8 +177,27 @@ export const TESTIMONIALS = [
   {
     name: "Saraid Tripp",
     role: "Parent",
-    program: "Small Group Training (5–8yo)",
+    program: "Small Group Training (5 to 8yo)",
     quote:
-      "Caitlyn is fabulous with kids! She's fun, engaging and tailors her sessions to all levels.",
+      "Caitlyn is fabulous with kids. She's fun, engaging and tailors her sessions to all levels.",
+  },
+];
+
+export const FAQ = [
+  {
+    q: "Where do sessions run?",
+    a: "Across Australia. Caitlyn travels for team and small-group bookings. Online mentoring runs from anywhere in the country.",
+  },
+  {
+    q: "Who is this for?",
+    a: "Athletes from junior development through to premier league and state-level players. Plus coaches building serious programs.",
+  },
+  {
+    q: "How quickly can we get started?",
+    a: "Most enquiries get a reply within one business day. First session is usually booked within the same week.",
+  },
+  {
+    q: "Do you do team and group rates?",
+    a: "Yes. Team training is priced per session, not per athlete. Small group training is per-athlete with bookings of 3 or more.",
   },
 ];

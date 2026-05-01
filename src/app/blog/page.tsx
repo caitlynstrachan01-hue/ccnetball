@@ -5,7 +5,7 @@ import { BLOG_POSTS } from "@/lib/blog-posts";
 export const metadata = {
   title: "Blog",
   description:
-    "Insights from the elite end of netball — athlete interviews, position deep-dives, mindset, and recovery.",
+    "Athlete interviews, position deep-dives, mindset and recovery, from a coach who has lived it at the highest level.",
 };
 
 const dateFormat = new Intl.DateTimeFormat("en-AU", {
@@ -26,8 +26,8 @@ export default function BlogPage() {
             Inside the <span className="gradient-text">elite game.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
-            Athlete interviews, position deep-dives, mindset and recovery —
-            from a coach who's lived it at the highest level.
+            Athlete interviews, position deep-dives, mindset and recovery.
+            Written by a coach who&apos;s lived it at the highest level.
           </p>
         </div>
       </section>

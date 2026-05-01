@@ -16,7 +16,7 @@ export default function PrivacyPage() {
 
         <div className="prose prose-lg mt-10 max-w-none text-foreground/90">
           <p>
-            CCNetball collects only the information you provide directly —
+            CCNetball collects only the information you provide directly,
             through booking enquiries, contact forms and email correspondence.
             We use this information to respond to enquiries, schedule sessions
             and provide coaching services.

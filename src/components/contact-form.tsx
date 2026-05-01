@@ -37,7 +37,7 @@ export function ContactForm() {
         <CheckCircle2 className="size-14 text-primary" />
         <h3 className="mt-4 font-display text-2xl font-bold">Message sent</h3>
         <p className="mt-2 max-w-sm text-muted-foreground">
-          Thanks — Caitlyn will be in touch within one business day.
+          Thanks. Caitlyn will be in touch within one business day.
         </p>
       </div>
     );

@@ -3,7 +3,7 @@ import { Camera } from "lucide-react";
 export const metadata = {
   title: "Gallery",
   description:
-    "Career and coaching moments from Caitlyn Strachan — Diamonds, Vixens, Firebirds, and CCNetball coaching sessions.",
+    "Career and coaching moments from Caitlyn Strachan. Diamonds, Vixens, Firebirds, and CCNetball coaching sessions.",
 };
 
 const PLACEHOLDER_TILES = [
@@ -56,7 +56,7 @@ export default function GalleryPage() {
           </div>
 
           <div className="mt-10 rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-center text-sm text-muted-foreground">
-            Photos coming soon — Caitlyn is curating high-resolution images
+            Photos coming soon. Caitlyn is curating high-resolution images
             from her playing career and recent coaching sessions.
           </div>
         </div>

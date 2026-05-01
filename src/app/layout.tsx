@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { MetaPixel } from "@/components/analytics/meta-pixel";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
+import { ScrollProgressBar } from "@/components/motion";
+import { StructuredData } from "@/components/structured-data";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,14 +24,14 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "CCNetball — Elite Netball Coaching with Caitlyn Strachan",
+    default: "CCNetball | Netball coaching with Caitlyn Strachan",
     template: "%s · CCNetball",
   },
   description:
-    "Premium netball coaching across Australia with former Australian Diamond and triple premiership winner Caitlyn Strachan. 1-on-1, small group, team training, video analysis and online mentoring.",
+    "Caitlyn Strachan played for the Australian Diamonds and won three premierships with the Vixens and Firebirds. Now she coaches netball athletes across Australia. 1-on-1, small group, team training, video analysis and online mentoring.",
   metadataBase: new URL("https://ccnetball.com"),
   openGraph: {
-    title: "CCNetball — Elite Netball Coaching with Caitlyn Strachan",
+    title: "CCNetball | Netball coaching with Caitlyn Strachan",
     description:
       "Train with a former Australian Diamond and triple premiership winner. 1-on-1, group, team and online netball coaching across Australia.",
     url: "https://ccnetball.com",
@@ -37,6 +39,13 @@ export const metadata: Metadata = {
     locale: "en_AU",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "CCNetball | Netball coaching with Caitlyn Strachan",
+    description:
+      "Train with a former Australian Diamond. 1-on-1, group, team and online coaching.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -47,7 +56,11 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jakarta.variable} h-full antialiased`}
     >
+      <head>
+        <StructuredData />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        <ScrollProgressBar />
         <PostHogProvider>
           <SiteHeader />
           <main className="flex-1">{children}</main>

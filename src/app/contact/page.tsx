@@ -1,11 +1,12 @@
 import { Mail, MapPin, MessageSquare } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { SITE } from "@/lib/site-content";
+import { Reveal } from "@/components/motion";
 
 export const metadata = {
   title: "Contact",
   description:
-    "Get in touch with CCNetball. Coaching enquiries, team bookings, or general questions — we reply within 24 hours.",
+    "Coaching enquiries, team bookings, or general questions. Reply within one business day.",
 };
 
 export default function ContactPage() {
@@ -13,27 +14,30 @@ export default function ContactPage() {
     <>
       <section className="border-b border-border/60 bg-card">
         <div className="mx-auto max-w-4xl px-6 py-20 lg:px-10 lg:py-24">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-            Contact
-          </p>
-          <h1 className="mt-3 font-display text-5xl font-extrabold leading-tight tracking-tight md:text-6xl">
-            Let's <span className="gradient-text">talk netball.</span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
-            Coaching enquiries, team bookings, or general questions — drop a
-            message and Caitlyn will get back to you within 24 hours.
-          </p>
+          <Reveal>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              Contact
+            </p>
+            <h1 className="mt-3 font-display text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+              Let&apos;s <span className="gradient-text">talk netball</span>.
+            </h1>
+            <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
+              Coaching enquiries, team bookings, or general questions. Drop a
+              message and Caitlyn will get back to you within one business
+              day.
+            </p>
+          </Reveal>
         </div>
       </section>
 
       <section className="py-16">
         <div className="mx-auto grid max-w-5xl gap-10 px-6 lg:grid-cols-3 lg:px-10">
-          <div className="space-y-6 lg:col-span-1">
+          <Reveal className="space-y-6 lg:col-span-1">
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
               <Mail className="size-6 text-[color:var(--brand-coral)]" />
               <h3 className="mt-4 font-display text-lg font-bold">Email</h3>
               <p className="mt-1 text-sm text-white/70">
-                We reply within one business day.
+                Reply within one business day.
               </p>
               <a
                 href={`mailto:${SITE.email}`}
@@ -49,7 +53,7 @@ export default function ContactPage() {
                 Coaching across
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Australia — VIC, QLD, NSW and online from anywhere.
+                Australia. VIC, QLD, NSW and online from anywhere.
               </p>
             </div>
 
@@ -68,11 +72,11 @@ export default function ContactPage() {
                 @coach_caitlyn
               </a>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="lg:col-span-2">
+          <Reveal delay={0.08} className="lg:col-span-2">
             <ContactForm />
-          </div>
+          </Reveal>
         </div>
       </section>
     </>

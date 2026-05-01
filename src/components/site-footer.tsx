@@ -31,8 +31,8 @@ export function SiteFooter() {
             <span>Netball</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-white/70">
-            Premium netball coaching with former Australian Diamond and triple
-            premiership winner Caitlyn Strachan. Currently completing elite
+            Netball coaching with Caitlyn Strachan. Former Australian Diamond,
+            three-time premiership winner, currently completing her elite
             coaching accreditation.
           </p>
           <div className="mt-6 flex gap-3">
@@ -92,7 +92,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-6 text-xs text-white/50 md:flex-row lg:px-10">
           <p>© {new Date().getFullYear()} CCNetball. All rights reserved.</p>
-          <p>Coaching premium netball talent across Australia.</p>
+          <p>Coaching netball talent across Australia.</p>
         </div>
       </div>
     </footer>
