@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { PROGRAMS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
+import { CalEmbed } from "@/components/cal-embed";
 
 export const metadata = {
   title: "Book a Session",
@@ -30,30 +31,41 @@ export default function BookPage() {
       </section>
 
       <section className="py-16">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10">
-          <Reveal>
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-5 lg:px-10">
+          <Reveal className="lg:col-span-2">
             <h2 className="font-display text-2xl font-bold tracking-tight">
-              Pick a program to book
+              Pick a program
             </h2>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="mt-6 space-y-3">
               {PROGRAMS.map((program) => (
                 <Link
                   key={program.id}
                   href={`/contact?program=${encodeURIComponent(program.name)}`}
-                  className="group flex items-center justify-between rounded-2xl border border-border/70 bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
+                  className="group flex items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
                 >
-                  <div>
-                    <h3 className="font-display text-lg font-bold">
+                  <div className="min-w-0">
+                    <h3 className="font-display text-base font-bold leading-tight">
                       {program.name}
                     </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      ${program.price} {program.unit} ·{" "}
-                      {program.durationMinutes} min
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      ${program.price} · {program.durationMinutes} min
                     </p>
                   </div>
-                  <ArrowRight className="size-5 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
                 </Link>
               ))}
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.08} className="lg:col-span-3">
+            <h2 className="font-display text-2xl font-bold tracking-tight">
+              Pick a time
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Live availability. Bookings sync straight to Caitlyn&apos;s calendar.
+            </p>
+            <div className="mt-6 h-[640px]">
+              <CalEmbed />
             </div>
           </Reveal>
         </div>

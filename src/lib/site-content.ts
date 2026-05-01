@@ -6,6 +6,9 @@ export const SITE = {
   instagram: "https://instagram.com/ccnetball_",
   facebook: "https://facebook.com/ccnetball_",
   instagramHandle: "@ccnetball_",
+  // Cal.com username — placeholder until Caitlyn's Cal.com is set up.
+  // Update this once she has a Cal.com account; bookings will route to it automatically.
+  calcomUsername: process.env.NEXT_PUBLIC_CALCOM_USERNAME || "ccnetball",
 };
 
 export const CREDENTIALS = [
