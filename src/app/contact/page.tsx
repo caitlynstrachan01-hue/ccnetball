@@ -69,12 +69,12 @@ export default function ContactPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Behind-the-scenes coaching, athlete spotlights and updates.
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold">
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold">
                 <a
                   href={SITE.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
                 >
                   <InstagramIcon className="size-4" /> Instagram
                 </a>
@@ -82,14 +82,11 @@ export default function ContactPage() {
                   href={SITE.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-primary transition hover:bg-primary hover:text-primary-foreground"
                 >
                   <FacebookIcon className="size-4" /> Facebook
                 </a>
               </div>
-              <p className="mt-2 text-sm font-semibold text-foreground">
-                {SITE.instagramHandle}
-              </p>
             </div>
           </Reveal>
 
