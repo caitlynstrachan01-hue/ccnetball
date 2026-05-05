@@ -92,9 +92,6 @@ export default function BookPage() {
             <h2 className="font-display text-2xl font-bold tracking-tight">
               Book a time
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Live availability. Bookings sync straight to Caitlyn&apos;s calendar.
-            </p>
             <p className="mt-3 text-xs italic leading-relaxed text-muted-foreground">
               Please note: the booking time and location is not guaranteed upon
               selection. A confirmation email will be supplied once the session

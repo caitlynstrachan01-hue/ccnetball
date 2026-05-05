@@ -214,7 +214,7 @@ export const PROGRAMS: Program[] = [
     short: "1-on-1 mentoring from anywhere in Australia.",
     description:
       "Live online sessions covering technique, tactics, and the mental side. Programming, accountability, and direct feedback from a Diamond. No travel required.",
-    price: 120,
+    price: 160,
     unit: "AUD per session",
     durationMinutes: 60,
     capacity: "1 athlete",
