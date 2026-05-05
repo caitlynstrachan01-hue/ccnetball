@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 200" width="1100" height="200" role="img" aria-label="Coach Caitlyn wordmark">
+  <defs>
+    <linearGradient id="caitlynGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="100%" stop-color="#FF6B9D"/>
+    </linearGradient>
+  </defs>
+  <text x="40" y="100"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="128"
+        letter-spacing="-4"
+        fill="#1A1F36">
+    <tspan>Coach</tspan>
+  </text>
+
+  <text x="380" y="100"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="128"
+        letter-spacing="-4"
+        fill="url(#caitlynGrad)">
+    <tspan>Caitlyn</tspan>
+  </text>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 320" width="1400" height="320" role="img" aria-label="Coach Caitlyn logo, white version">
+  <g transform="translate(40,40)">
+    <circle cx="120" cy="120" r="120" fill="none" stroke="#FFFFFF" stroke-width="8"/>
+    <text x="120" y="120"
+          text-anchor="middle"
+          dominant-baseline="central"
+          font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+          font-weight="800"
+          font-size="135"
+          letter-spacing="-11"
+          fill="#FFFFFF">CC</text>
+  </g>
+
+  <text x="320" y="160"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="128"
+        letter-spacing="-4"
+        fill="#FFFFFF">
+    <tspan>Coach</tspan>
+  </text>
+
+  <text x="660" y="160"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="128"
+        letter-spacing="-4"
+        fill="#FFB4A2">
+    <tspan>Caitlyn</tspan>
+  </text>
+</svg>

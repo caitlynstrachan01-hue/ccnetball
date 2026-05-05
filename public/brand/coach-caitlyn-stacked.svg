@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 760" width="700" height="760" role="img" aria-label="Coach Caitlyn logo, stacked">
+  <defs>
+    <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="60%" stop-color="#FF6B9D"/>
+      <stop offset="100%" stop-color="#FFB4A2"/>
+    </linearGradient>
+    <linearGradient id="caitlynGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E63B7A"/>
+      <stop offset="100%" stop-color="#FF6B9D"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(190,60)">
+    <circle cx="160" cy="160" r="160" fill="url(#markGrad)"/>
+    <text x="160" y="160"
+          text-anchor="middle"
+          dominant-baseline="central"
+          font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+          font-weight="800"
+          font-size="180"
+          letter-spacing="-15"
+          fill="#FFFFFF">CC</text>
+  </g>
+
+  <text x="350" y="500"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="86"
+        letter-spacing="-3"
+        fill="#1A1F36">Coach</text>
+
+  <text x="350" y="600"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="800"
+        font-size="86"
+        letter-spacing="-3"
+        fill="url(#caitlynGrad)">Caitlyn</text>
+
+  <text x="350" y="690"
+        text-anchor="middle"
+        dominant-baseline="central"
+        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
+        font-weight="600"
+        font-size="22"
+        letter-spacing="6"
+        fill="#5A6178">ELITE NETBALL COACHING</text>
+</svg>
