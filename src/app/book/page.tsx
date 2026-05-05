@@ -62,34 +62,10 @@ export default function BookPage() {
       </section>
 
       <section className="py-16">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-5 lg:px-10">
-          <Reveal className="lg:col-span-2">
-            <h2 className="font-display text-2xl font-bold tracking-tight">
-              Program enquiry
-            </h2>
-            <div className="mt-6 space-y-3">
-              {PROGRAMS.map((program) => (
-                <Link
-                  key={program.id}
-                  href={`/contact?program=${encodeURIComponent(program.name)}`}
-                  className="group flex items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
-                >
-                  <div className="min-w-0">
-                    <h3 className="font-display text-base font-bold leading-tight">
-                      {program.name}
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      ${program.price} · {program.durationMinutes} min
-                    </p>
-                  </div>
-                  <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
-                </Link>
-              ))}
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.08} className="lg:col-span-3">
-            <h2 className="font-display text-2xl font-bold tracking-tight">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-12 lg:px-10">
+          {/* Booking widget — hero on the left, takes 8/12 cols on desktop */}
+          <Reveal className="lg:col-span-8">
+            <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
               Book a time
             </h2>
             <p className="mt-3 text-xs italic leading-relaxed text-muted-foreground">
@@ -98,8 +74,38 @@ export default function BookPage() {
               time and location is locked in. Payment is required 48 hours prior
               to the session.
             </p>
-            <div className="mt-6 h-[640px]">
+            <div className="mt-6 h-[680px]">
               <CalEmbed />
+            </div>
+          </Reveal>
+
+          {/* Program enquiry — narrower column on the right */}
+          <Reveal delay={0.08} className="lg:col-span-4">
+            <h2 className="font-display text-2xl font-bold tracking-tight">
+              Program enquiry
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Have a specific program in mind? Send Caitlyn a tailored
+              enquiry instead.
+            </p>
+            <div className="mt-6 space-y-2.5">
+              {PROGRAMS.map((program) => (
+                <Link
+                  key={program.id}
+                  href={`/contact?program=${encodeURIComponent(program.name)}`}
+                  className="group flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                >
+                  <div className="min-w-0">
+                    <h3 className="truncate font-display text-sm font-bold leading-tight">
+                      {program.name}
+                    </h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      ${program.price} · {program.durationMinutes} min
+                    </p>
+                  </div>
+                  <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
+                </Link>
+              ))}
             </div>
           </Reveal>
         </div>
