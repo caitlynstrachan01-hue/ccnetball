@@ -41,8 +41,8 @@ export default function PrivacyPage() {
           </h2>
           <p>
             Questions about your data? Email{" "}
-            <a href="mailto:hello@ccnetball.com" className="text-primary">
-              hello@ccnetball.com
+            <a href="mailto:info.ccnetball@gmail.com" className="text-primary">
+              info.ccnetball@gmail.com
             </a>
             .
           </p>

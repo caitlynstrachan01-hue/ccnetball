@@ -96,8 +96,8 @@ export default function TermsPage() {
           </h2>
           <p>
             Questions? Email{" "}
-            <a href="mailto:hello@ccnetball.com" className="text-primary">
-              hello@ccnetball.com
+            <a href="mailto:info.ccnetball@gmail.com" className="text-primary">
+              info.ccnetball@gmail.com
             </a>
             .
           </p>

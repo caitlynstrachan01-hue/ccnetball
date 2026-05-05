@@ -3,7 +3,7 @@ import { Resend } from "resend";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.CONTACT_FROM_EMAIL || "CCNetball <noreply@ccnetball.com>";
-const TO_EMAIL = process.env.CONTACT_TO_EMAIL || "hello@ccnetball.com";
+const TO_EMAIL = process.env.CONTACT_TO_EMAIL || "info.ccnetball@gmail.com";
 
 export async function POST(request: Request) {
   const body = await request.json();
