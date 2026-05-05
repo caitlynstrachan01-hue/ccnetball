@@ -95,6 +95,12 @@ export default function BookPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               Live availability. Bookings sync straight to Caitlyn&apos;s calendar.
             </p>
+            <p className="mt-3 text-xs italic leading-relaxed text-muted-foreground">
+              Please note: the booking time and location is not guaranteed upon
+              selection. A confirmation email will be supplied once the session
+              time and location is locked in. Payment is required 48 hours prior
+              to the session.
+            </p>
             <div className="mt-6 h-[640px]">
               <CalEmbed />
             </div>
