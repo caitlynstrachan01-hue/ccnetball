@@ -17,50 +17,39 @@ export function CareerPathway() {
   return (
     <section
       aria-label="Career pathway"
-      className="relative overflow-hidden border-y border-border/60 bg-card py-20 md:py-24"
+      className="relative overflow-hidden border-y border-border/60 bg-card py-12 md:py-16"
     >
       <div className="absolute inset-0 -z-10">
-        <div className="absolute -top-32 right-[-15%] size-[28rem] rounded-full bg-[var(--brand-coral)]/30 blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] size-[28rem] rounded-full bg-[var(--brand-raspberry)]/15 blur-[120px]" />
+        <div className="absolute -top-32 right-[-15%] size-[20rem] rounded-full bg-[var(--brand-coral)]/25 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] size-[20rem] rounded-full bg-[var(--brand-raspberry)]/12 blur-[120px]" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-6 lg:px-10">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+      <div className="mx-auto max-w-4xl px-6 lg:px-10">
+        <Reveal className="text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
             The full pathway
           </p>
-          <h2 className="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">
+          <h2 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
             Every level of Australian netball,{" "}
             <span className="gradient-text">in order</span>.
           </h2>
-          <p className="mt-5 text-lg text-muted-foreground">
-            From junior nationals to the green and gold. The pathway Caitlyn
-            walked, and the one she now teaches to athletes climbing it.
+          <p className="mt-3 text-sm text-muted-foreground md:text-base">
+            From junior nationals to the green and gold.
           </p>
         </Reveal>
 
-        <StaggerGroup
-          className="relative mt-14 space-y-5"
-          staggerChildren={0.1}
-        >
-          {/* Vertical connecting line */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-7 top-6 bottom-6 hidden w-px bg-gradient-to-b from-primary via-[var(--brand-coral)] to-primary/20 md:block"
-          />
-
+        <StaggerGroup className="mt-8 space-y-3" staggerChildren={0.06}>
           {CAREER_PATHWAY.map((tier, i) => {
             const Icon = ICONS[i] ?? Award;
             const isPrimary = tier.tier === "primary";
             const isSecondary = tier.tier === "secondary";
+            const onDark = isPrimary || isSecondary;
 
             const cardClass = isPrimary
-              ? "group relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--brand-raspberry)] via-[var(--brand-raspberry)] to-[var(--brand-coral)] p-7 text-primary-foreground shadow-2xl shadow-primary/25 ring-1 ring-white/15 md:p-9"
+              ? "group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-raspberry)] via-[var(--brand-raspberry)] to-[var(--brand-coral)] p-5 text-primary-foreground shadow-lg shadow-primary/20 ring-1 ring-white/15"
               : isSecondary
-                ? "group relative overflow-hidden rounded-3xl bg-secondary p-7 text-secondary-foreground shadow-xl shadow-primary/15 ring-1 ring-white/10 md:p-9"
-                : "group relative rounded-3xl bg-background p-7 ring-1 ring-border transition hover:ring-primary/40 hover:shadow-xl hover:shadow-primary/5 md:p-9";
-
-            const onDark = isPrimary || isSecondary;
+                ? "group relative overflow-hidden rounded-2xl bg-secondary p-5 text-secondary-foreground shadow-md shadow-primary/10 ring-1 ring-white/10"
+                : "group relative rounded-2xl bg-background p-5 ring-1 ring-border transition hover:ring-primary/40 hover:shadow-md hover:shadow-primary/5";
 
             const iconBox = isPrimary
               ? "bg-white/15 text-white ring-white/30"
@@ -69,7 +58,7 @@ export function CareerPathway() {
                 : "bg-primary/10 text-primary ring-primary/20";
 
             const stepText = isPrimary
-              ? "text-white/70"
+              ? "text-white/60"
               : isSecondary
                 ? "text-white/40"
                 : "text-primary/40";
@@ -94,39 +83,37 @@ export function CareerPathway() {
               <StaggerItem key={tier.step}>
                 <article className={cardClass}>
                   {isPrimary && (
-                    <div className="absolute -top-12 -right-12 size-44 rounded-full bg-white/15 blur-2xl" />
+                    <div className="absolute -top-8 -right-8 size-32 rounded-full bg-white/15 blur-2xl" />
                   )}
 
-                  <div className="relative grid gap-6 md:grid-cols-[auto_1fr] md:items-start md:gap-8">
-                    <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-3">
-                      <div
-                        className={`relative flex size-14 shrink-0 items-center justify-center rounded-2xl ring-1 ${iconBox}`}
-                      >
-                        <Icon className="size-6" />
-                      </div>
-                      <p
-                        className={`font-display text-xl font-extrabold leading-none md:text-2xl ${stepText}`}
-                      >
-                        {tier.step}
-                      </p>
+                  <div className="relative flex items-start gap-4">
+                    <div
+                      className={`flex size-10 shrink-0 items-center justify-center rounded-lg ring-1 ${iconBox}`}
+                    >
+                      <Icon className="size-5" />
                     </div>
 
-                    <div>
-                      <p
-                        className={`text-[10px] font-bold uppercase tracking-[0.22em] ${eyebrowText}`}
-                      >
-                        {tier.eyebrow}
-                      </p>
-                      <h3 className="mt-2 font-display text-2xl font-extrabold leading-tight tracking-tight md:text-[1.85rem]">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p
+                          className={`text-[10px] font-bold uppercase tracking-[0.2em] ${eyebrowText}`}
+                        >
+                          {tier.eyebrow}
+                        </p>
+                        <span className={`text-xs font-bold ${stepText}`}>
+                          · {tier.step}
+                        </span>
+                      </div>
+                      <h3 className="mt-1 font-display text-lg font-extrabold leading-tight tracking-tight md:text-xl">
                         {tier.competition}
                       </h3>
 
                       {tier.teams.length > 0 && (
-                        <ul className="mt-4 flex flex-wrap gap-2">
+                        <ul className="mt-2 flex flex-wrap gap-1.5">
                           {tier.teams.map((team) => (
                             <li
                               key={team}
-                              className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${chipClass}`}
+                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${chipClass}`}
                             >
                               {team}
                             </li>
@@ -134,9 +121,7 @@ export function CareerPathway() {
                         </ul>
                       )}
 
-                      <p
-                        className={`mt-5 max-w-2xl text-sm leading-relaxed md:text-base ${detailText}`}
-                      >
+                      <p className={`mt-2 text-xs leading-relaxed md:text-sm ${detailText}`}>
                         {tier.detail}
                       </p>
                     </div>
