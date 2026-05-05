@@ -1,7 +1,8 @@
-import { Mail, MapPin, MessageSquare } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { SITE } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
+import { InstagramIcon, FacebookIcon } from "@/components/social-icons";
 
 export const metadata = {
   title: "Contact",
@@ -58,19 +59,37 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-border/70 bg-card p-6">
-              <MessageSquare className="size-6 text-primary" />
-              <h3 className="mt-4 font-display text-lg font-bold">DM us</h3>
+              <div className="flex items-center gap-2 text-primary">
+                <InstagramIcon className="size-5" />
+                <FacebookIcon className="size-5" />
+              </div>
+              <h3 className="mt-4 font-display text-lg font-bold">
+                Follow us
+              </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Quick questions? Slide into the DMs:
+                Behind-the-scenes coaching, athlete spotlights and updates.
               </p>
-              <a
-                href={SITE.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
-              >
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold">
+                <a
+                  href={SITE.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                >
+                  <InstagramIcon className="size-4" /> Instagram
+                </a>
+                <a
+                  href={SITE.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                >
+                  <FacebookIcon className="size-4" /> Facebook
+                </a>
+              </div>
+              <p className="mt-2 text-sm font-semibold text-foreground">
                 {SITE.instagramHandle}
-              </a>
+              </p>
             </div>
           </Reveal>
 
