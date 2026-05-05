@@ -19,7 +19,7 @@ export function CareerSection() {
             Inside the career
           </p>
           <h2 className="mt-2 font-display text-xl font-bold tracking-tight md:text-2xl">
-            From state league to the{" "}
+            From Country Victoria to the{" "}
             <span className="gradient-text">gold dress</span>.
           </h2>
         </Reveal>
