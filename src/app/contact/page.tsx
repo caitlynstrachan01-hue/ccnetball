@@ -36,15 +36,11 @@ export default function ContactPage() {
           <Reveal className="space-y-6 lg:col-span-1">
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
               <MapPin className="size-6 text-[color:var(--brand-coral)]" />
-              <h3 className="mt-4 font-display text-lg font-bold">
-                Coaching across
+              <h3 className="mt-4 font-display text-lg font-bold leading-snug">
+                Based in South East Queensland (QLD)
               </h3>
-              <p className="mt-3 text-base font-bold text-white">
-                Based in South East Queensland.
-              </p>
               <p className="mt-2 text-sm leading-relaxed text-white/80">
-                Offering coaching across Victoria, Queensland, New South
-                Wales, and anywhere online.
+                Offering coaching across QLD, NSW, VIC, and anywhere online.
               </p>
             </div>
 
