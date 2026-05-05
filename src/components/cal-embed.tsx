@@ -31,7 +31,13 @@ export function CalEmbed({ slug }: { slug?: string }) {
         namespace="ccnetball"
         calLink={calLink}
         style={{ width: "100%", height: "100%", overflow: "scroll" }}
-        config={{ layout: "month_view", theme: "light" }}
+        config={{
+          layout: "month_view",
+          theme: "light",
+          // Default visitors to Brisbane time so times match Caitlyn's calendar
+          // out of the box. Visitors can switch in the widget if they need to.
+          timezone: "Australia/Brisbane",
+        }}
       />
     </div>
   );
