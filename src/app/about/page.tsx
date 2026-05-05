@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ArrowRight, Trophy, Award, Sparkles, MapPin } from "lucide-react";
 import { CREDENTIALS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
+import { CareerPathway } from "@/components/career-pathway";
 
 export const metadata = {
   title: "About Caitlyn Strachan",
@@ -172,6 +173,8 @@ export default function AboutPage() {
           </Reveal>
         </div>
       </section>
+
+      <CareerPathway />
     </>
   );
 }

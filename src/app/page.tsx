@@ -15,7 +15,7 @@ import {
   TESTIMONIALS,
   FAQ,
 } from "@/lib/site-content";
-import { ProofBar } from "@/components/proof-bar";
+import { CareerSection } from "@/components/career-section";
 import { ResultsSection } from "@/components/results-section";
 import {
   Reveal,
@@ -161,7 +161,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <ProofBar />
+      <CareerSection />
 
       <ResultsSection />
 

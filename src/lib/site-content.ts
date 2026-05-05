@@ -18,12 +18,106 @@ export const CREDENTIALS = [
   { label: "Coaches throughout Australia", detail: "Based in Brisbane · Junior Age to Open" },
 ];
 
-export const PROOF_TEAMS = [
-  "Australian Diamonds",
-  "Melbourne Vixens",
-  "Queensland Firebirds",
-  "Suncorp Super Netball",
-  "Australian Netball Championship",
+export const CAREER = {
+  international: {
+    name: "Australian Diamonds",
+    eyebrow: "International",
+    detail: "Debut vs Silver Ferns, Jan 2017",
+  },
+  clubs: [
+    { name: "Melbourne Vixens", years: "2013–2014" },
+    { name: "Queensland Firebirds", years: "2015–2019" },
+  ],
+  competitions: [
+    { name: "ANZ Championship", years: "2013–2016" },
+    { name: "Suncorp Super Netball", years: "2017–2019" },
+  ],
+};
+
+/**
+ * Full career pathway, top-to-bottom: international down to junior representative.
+ * Used on the About page for a deeper view of every level Caitlyn played at.
+ */
+export const CAREER_PATHWAY = [
+  {
+    step: "01",
+    eyebrow: "International",
+    competition: "Australian Diamonds",
+    teams: ["Quad Series", "Constellation Cup"],
+    detail:
+      "Selected to wear the green and gold. Debut against the Silver Ferns, January 2017, becoming the second-oldest player in Diamonds history to debut.",
+    tier: "primary" as const,
+  },
+  {
+    step: "02",
+    eyebrow: "International · Fast 5",
+    competition: "Australian Fast 5",
+    teams: ["World Netball Series"],
+    detail:
+      "Selected for Australia in the Fast 5 format, competing on the world stage at the World Netball Series.",
+    tier: "secondary" as const,
+  },
+  {
+    step: "03",
+    eyebrow: "Elite domestic",
+    competition: "Suncorp Super Netball / ANZ Championship",
+    teams: ["Melbourne Vixens", "Queensland Firebirds"],
+    detail:
+      "Australia's top-flight club competitions. Three premierships across both clubs between 2013 and 2019.",
+    tier: "standard" as const,
+  },
+  {
+    step: "04",
+    eyebrow: "Sub-elite domestic",
+    competition: "Australian Netball League",
+    teams: [
+      "Victorian Fury · 2008, 2013, 2014",
+      "Canberra Darters · 2012",
+    ],
+    detail:
+      "National second-tier competition. The proving ground for athletes pushing into Australia's elite programs.",
+    tier: "standard" as const,
+  },
+  {
+    step: "05",
+    eyebrow: "Junior representative",
+    competition: "National Netball Championships",
+    teams: [
+      "Victoria 17&U",
+      "Victoria 19&U",
+      "Victoria 21&U",
+    ],
+    detail:
+      "Junior representative netball at national level, representing Victoria across three age divisions.",
+    tier: "standard" as const,
+  },
+  {
+    step: "06",
+    eyebrow: "State league",
+    competition: "Victorian Netball League",
+    teams: ["Southern Saints", "Yarra Valley Grammar Ariels"],
+    detail:
+      "Victoria's premier state league. Game time, leadership and the cohesion needed before stepping onto the national stage.",
+    tier: "standard" as const,
+  },
+  {
+    step: "07",
+    eyebrow: "Academy",
+    competition: "Northern Zone Academy",
+    teams: [],
+    detail:
+      "Regional development academy. The structured entry point into Victorian state programs and the wider netball pathway.",
+    tier: "standard" as const,
+  },
+  {
+    step: "08",
+    eyebrow: "Where it started",
+    competition: "Echuca & District Netball Association",
+    teams: [],
+    detail:
+      "Junior netball at the local association in Echuca, the regional Victorian club that started everything.",
+    tier: "standard" as const,
+  },
 ];
 
 export const RESULTS = [
