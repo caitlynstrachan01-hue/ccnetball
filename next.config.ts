@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       { source: "/post/the-rise-of-reilley-batcheldor", destination: "/blog/rise-of-reilley-batcheldor", permanent: true },
       { source: "/post/laura-clemesha-role-of-a-goal-keeper-and-how-to-combat-a-tall-shooter", destination: "/blog", permanent: true },
       { source: "/blog/laura-clemesha-goal-keeper", destination: "/blog", permanent: true },
+      { source: "/blog/coming-back-from-an-acl-injury", destination: "/blog", permanent: true },
       { source: "/post/the-biggest-behavioural-change-that-led-to-my-selection-in-high-performance-programs", destination: "/blog/behavioural-change-high-performance", permanent: true },
       { source: "/post/your-start-does-not-determine-how-you-are-going-to-finish", destination: "/blog/your-start-does-not-determine-your-finish", permanent: true },
       { source: "/post/the-craft-of-a-goal-keeper", destination: "/blog/craft-of-a-goal-keeper", permanent: true },
