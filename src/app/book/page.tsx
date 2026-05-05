@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, MapPin, Plane, Laptop } from "lucide-react";
 import { PROGRAMS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
 import { CalEmbed } from "@/components/cal-embed";
@@ -23,9 +23,40 @@ export default function BookPage() {
               Train with a <span className="gradient-text">Diamond</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
-              Pick the program, choose a time, and lock it in. Sessions run
-              across Australia and online.
+              Pick the program, choose a time, and lock it in.
             </p>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="border-b border-border/60 bg-background">
+        <div className="mx-auto grid max-w-6xl gap-4 px-6 py-8 sm:grid-cols-3 lg:px-10">
+          <Reveal className="flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <MapPin className="size-5" />
+            </div>
+            <div>
+              <p className="font-display text-sm font-bold">Based in Brisbane</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">QLD home base for 1-on-1 and small group sessions.</p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.06} className="flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Plane className="size-5" />
+            </div>
+            <div>
+              <p className="font-display text-sm font-bold">Across Australia</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">Caitlyn travels Australia-wide for team and clinic bookings.</p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.12} className="flex items-start gap-4 rounded-2xl border border-border/70 bg-card p-5">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Laptop className="size-5" />
+            </div>
+            <div>
+              <p className="font-display text-sm font-bold">Online from anywhere</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">Mentoring and video analysis run from any postcode.</p>
+            </div>
           </Reveal>
         </div>
       </section>

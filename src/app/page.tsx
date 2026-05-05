@@ -351,7 +351,7 @@ export default function HomePage() {
                   <div className="rounded-2xl border border-border/70 bg-card p-6">
                     <Target className="size-8 text-primary" />
                     <p className="mt-4 font-display text-3xl font-bold">
-                      100s
+                      1,000+
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Athletes coached

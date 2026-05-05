@@ -19,7 +19,9 @@ export function AnimatedCounter({
   const ref = useRef<HTMLSpanElement | null>(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const value = useMotionValue(0);
-  const rounded = useTransform(value, (latest) => Math.round(latest).toString());
+  const rounded = useTransform(value, (latest) =>
+    Math.round(latest).toLocaleString("en-AU"),
+  );
 
   useEffect(() => {
     if (!inView) return;

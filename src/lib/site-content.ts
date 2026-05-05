@@ -34,7 +34,7 @@ export const RESULTS = [
     detail: "Vixens & Firebirds",
   },
   {
-    value: "100",
+    value: "1000",
     suffix: "+",
     label: "Athletes coached",
     detail: "Across Australia",
