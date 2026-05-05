@@ -1,4 +1,4 @@
-import { Mail, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { SITE } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
@@ -35,26 +35,16 @@ export default function ContactPage() {
         <div className="mx-auto grid max-w-5xl gap-10 px-6 lg:grid-cols-3 lg:px-10">
           <Reveal className="space-y-6 lg:col-span-1">
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
-              <Mail className="size-6 text-[color:var(--brand-coral)]" />
-              <h3 className="mt-4 font-display text-lg font-bold">Email</h3>
-              <p className="mt-1 text-sm text-white/70">
-                Reply within one business day.
-              </p>
-              <a
-                href={`mailto:${SITE.email}`}
-                className="mt-3 inline-block text-sm font-semibold text-[color:var(--brand-coral)] hover:underline"
-              >
-                {SITE.email}
-              </a>
-            </div>
-
-            <div className="rounded-2xl border border-border/70 bg-card p-6">
-              <MapPin className="size-6 text-primary" />
+              <MapPin className="size-6 text-[color:var(--brand-coral)]" />
               <h3 className="mt-4 font-display text-lg font-bold">
                 Coaching across
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Australia. VIC, QLD, NSW and online from anywhere.
+              <p className="mt-3 text-base font-bold text-white">
+                Based in South East Queensland.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-white/80">
+                Offering coaching across Victoria, Queensland, New South
+                Wales, and anywhere online.
               </p>
             </div>
 

@@ -78,7 +78,14 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-6 text-xs text-white/50 md:flex-row lg:px-10">
           <p>© {new Date().getFullYear()} CCNetball. All rights reserved.</p>
-          <p>Coaching netball talent across Australia.</p>
+          <p>
+            <a
+              href={`mailto:${SITE.email}`}
+              className="transition hover:text-[color:var(--brand-coral)]"
+            >
+              {SITE.email}
+            </a>
+          </p>
         </div>
       </div>
     </footer>
