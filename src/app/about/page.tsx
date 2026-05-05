@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Trophy, Award, Sparkles, MapPin } from "lucide-react";
 import { CREDENTIALS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
@@ -13,19 +14,34 @@ export default function AboutPage() {
   return (
     <>
       <section className="border-b border-border/60 bg-card">
-        <div className="mx-auto max-w-4xl px-6 py-20 lg:px-10 lg:py-28">
-          <Reveal>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              About the coach
-            </p>
-            <h1 className="mt-3 font-display text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
-              Meet <span className="gradient-text">Caitlyn Strachan</span>.
-            </h1>
-            <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
-              Former Australian Diamond. Triple premiership winner. Now
-              coaching the next generation.
-            </p>
-          </Reveal>
+        <div className="mx-auto max-w-6xl px-6 py-20 lg:px-10 lg:py-28">
+          <div className="grid items-center gap-12 lg:grid-cols-12">
+            <Reveal className="lg:col-span-7">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                About the coach
+              </p>
+              <h1 className="mt-3 font-display text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+                Meet <span className="gradient-text">Caitlyn Strachan</span>.
+              </h1>
+              <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
+                Former Australian Diamond. Triple premiership winner. Now
+                coaching the next generation.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.1} className="lg:col-span-5">
+              <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-3xl shadow-2xl shadow-primary/15 ring-1 ring-border lg:ml-auto">
+                <Image
+                  src="/gallery/09-firebirds-medal-portrait.jpg"
+                  alt="Close-up portrait of Caitlyn Strachan smiling and holding up her ANZ Champions medal in a Firebirds polo"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 35vw, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 

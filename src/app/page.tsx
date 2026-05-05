@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Award,
@@ -98,31 +99,62 @@ export default function HomePage() {
             </div>
 
             <Reveal delay={0.2} className="lg:col-span-5">
-              <div className="relative rounded-3xl bg-secondary p-8 text-secondary-foreground shadow-2xl shadow-primary/10 md:p-10">
-                <div className="absolute -top-4 -right-4 rounded-full bg-primary px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-foreground shadow-lg">
-                  Career
+              <div className="relative">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl shadow-2xl shadow-primary/20">
+                  <Image
+                    src="/gallery/01-diamonds-wa-action.jpg"
+                    alt="Caitlyn Strachan in the Australian Diamonds gold dress at Wing Attack, releasing a pass mid-court"
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 via-secondary/10 to-transparent" />
+
+                  <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--brand-coral)]">
+                      The coach
+                    </p>
+                    <p className="mt-1 font-display text-2xl font-extrabold text-white md:text-3xl">
+                      Caitlyn Strachan
+                    </p>
+                    <p className="mt-1 text-sm text-white/85">
+                      Wing Attack · Australian Diamonds
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-6">
-                  {CREDENTIALS.map((c, i) => (
-                    <div
-                      key={c.label}
-                      className="flex items-start gap-4 border-b border-white/10 pb-5 last:border-0 last:pb-0"
-                    >
-                      <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[color:var(--brand-coral)]">
-                        {i === 0 && <Award className="size-5" />}
-                        {i === 1 && <Trophy className="size-5" />}
-                        {i === 2 && <Sparkles className="size-5" />}
-                        {i === 3 && <Target className="size-5" />}
+
+                <div className="absolute -bottom-5 -left-5 hidden rounded-2xl bg-card px-5 py-4 shadow-xl shadow-primary/15 ring-1 ring-border md:block">
+                  <p className="font-display text-2xl font-extrabold gradient-text leading-none">3×</p>
+                  <p className="mt-1 text-xs font-semibold text-foreground">Premiership winner</p>
+                </div>
+
+                <div className="absolute -top-5 -right-5 hidden rounded-2xl bg-secondary px-5 py-4 text-secondary-foreground shadow-xl ring-1 ring-white/10 md:block">
+                  <p className="font-display text-2xl font-extrabold leading-none">2017</p>
+                  <p className="mt-1 text-xs font-semibold text-white/80">Diamonds debut</p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-3 rounded-2xl bg-card p-5 ring-1 ring-border sm:grid-cols-2">
+                {CREDENTIALS.map((c, i) => (
+                  <div
+                    key={c.label}
+                    className="flex items-start gap-3"
+                  >
+                      <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        {i === 0 && <Award className="size-4" />}
+                        {i === 1 && <Trophy className="size-4" />}
+                        {i === 2 && <Sparkles className="size-4" />}
+                        {i === 3 && <Target className="size-4" />}
                       </div>
                       <div>
-                        <p className="font-display text-lg font-bold text-white">
+                        <p className="font-display text-sm font-bold text-foreground">
                           {c.label}
                         </p>
-                        <p className="text-sm text-white/70">{c.detail}</p>
+                        <p className="text-xs text-muted-foreground">{c.detail}</p>
                       </div>
                     </div>
                   ))}
-                </div>
               </div>
             </Reveal>
           </div>
