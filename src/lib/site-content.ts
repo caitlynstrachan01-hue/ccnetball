@@ -15,7 +15,7 @@ export const CREDENTIALS = [
   { label: "Australian Diamond", detail: "Debut vs Silver Ferns, Jan 2017" },
   { label: "3× Premiership Winner", detail: "Melbourne Vixens, Queensland Firebirds" },
   { label: "Elite Coaching Accreditation", detail: "Currently completing" },
-  { label: "Coached Across Australia", detail: "Junior to open grade" },
+  { label: "Coaches throughout Australia", detail: "Based in Brisbane · Junior Age to Open" },
 ];
 
 export const PROOF_TEAMS = [
