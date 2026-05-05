@@ -4,7 +4,7 @@ export const SITE = {
   domain: "ccnetball.com",
   email: "info.ccnetball@gmail.com",
   instagram: "https://instagram.com/ccnetball_",
-  facebook: "https://facebook.com/ccnetball_",
+  facebook: "https://www.facebook.com/caitlynstrachan4/",
   instagramHandle: "@ccnetball_",
   // Cal.com username — placeholder until Caitlyn's Cal.com is set up.
   // Update this once she has a Cal.com account; bookings will route to it automatically.
