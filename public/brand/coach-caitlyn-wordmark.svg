@@ -12,16 +12,6 @@
         font-size="128"
         letter-spacing="-4"
         fill="#1A1F36">
-    <tspan>Coach</tspan>
-  </text>
-
-  <text x="380" y="100"
-        dominant-baseline="central"
-        font-family="'Plus Jakarta Sans', 'Helvetica Neue', Arial, system-ui, sans-serif"
-        font-weight="800"
-        font-size="128"
-        letter-spacing="-4"
-        fill="url(#caitlynGrad)">
-    <tspan>Caitlyn</tspan>
+    <tspan>Coach</tspan><tspan fill="url(#caitlynGrad)" dx="40">Caitlyn</tspan>
   </text>
 </svg>
