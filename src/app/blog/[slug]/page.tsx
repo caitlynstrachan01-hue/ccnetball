@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Calendar, Clock } from "lucide-react";
-import { BLOG_POSTS, getPostBySlug } from "@/lib/blog-posts";
+import {
+  BLOG_POSTS,
+  getPostBySlug,
+  getPublishedPosts,
+  isPublished,
+} from "@/lib/blog-posts";
 import { Reveal } from "@/components/motion";
+
+// Revalidate hourly so scheduled posts auto-publish on their date.
+export const revalidate = 3600;
 
 const dateFormat = new Intl.DateTimeFormat("en-AU", {
   year: "numeric",
@@ -13,7 +21,7 @@ const dateFormat = new Intl.DateTimeFormat("en-AU", {
 type RouteParams = { slug: string };
 
 export function generateStaticParams() {
-  return BLOG_POSTS.map((p) => ({ slug: p.slug }));
+  return getPublishedPosts().map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
@@ -72,11 +80,11 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post) notFound();
+  if (!post || !isPublished(post)) notFound();
 
-  const related = BLOG_POSTS.filter(
-    (p) => p.slug !== slug && p.category === post.category,
-  ).slice(0, 2);
+  const related = getPublishedPosts()
+    .filter((p) => p.slug !== slug && p.category === post.category)
+    .slice(0, 2);
 
   return (
     <>

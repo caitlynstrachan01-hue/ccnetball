@@ -80,10 +80,10 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "how-to-prepare-for-netball-trials",
-    title: "How to prepare for netball trials (without losing your head)",
+    title: "How to prepare for netball trials",
     excerpt:
       "What to focus on in the weeks before trials, what to ignore, and how to walk into the gym ready to be picked.",
-    date: "2026-05-04",
+    date: "2026-11-02",
     readMinutes: 6,
     category: "Mindset",
     body: [
@@ -217,4 +217,16 @@ export const BLOG_POSTS: BlogPost[] = [
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
   return BLOG_POSTS.find((p) => p.slug === slug);
+}
+
+/**
+ * Returns posts whose publish date has arrived. Posts dated in the future
+ * (scheduled posts) are filtered out so they stay hidden until their date.
+ */
+export function getPublishedPosts(now: Date = new Date()): BlogPost[] {
+  return BLOG_POSTS.filter((p) => new Date(p.date).getTime() <= now.getTime());
+}
+
+export function isPublished(post: BlogPost, now: Date = new Date()): boolean {
+  return new Date(post.date).getTime() <= now.getTime();
 }

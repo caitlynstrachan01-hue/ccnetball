@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
-import { BLOG_POSTS } from "@/lib/blog-posts";
+import { getPublishedPosts } from "@/lib/blog-posts";
+
+// Revalidate hourly so scheduled posts auto-publish on their date without
+// needing a manual redeploy.
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Blog",
@@ -15,6 +19,7 @@ const dateFormat = new Intl.DateTimeFormat("en-AU", {
 });
 
 export default function BlogPage() {
+  const posts = getPublishedPosts();
   return (
     <>
       <section className="border-b border-border/60 bg-card">
@@ -35,7 +40,7 @@ export default function BlogPage() {
       <section className="py-16">
         <div className="mx-auto max-w-5xl px-6 lg:px-10">
           <div className="grid gap-6 md:grid-cols-2">
-            {BLOG_POSTS.map((post) => (
+            {posts.map((post) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
