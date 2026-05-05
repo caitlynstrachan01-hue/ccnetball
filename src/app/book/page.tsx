@@ -90,7 +90,7 @@ export default function BookPage() {
 
           <Reveal delay={0.08} className="lg:col-span-3">
             <h2 className="font-display text-2xl font-bold tracking-tight">
-              Pick a time
+              Book a time
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Live availability. Bookings sync straight to Caitlyn&apos;s calendar.
