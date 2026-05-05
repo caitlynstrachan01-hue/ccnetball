@@ -3,6 +3,26 @@
 import { useState } from "react";
 import { Send, CheckCircle2 } from "lucide-react";
 
+const PROGRAM_OPTIONS = [
+  "Not sure yet",
+  "1-on-1 / 2-on-1 Training",
+  "Small Group Training",
+  "Team Training",
+  "Video Game Analysis",
+  "Online Mentoring",
+  "Coach the Coaches",
+];
+
+const LOCATION_OPTIONS = [
+  "No preference",
+  "Underwood Park Netball Association",
+  "Beenleigh Netball Association",
+  "MacGregor Netball Association",
+  "Pimpama Sports Hub",
+  "Online (anywhere)",
+  "Other (please describe in message)",
+];
+
 export function ContactForm() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -57,15 +77,16 @@ export function ContactForm() {
         <SelectField
           label="Program"
           name="program"
-          options={[
-            "Not sure yet",
-            "1-on-1 / 2-on-1 Training",
-            "Small Group Training",
-            "Team Training",
-            "Video Game Analysis",
-            "Online Mentoring",
-            "Coach the Coaches",
-          ]}
+          placeholder="Choose a program"
+          options={PROGRAM_OPTIONS}
+        />
+      </div>
+      <div className="mt-5">
+        <SelectField
+          label="Preferred location"
+          name="location"
+          placeholder="Choose a location"
+          options={LOCATION_OPTIONS}
         />
       </div>
       <TextAreaField
@@ -120,10 +141,12 @@ function SelectField({
   label,
   name,
   options,
+  placeholder,
 }: {
   label: string;
   name: string;
   options: string[];
+  placeholder: string;
 }) {
   return (
     <label className="block">
@@ -134,7 +157,7 @@ function SelectField({
         className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
         <option value="" disabled>
-          Choose a program
+          {placeholder}
         </option>
         {options.map((opt) => (
           <option key={opt} value={opt}>

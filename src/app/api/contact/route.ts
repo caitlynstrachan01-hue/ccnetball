@@ -7,7 +7,7 @@ const TO_EMAIL = process.env.CONTACT_TO_EMAIL || "info.ccnetball@gmail.com";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { name, email, phone, program, message } = body ?? {};
+  const { name, email, phone, program, location, message } = body ?? {};
 
   if (!name || !email || !message) {
     return NextResponse.json(
@@ -29,6 +29,7 @@ export async function POST(request: Request) {
           `Email: ${email}`,
           phone ? `Phone: ${phone}` : null,
           program ? `Program: ${program}` : null,
+          location ? `Preferred location: ${location}` : null,
           ``,
           `Message:`,
           message,
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
       email,
       phone,
       program,
+      location,
       message,
     });
   }
