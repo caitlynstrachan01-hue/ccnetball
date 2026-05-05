@@ -65,7 +65,7 @@ export default function BookPage() {
         <div className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-5 lg:px-10">
           <Reveal className="lg:col-span-2">
             <h2 className="font-display text-2xl font-bold tracking-tight">
-              Pick a program
+              Program enquiry
             </h2>
             <div className="mt-6 space-y-3">
               {PROGRAMS.map((program) => (
