@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    // Allow our higher-quality preset alongside the default 75
+    qualities: [75, 90, 95],
+  },
   async redirects() {
     return [
       // Old Wix booking service pages
