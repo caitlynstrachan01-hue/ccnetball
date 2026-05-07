@@ -17,8 +17,8 @@ export function CareerSection() {
 
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
-          {/* Photo — left column on desktop */}
-          <Reveal className="lg:col-span-5">
+          {/* Photo — left column on desktop. No Reveal wrap so it's always visible. */}
+          <div className="lg:col-span-5">
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl shadow-2xl shadow-primary/15 ring-1 ring-border">
               <Image
                 src="/gallery/07-firebirds-vs-vixens.jpg"
@@ -26,6 +26,7 @@ export function CareerSection() {
                 fill
                 sizes="(min-width: 1024px) 40vw, 100vw"
                 className="object-cover"
+                priority
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-secondary/80 via-secondary/15 to-transparent p-5 md:p-6">
                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--brand-coral)]">
@@ -36,7 +37,7 @@ export function CareerSection() {
                 </p>
               </div>
             </div>
-          </Reveal>
+          </div>
 
           {/* Career content — right column on desktop */}
           <Reveal delay={0.1} className="lg:col-span-7">

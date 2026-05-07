@@ -74,19 +74,17 @@ export function CareerPathway() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline gap-x-2">
-                        <p
-                          className={`text-[9px] font-bold uppercase tracking-[0.18em] ${eyebrowText}`}
-                        >
-                          {tier.eyebrow}
-                        </p>
-                        <h3 className="font-display text-sm font-extrabold leading-tight tracking-tight md:text-[15px]">
-                          {tier.competition}
-                        </h3>
-                      </div>
+                      <p
+                        className={`text-[9px] font-bold uppercase tracking-[0.18em] ${eyebrowText}`}
+                      >
+                        {tier.eyebrow}
+                      </p>
+                      <h3 className="mt-0.5 font-display text-sm font-extrabold leading-snug tracking-tight md:text-[15px]">
+                        {tier.competition}
+                      </h3>
 
                       {tier.teams.length > 0 && (
-                        <ul className="mt-1.5 flex flex-wrap gap-1">
+                        <ul className="mt-2 flex flex-wrap gap-1">
                           {tier.teams.map((team) => (
                             <li
                               key={team}
