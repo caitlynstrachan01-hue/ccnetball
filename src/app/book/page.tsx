@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Check, MapPin, Plane, Laptop } from "lucide-react";
-import { PROGRAMS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
 import { CalEmbed } from "@/components/cal-embed";
 
@@ -62,7 +61,7 @@ export default function BookPage() {
       </section>
 
       <section className="py-16">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-12 lg:px-10">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-10 lg:px-10">
           {/* Booking widget — hero on the left, takes 8/12 cols on desktop */}
           <Reveal className="lg:col-span-8">
             <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
@@ -79,60 +78,62 @@ export default function BookPage() {
             </div>
           </Reveal>
 
-          {/* Program enquiry — narrower column on the right */}
+          {/* What to expect — sits next to Book a time on desktop, stacks below on mobile */}
           <Reveal delay={0.08} className="lg:col-span-4">
             <h2 className="font-display text-2xl font-bold tracking-tight">
-              Program enquiry
+              What to expect
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Have a specific program in mind? Send Caitlyn a tailored
-              enquiry instead.
+              What every session looks like, regardless of program.
             </p>
-            <div className="mt-6 space-y-2.5">
-              {PROGRAMS.map((program) => (
-                <Link
-                  key={program.id}
-                  href={`/contact?program=${encodeURIComponent(program.name)}`}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <div className="min-w-0">
-                    <h3 className="truncate font-display text-sm font-bold leading-tight">
-                      {program.name}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      ${program.price} · {program.durationMinutes} min
-                    </p>
-                  </div>
-                  <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" />
-                </Link>
+            <ul className="mt-6 space-y-3 rounded-2xl border border-border/70 bg-card p-6">
+              {[
+                "A program designed around you, not a template",
+                "Direct coaching from a former Australian Diamond",
+                "Sharp, demanding, and genuinely fun",
+                "Clear takeaways and homework after every session",
+                "Flexible booking across Australia or online",
+                "All ages and skill levels, juniors to opens",
+              ].map((point) => (
+                <li key={point} className="flex items-start gap-3 text-sm leading-snug">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{point}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </Reveal>
         </div>
       </section>
 
+      {/* Program enquiry — single simplified CTA below the booking + what to expect */}
       <section className="bg-muted/40 py-16">
         <div className="mx-auto max-w-4xl px-6 lg:px-10">
           <Reveal>
-            <div className="rounded-3xl border border-border/70 bg-card p-10">
-              <h2 className="font-display text-2xl font-bold tracking-tight">
-                What to expect
-              </h2>
-              <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-                {[
-                  "A program designed around you, not a template",
-                  "Direct coaching from a former Australian Diamond",
-                  "Sharp, demanding, and genuinely fun",
-                  "Clear takeaways and homework after every session",
-                  "Flexible booking across Australia or online",
-                  "All ages and skill levels, juniors to opens",
-                ].map((point) => (
-                  <li key={point} className="flex items-start gap-3 text-base">
-                    <Check className="mt-1 size-5 shrink-0 text-primary" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="rounded-3xl bg-card p-8 ring-1 ring-border md:p-10">
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-10">
+                <div className="md:max-w-2xl">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                    Program enquiry
+                  </p>
+                  <h2 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
+                    Want to chat about a program first?
+                  </h2>
+                  <p className="mt-3 text-base text-muted-foreground">
+                    Send Caitlyn an enquiry and pick the program (1-on-1,
+                    small group, team training, video analysis, online
+                    mentoring or coach development) on the next page. Reply
+                    within one business day.
+                  </p>
+                </div>
+
+                <Link
+                  href="/contact"
+                  className="group inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-[1.02] hover:bg-[var(--brand-raspberry-dark)] md:self-auto"
+                >
+                  Start an enquiry
+                  <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                </Link>
+              </div>
             </div>
           </Reveal>
         </div>
