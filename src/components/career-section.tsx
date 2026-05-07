@@ -25,6 +25,7 @@ export function CareerSection() {
                 alt="Caitlyn Strachan playing Wing Attack for Queensland Firebirds in Suncorp Super Netball"
                 fill
                 sizes="(min-width: 1024px) 40vw, 100vw"
+                quality={95}
                 className="object-cover"
                 priority
               />

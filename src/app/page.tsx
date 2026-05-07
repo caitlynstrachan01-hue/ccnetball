@@ -107,6 +107,7 @@ export default function HomePage() {
                     fill
                     priority
                     sizes="(min-width: 1024px) 40vw, 100vw"
+                    quality={95}
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 via-secondary/10 to-transparent" />
