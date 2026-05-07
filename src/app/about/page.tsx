@@ -143,33 +143,6 @@ export default function AboutPage() {
               </ul>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-card p-6">
-              <h3 className="font-display text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                Quick facts
-              </h3>
-              <dl className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Hometown</dt>
-                  <dd className="font-semibold">Echuca, VIC</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Diamond debut</dt>
-                  <dd className="font-semibold">29 Jan 2017</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Clubs</dt>
-                  <dd className="font-semibold text-right">Vixens, Firebirds</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Premierships</dt>
-                  <dd className="font-semibold">3</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Retired</dt>
-                  <dd className="font-semibold">2020</dd>
-                </div>
-              </dl>
-            </div>
           </Reveal>
         </div>
       </section>
