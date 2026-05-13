@@ -226,10 +226,10 @@ export const PROGRAMS: Program[] = [
     short: "Develop the coach behind the squad.",
     description:
       "Professional development for coaches: session design, drill libraries, athlete management, and the systems behind premiership-winning teams. Tailored to your level and the squad you're building.",
-    price: 180,
-    unit: "AUD per session",
-    durationMinutes: 60,
-    capacity: "1 to 4 coaches",
+    price: 80,
+    unit: "AUD per coach (minimum 4 coaches)",
+    durationMinutes: 90,
+    capacity: "Minimum 4 coaches",
     bestFor: "Club, school and rep coaches",
   },
 ];

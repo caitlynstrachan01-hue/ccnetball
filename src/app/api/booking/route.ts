@@ -8,6 +8,7 @@ const TO_EMAIL = process.env.CONTACT_TO_EMAIL || "info.ccnetball@gmail.com";
 export async function POST(request: Request) {
   const body = await request.json();
   const {
+    program,
     parentName,
     parentEmail,
     parentPhone,
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
   } = body ?? {};
 
   if (
+    !program ||
     !parentName ||
     !parentEmail ||
     !athleteName ||
@@ -38,6 +40,16 @@ export async function POST(request: Request) {
     );
   }
 
+  const PROGRAM_LABELS: Record<string, string> = {
+    "1on1": "1-on-1 / 2-on-1 Training ($160 AUD — pay on confirmation)",
+    "small-group": "Small Group Training ($60 AUD per athlete — pay on confirmation)",
+    team: "Team Training ($250 AUD — pay on confirmation)",
+    "video-analysis": "Video Game Analysis ($200 AUD — paid at booking)",
+    online: "Online Mentoring ($160 AUD — paid at booking)",
+    "coach-the-coaches": "Coach the Coaches ($80 AUD per coach, min 4 — pay on confirmation)",
+  };
+  const programLabel = PROGRAM_LABELS[String(program)] || String(program);
+
   if (RESEND_API_KEY) {
     try {
       const resend = new Resend(RESEND_API_KEY);
@@ -45,8 +57,11 @@ export async function POST(request: Request) {
         from: FROM_EMAIL,
         to: TO_EMAIL,
         replyTo: parentEmail,
-        subject: `New CCNetball booking — ${athleteName} (age ${athleteAge})`,
+        subject: `New CCNetball booking — ${athleteName} (age ${athleteAge}) — ${programLabel.split(" (")[0]}`,
         text: [
+          `--- Program ---`,
+          programLabel,
+          ``,
           `--- Parent / guardian ---`,
           `Name: ${parentName}`,
           `Email: ${parentEmail}`,

@@ -2,11 +2,21 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2, CreditCard, ArrowRight } from "lucide-react";
+import {
+  PROGRAM_ORDER,
+  PROGRAM_PAYMENTS,
+  type ProgramId,
+} from "@/lib/stripe-links";
+
+type DoneState = {
+  programId: ProgramId;
+  athleteName: string;
+};
 
 export function BookingForm() {
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<DoneState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -19,6 +29,9 @@ export function BookingForm() {
     payload.photoConsent = formData.get("photoConsent") === "on";
     payload.termsAccepted = formData.get("termsAccepted") === "on";
 
+    const programId = String(formData.get("program") || "") as ProgramId;
+    const athleteName = String(formData.get("athleteName") || "");
+
     try {
       const res = await fetch("/api/booking", {
         method: "POST",
@@ -26,7 +39,7 @@ export function BookingForm() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Submission failed");
-      setDone(true);
+      setDone({ programId, athleteName });
     } catch {
       setError("Something went wrong. Please email us instead.");
     } finally {
@@ -35,13 +48,43 @@ export function BookingForm() {
   }
 
   if (done) {
+    const program = PROGRAM_PAYMENTS[done.programId];
+    const payNow = program?.payOnBooking;
+
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl border border-border/70 bg-card p-12 text-center">
-        <CheckCircle2 className="size-14 text-primary" />
-        <h3 className="mt-4 font-display text-2xl font-bold">Booking submitted</h3>
-        <p className="mt-2 max-w-sm text-muted-foreground">
-          Thanks. Caitlyn will confirm your session details within one business day.
-        </p>
+      <div className="rounded-3xl border border-border/70 bg-card p-10 text-center md:p-12">
+        <CheckCircle2 className="mx-auto size-14 text-primary" />
+        <h3 className="mt-4 font-display text-2xl font-bold md:text-3xl">
+          Booking submitted
+        </h3>
+
+        {payNow ? (
+          <>
+            <p className="mx-auto mt-3 max-w-md text-muted-foreground">
+              One more step — your <strong>{program.label.split(" — ")[0]}</strong>{" "}
+              session is locked in once payment is received. Click below to pay
+              securely via Stripe.
+            </p>
+            <a
+              href={program.paymentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
+            >
+              <CreditCard className="size-5" />
+              Pay now — {program.label.split(" — ")[1]}
+              <ArrowRight className="size-4" />
+            </a>
+            <p className="mt-4 text-xs text-muted-foreground">
+              You&apos;ll receive a confirmation email once payment is complete.
+            </p>
+          </>
+        ) : (
+          <p className="mx-auto mt-3 max-w-md text-muted-foreground">
+            Thanks. Caitlyn will confirm your session details within one
+            business day, then send a secure payment link to lock it in.
+          </p>
+        )}
       </div>
     );
   }
@@ -51,7 +94,25 @@ export function BookingForm() {
       onSubmit={handleSubmit}
       className="rounded-3xl border border-border/70 bg-card p-8 md:p-10"
     >
-      <SectionHeading title="Parent / guardian details" />
+      <SectionHeading title="Program" />
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        Online sessions (Video Game Analysis, Online Mentoring) require payment
+        at booking. All other sessions are paid once Caitlyn confirms your time
+        and location.
+      </p>
+      <div className="mt-5">
+        <SelectField
+          label="Which program are you booking?"
+          name="program"
+          required
+          options={PROGRAM_ORDER.map((id) => ({
+            value: id,
+            label: PROGRAM_PAYMENTS[id].label,
+          }))}
+        />
+      </div>
+
+      <SectionHeading title="Parent / guardian details" className="mt-10" />
       <div className="mt-5 grid gap-5 sm:grid-cols-2">
         <Field label="Parent name" name="parentName" required />
         <Field label="Parent email" name="parentEmail" type="email" required />
@@ -182,6 +243,42 @@ function Field({
         placeholder={placeholder}
         className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
       />
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  name,
+  options,
+  required = false,
+}: {
+  label: string;
+  name: string;
+  options: { value: string; label: string }[];
+  required?: boolean;
+}) {
+  return (
+    <label className="block">
+      <span className="text-sm font-semibold text-foreground/90">
+        {label}
+        {required && <span className="ml-1 text-primary">*</span>}
+      </span>
+      <select
+        name={name}
+        required={required}
+        defaultValue=""
+        className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+      >
+        <option value="" disabled>
+          Choose a program
+        </option>
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
