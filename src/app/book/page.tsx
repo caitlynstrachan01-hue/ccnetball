@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, MapPin, Plane, Laptop } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { CalEmbed } from "@/components/cal-embed";
+import { BookingForm } from "@/components/booking-form";
 
 export const metadata = {
   title: "Book a Session",
@@ -64,7 +65,10 @@ export default function BookPage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-10 lg:px-10">
           {/* Booking widget — hero on the left, takes 8/12 cols on desktop */}
           <Reveal className="lg:col-span-8">
-            <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              Step 1 — pick a time
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
               Book a time
             </h2>
             <p className="mt-3 text-xs italic leading-relaxed text-muted-foreground">
@@ -101,6 +105,27 @@ export default function BookPage() {
                 </li>
               ))}
             </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Athlete intake form — collects everything Caitlyn needs once a time is picked */}
+      <section className="border-t border-border/60 bg-background py-16">
+        <div className="mx-auto max-w-4xl px-6 lg:px-10">
+          <Reveal>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              Step 2 — athlete details
+            </p>
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              Tell Caitlyn about your athlete
+            </h2>
+            <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+              Once you&apos;ve picked a time above, fill this in so Caitlyn has
+              everything she needs to make the session count.
+            </p>
+          </Reveal>
+          <Reveal delay={0.08} className="mt-8">
+            <BookingForm />
           </Reveal>
         </div>
       </section>
