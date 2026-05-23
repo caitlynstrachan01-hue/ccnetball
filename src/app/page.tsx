@@ -23,6 +23,10 @@ import {
   StaggerItem,
 } from "@/components/motion";
 
+// Temporarily hide testimonial reviewers' names on the homepage.
+// Flip to false when ready to show the names again.
+const HIDE_TESTIMONIAL_NAMES = true;
+
 export default function HomePage() {
   return (
     <>
@@ -390,16 +394,24 @@ export default function HomePage() {
                     &ldquo;{featured.quote}&rdquo;
                   </blockquote>
                   <figcaption className="mt-8 flex items-center gap-4 border-t border-border pt-6">
-                    <div className="flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                      {featured.name
-                        .split(" ")
-                        .map((p) => p[0])
-                        .join("")}
-                    </div>
+                    {HIDE_TESTIMONIAL_NAMES ? (
+                      <div className="flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Quote className="size-5" />
+                      </div>
+                    ) : (
+                      <div className="flex size-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
+                        {featured.name
+                          .split(" ")
+                          .map((p) => p[0])
+                          .join("")}
+                      </div>
+                    )}
                     <div>
-                      <p className="font-display text-base font-bold">
-                        {featured.name}
-                      </p>
+                      {!HIDE_TESTIMONIAL_NAMES && (
+                        <p className="font-display text-base font-bold">
+                          {featured.name}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">
                         {featured.role} · {featured.program}
                       </p>
@@ -429,7 +441,9 @@ export default function HomePage() {
                     &ldquo;{t.quote}&rdquo;
                   </blockquote>
                   <figcaption className="mt-6 border-t border-border/70 pt-4">
-                    <p className="font-semibold">{t.name}</p>
+                    {!HIDE_TESTIMONIAL_NAMES && (
+                      <p className="font-semibold">{t.name}</p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {t.role} · {t.program}
                     </p>
