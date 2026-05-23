@@ -157,6 +157,8 @@ export type Program = {
   durationMinutes: number;
   capacity: string;
   bestFor: string;
+  /** Temporarily hide from public pages and the booking form. */
+  hidden?: boolean;
 };
 
 export const PROGRAMS: Program[] = [
@@ -207,6 +209,7 @@ export const PROGRAMS: Program[] = [
     durationMinutes: 60,
     capacity: "Per athlete",
     bestFor: "Athletes serious about self-analysis",
+    hidden: true,
   },
   {
     id: "online",

@@ -33,7 +33,7 @@ export default function ProgramsPage() {
 
       <section className="py-20">
         <div className="mx-auto max-w-6xl space-y-10 px-6 lg:px-10">
-          {PROGRAMS.map((program, i) => (
+          {PROGRAMS.filter((p) => !p.hidden).map((program, i) => (
             <Reveal key={program.id} delay={i * 0.04}>
               <article
                 id={program.id}
@@ -83,7 +83,7 @@ export default function ProgramsPage() {
                   </dl>
 
                   <Link
-                    href="/book"
+                    href={`/book?program=${program.id}`}
                     className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]"
                   >
                     Book {program.name} <ArrowRight className="size-4" />

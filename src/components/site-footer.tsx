@@ -56,7 +56,6 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2 text-sm text-white/70">
             <li><Link href="/programs" className="hover:text-primary">Programs</Link></li>
             <li><Link href="/book" className="hover:text-primary">Book a Session</Link></li>
-            <li><Link href="/programs#video-analysis" className="hover:text-primary">Video Analysis</Link></li>
             <li><Link href="/programs#online" className="hover:text-primary">Online Mentoring</Link></li>
           </ul>
         </div>

@@ -193,7 +193,7 @@ export default function HomePage() {
             className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
             staggerChildren={0.06}
           >
-            {PROGRAMS.map((program) => (
+            {PROGRAMS.filter((p) => !p.hidden).map((program) => (
               <StaggerItem key={program.id}>
                 <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-background p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
                   <div className="flex items-start justify-between gap-4">
@@ -215,12 +215,20 @@ export default function HomePage() {
                       {program.capacity}
                     </span>
                   </div>
-                  <Link
-                    href={`/programs#${program.id}`}
-                    className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-primary transition group-hover:gap-2.5"
-                  >
-                    Read more <ArrowRight className="size-3.5" />
-                  </Link>
+                  <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+                    <Link
+                      href={`/book?program=${program.id}`}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
+                    >
+                      Book this program <ArrowRight className="size-3.5" />
+                    </Link>
+                    <Link
+                      href={`/programs#${program.id}`}
+                      className="text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+                    >
+                      Read more
+                    </Link>
+                  </div>
                 </article>
               </StaggerItem>
             ))}

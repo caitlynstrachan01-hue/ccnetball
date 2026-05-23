@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Send, CheckCircle2, CreditCard, ArrowRight } from "lucide-react";
 import {
   PROGRAM_ORDER,
   PROGRAM_PAYMENTS,
   type ProgramId,
 } from "@/lib/stripe-links";
+import { PROGRAMS } from "@/lib/site-content";
+
+const HIDDEN_PROGRAM_IDS = new Set(
+  PROGRAMS.filter((p) => p.hidden).map((p) => p.id),
+);
+const VISIBLE_PROGRAM_ORDER = PROGRAM_ORDER.filter(
+  (id) => !HIDDEN_PROGRAM_IDS.has(id),
+);
 
 type DoneState = {
   programId: ProgramId;
@@ -18,6 +26,17 @@ export function BookingForm() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<DoneState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [program, setProgram] = useState<string>("");
+
+  // Pre-select the program from the URL (?program=1on1) when the page loads.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("program");
+    if (fromUrl && VISIBLE_PROGRAM_ORDER.includes(fromUrl as ProgramId)) {
+      setProgram(fromUrl);
+    }
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,16 +115,17 @@ export function BookingForm() {
     >
       <SectionHeading title="Program" />
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        Online sessions (Video Game Analysis, Online Mentoring) require payment
-        at booking. All other sessions are paid once Caitlyn confirms your time
-        and location.
+        Online Mentoring sessions require payment at booking. All other sessions
+        are paid once Caitlyn confirms your time and location.
       </p>
       <div className="mt-5">
         <SelectField
           label="Which program are you booking?"
           name="program"
           required
-          options={PROGRAM_ORDER.map((id) => ({
+          value={program}
+          onChange={setProgram}
+          options={VISIBLE_PROGRAM_ORDER.map((id) => ({
             value: id,
             label: PROGRAM_PAYMENTS[id].label,
           }))}
@@ -252,12 +272,17 @@ function SelectField({
   name,
   options,
   required = false,
+  value,
+  onChange,
 }: {
   label: string;
   name: string;
   options: { value: string; label: string }[];
   required?: boolean;
+  value?: string;
+  onChange?: (v: string) => void;
 }) {
+  const controlled = value !== undefined && onChange !== undefined;
   return (
     <label className="block">
       <span className="text-sm font-semibold text-foreground/90">
@@ -267,7 +292,9 @@ function SelectField({
       <select
         name={name}
         required={required}
-        defaultValue=""
+        {...(controlled
+          ? { value, onChange: (e) => onChange!(e.target.value) }
+          : { defaultValue: "" })}
         className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
         <option value="" disabled>

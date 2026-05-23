@@ -2,15 +2,11 @@
 
 import { useState } from "react";
 import { Send, CheckCircle2 } from "lucide-react";
+import { PROGRAMS } from "@/lib/site-content";
 
 const PROGRAM_OPTIONS = [
   "Not sure yet",
-  "1-on-1 / 2-on-1 Training",
-  "Small Group Training",
-  "Team Training",
-  "Video Game Analysis",
-  "Online Mentoring",
-  "Coach the Coaches",
+  ...PROGRAMS.filter((p) => !p.hidden).map((p) => p.name),
 ];
 
 const LOCATION_OPTIONS = [

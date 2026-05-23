@@ -2,15 +2,9 @@
 
 import { useState } from "react";
 import { Send, CheckCircle2, Star } from "lucide-react";
+import { PROGRAMS } from "@/lib/site-content";
 
-const SESSION_OPTIONS = [
-  "1-on-1 / 2-on-1 Training",
-  "Small Group Training",
-  "Team Training",
-  "Video Game Analysis",
-  "Online Mentoring",
-  "Coach the Coaches",
-];
+const SESSION_OPTIONS = PROGRAMS.filter((p) => !p.hidden).map((p) => p.name);
 
 export function FeedbackForm() {
   const [submitting, setSubmitting] = useState(false);
