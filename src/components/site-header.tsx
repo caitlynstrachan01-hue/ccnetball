@@ -10,8 +10,8 @@ const NAV_LINKS = [
   { href: "/about", label: "About" },
   { href: "/programs", label: "Programs" },
   { href: "/shop", label: "Shop" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/blog", label: "Blog" },
+  // { href: "/gallery", label: "Gallery" }, // Temporarily hidden — un-comment to bring back.
+  // { href: "/blog", label: "Blog" }, // Temporarily hidden — un-comment to bring back.
   { href: "/contact", label: "Contact" },
 ];
 
