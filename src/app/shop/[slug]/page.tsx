@@ -136,7 +136,7 @@ export default async function ShopProductPage({
                 Pricing
               </p>
               {product.price ? (
-                <p className="mt-2 font-display text-4xl font-extrabold text-foreground md:text-5xl">
+                <p className="mt-2 font-display text-3xl font-extrabold text-foreground md:text-4xl">
                   {product.price}
                 </p>
               ) : (
@@ -148,6 +148,35 @@ export default async function ShopProductPage({
                     Final pricing is being locked in.
                   </p>
                 </>
+              )}
+
+              {product.pricingTiers && (
+                <div className="mt-5 space-y-2">
+                  {product.pricingTiers.map((tier) => (
+                    <div
+                      key={tier.label}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-4 py-3"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-foreground">
+                          {tier.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {tier.detail}
+                        </p>
+                      </div>
+                      <p className="font-display text-lg font-extrabold text-primary">
+                        {tier.price}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {product.pricingNote && (
+                <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                  {product.pricingNote}
+                </p>
               )}
 
               <div className="mt-6 border-t border-border pt-6">

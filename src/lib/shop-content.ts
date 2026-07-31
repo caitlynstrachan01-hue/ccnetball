@@ -1,3 +1,9 @@
+export type PricingTier = {
+  label: string;
+  detail: string;
+  price: string;
+};
+
 export type ShopProduct = {
   slug: string;
   name: string;
@@ -5,6 +11,10 @@ export type ShopProduct = {
   description: string;
   features: string[];
   price: string | null; // null = pricing to be announced
+  /** Optional tiered pricing table shown on the detail page. */
+  pricingTiers?: PricingTier[];
+  /** Optional pricing note shown below the price block. */
+  pricingNote?: string;
   /** Short pink-chip highlights shown on the tile and in the detail sidebar. */
   highlights: string[];
   /** Icon key mapped in the shop pages to a lucide icon. */
@@ -54,7 +64,26 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Court, time slot and team-count aware",
       "Simple team-count confirmation flow",
     ],
-    price: null,
+    price: "From $29.99 per competition",
+    pricingTiers: [
+      {
+        label: "Small",
+        detail: "Up to 30 teams",
+        price: "$29.99",
+      },
+      {
+        label: "Medium",
+        detail: "31 to 70 teams",
+        price: "$69.99",
+      },
+      {
+        label: "Large",
+        detail: "More than 70 teams",
+        price: "$99.99",
+      },
+    ],
+    pricingNote:
+      "One payment per competition. Your access continues right up until the start date of the competition — then you're ready to build the next one. Every new competition needs a fresh licence, so you can set different parameters and team numbers each season.",
     highlights: [
       "Netball Season Fixtures",
       "Including Grading Games",
