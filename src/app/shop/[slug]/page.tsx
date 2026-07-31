@@ -64,43 +64,40 @@ export default async function ShopProductPage({
           <div className="absolute -bottom-40 -left-40 size-[35rem] rounded-full bg-[var(--brand-raspberry)]/20 blur-[120px]" />
         </div>
 
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:py-20">
-          <div className="lg:col-span-7">
-            <Reveal>
-              <Link
-                href="/shop"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition hover:text-primary"
-              >
-                <ArrowLeft className="size-4" /> Back to the shop
-              </Link>
-            </Reveal>
+        <div className="mx-auto max-w-4xl px-6 py-16 lg:px-10 lg:py-20">
+          <Reveal>
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition hover:text-primary"
+            >
+              <ArrowLeft className="size-4" /> Back to the shop
+            </Link>
+          </Reveal>
 
-            <Reveal delay={0.05}>
-              <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                <Sparkles className="size-3.5" />
-                Coming Soon
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
-                {product.name}
-              </h1>
-            </Reveal>
-
-            <Reveal delay={0.15}>
-              <p className="mt-5 max-w-2xl text-lg text-muted-foreground md:text-xl">
-                {product.short}
-              </p>
-            </Reveal>
-          </div>
-
-          <Reveal delay={0.1} className="lg:col-span-5">
-            <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)] shadow-2xl shadow-primary/20">
-              <div className="absolute -top-16 -right-16 size-56 rounded-full bg-white/15 blur-3xl" />
-              <div className="absolute -bottom-16 -left-16 size-56 rounded-full bg-white/10 blur-3xl" />
-              <Icon className="relative size-32 text-white drop-shadow-2xl md:size-40" />
+          <Reveal delay={0.05}>
+            {/* Small hero visual — swap for an app screenshot when ready. */}
+            <div className="mt-8 flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Icon className="size-8" />
             </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              <Sparkles className="size-3.5" />
+              Coming Soon
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.15}>
+            <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
+              {product.name}
+            </h1>
+          </Reveal>
+
+          <Reveal delay={0.2}>
+            <p className="mt-5 max-w-2xl text-lg text-muted-foreground md:text-xl">
+              {product.short}
+            </p>
           </Reveal>
         </div>
       </section>
