@@ -6,6 +6,13 @@ export type ShopProduct = {
   features: string[];
   price: string | null; // null = pricing to be announced
   bestFor: string;
+  /** Icon key mapped in the shop pages to a lucide icon. */
+  icon:
+    | "clipboard-list"
+    | "trophy"
+    | "target"
+    | "zap"
+    | "compass";
 };
 
 export const SHOP_PRODUCTS: ShopProduct[] = [
@@ -29,6 +36,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: null,
     bestFor: "Clubs and associations running structured trials",
+    icon: "clipboard-list",
   },
   {
     slug: "competition-builder",
@@ -47,6 +55,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: null,
     bestFor: "Associations and league organisers",
+    icon: "trophy",
   },
   {
     slug: "game-day-standard",
@@ -65,6 +74,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: null,
     bestFor: "Weekly club and school teams",
+    icon: "target",
   },
   {
     slug: "game-day-tournament",
@@ -83,6 +93,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: null,
     bestFor: "Representative squads and club tournament teams",
+    icon: "zap",
   },
   {
     slug: "campaign-plan",
@@ -100,6 +111,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: null,
     bestFor: "Head coaches building a program",
+    icon: "compass",
   },
 ];
 

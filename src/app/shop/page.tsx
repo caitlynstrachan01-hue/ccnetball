@@ -1,7 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ClipboardList,
+  Compass,
+  Sparkles,
+  Target,
+  Trophy,
+  Zap,
+} from "lucide-react";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
-import { SHOP_PRODUCTS } from "@/lib/shop-content";
+import { SHOP_PRODUCTS, type ShopProduct } from "@/lib/shop-content";
+
+const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
+  "clipboard-list": ClipboardList,
+  trophy: Trophy,
+  target: Target,
+  zap: Zap,
+  compass: Compass,
+};
 
 export const metadata = {
   title: "The Netball Shop",
@@ -60,27 +76,37 @@ export default function ShopPage() {
             className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
             staggerChildren={0.06}
           >
-            {SHOP_PRODUCTS.map((product) => (
-              <StaggerItem key={product.slug}>
-                <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
-                  <h3 className="font-display text-xl font-bold leading-snug">
-                    {product.name}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {product.short}
-                  </p>
-                  <div className="mt-6 inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    {product.bestFor}
-                  </div>
-                  <Link
-                    href={`/shop/${product.slug}`}
-                    className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-primary transition group-hover:gap-2.5"
-                  >
-                    See details <ArrowRight className="size-3.5" />
-                  </Link>
-                </article>
-              </StaggerItem>
-            ))}
+            {SHOP_PRODUCTS.map((product) => {
+              const Icon = ICONS[product.icon];
+              return (
+                <StaggerItem key={product.slug}>
+                  <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                    <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
+                      <div className="absolute -top-10 -right-10 size-40 rounded-full bg-white/15 blur-2xl" />
+                      <div className="absolute -bottom-10 -left-10 size-40 rounded-full bg-white/10 blur-2xl" />
+                      <Icon className="relative size-16 text-white drop-shadow-lg transition group-hover:scale-110" />
+                    </div>
+                    <div className="flex flex-1 flex-col p-7">
+                      <h3 className="font-display text-xl font-bold leading-snug">
+                        {product.name}
+                      </h3>
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        {product.short}
+                      </p>
+                      <div className="mt-6 inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        {product.bestFor}
+                      </div>
+                      <Link
+                        href={`/shop/${product.slug}`}
+                        className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-primary transition group-hover:gap-2.5"
+                      >
+                        See details <ArrowRight className="size-3.5" />
+                      </Link>
+                    </div>
+                  </article>
+                </StaggerItem>
+              );
+            })}
           </StaggerGroup>
         </div>
       </section>
