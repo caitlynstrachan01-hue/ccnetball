@@ -131,7 +131,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     price: null,
     highlights: [
       "Season Planning",
-      "On-court & Off-court Goals",
+      "On-Court & Off-Court Goals",
       "Coaching Accountability",
     ],
     icon: "compass",
