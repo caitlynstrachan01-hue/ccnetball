@@ -91,8 +91,15 @@ export default function ShopPage() {
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                       {product.short}
                     </p>
-                    <div className="mt-6 inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      {product.bestFor}
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {product.highlights.map((h) => (
+                        <span
+                          key={h}
+                          className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                        >
+                          {h}
+                        </span>
+                      ))}
                     </div>
                     <Link
                       href={`/shop/${product.slug}`}

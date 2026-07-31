@@ -5,7 +5,8 @@ export type ShopProduct = {
   description: string;
   features: string[];
   price: string | null; // null = pricing to be announced
-  bestFor: string;
+  /** Short pink-chip highlights shown on the tile and in the detail sidebar. */
+  highlights: string[];
   /** Icon key mapped in the shop pages to a lucide icon. */
   icon:
     | "clipboard-list"
@@ -35,7 +36,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Optional add-on fees for umpires, selectors, court hire",
     ],
     price: null,
-    bestFor: "Clubs and associations running structured trials",
+    highlights: ["Netball Trials", "Club & Rep Teams", "Non-bias Population"],
     icon: "clipboard-list",
   },
   {
@@ -54,7 +55,11 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Simple team-count confirmation flow",
     ],
     price: null,
-    bestFor: "Associations and league organisers",
+    highlights: [
+      "Netball Season Fixtures",
+      "Including Grading Games",
+      "Maximise Court Availability",
+    ],
     icon: "trophy",
   },
   {
@@ -73,7 +78,14 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Automatic review prompts through the season",
     ],
     price: null,
-    bestFor: "Weekly club and school teams",
+    highlights: [
+      "Court Time",
+      "Attendance",
+      "Individual & Team Goals",
+      "Shooting Percentage",
+      "Live Scoring",
+      "Game Summary",
+    ],
     icon: "target",
   },
   {
@@ -92,7 +104,14 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Individual and team goal tracking with prompts",
     ],
     price: null,
-    bestFor: "Representative squads and club tournament teams",
+    highlights: [
+      "Court Time",
+      "Attendance",
+      "Individual & Team Goals",
+      "Shooting Percentage",
+      "Live Scoring",
+      "Game Summary",
+    ],
     icon: "zap",
   },
   {
@@ -110,7 +129,11 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Reusable across seasons and teams",
     ],
     price: null,
-    bestFor: "Head coaches building a program",
+    highlights: [
+      "Season Planning",
+      "On-court & Off-court Goals",
+      "Coaching Accountability",
+    ],
     icon: "compass",
   },
 ];

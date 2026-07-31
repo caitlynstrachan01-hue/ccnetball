@@ -152,11 +152,18 @@ export default async function ShopProductPage({
 
               <div className="mt-6 border-t border-border pt-6">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Best for
+                  Highlights
                 </p>
-                <p className="mt-2 text-sm font-semibold text-foreground/90">
-                  {product.bestFor}
-                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {product.highlights.map((h) => (
+                    <span
+                      key={h}
+                      className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                    >
+                      {h}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <button
