@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Menu, User, X } from "lucide-react";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -18,20 +17,6 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setSignedIn(Boolean(data.user));
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setSignedIn(Boolean(session?.user));
-    });
-    return () => {
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -57,14 +42,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href={signedIn ? "/account" : "/login"}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-4 py-2 text-sm font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
-          >
-            <User className="size-4" />
-            {signedIn === false ? "Sign in" : "My Account"}
-          </Link>
+        <div className="hidden md:block">
           <Link
             href="/book"
             className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:scale-[1.02] hover:bg-[var(--brand-raspberry-dark)]"
@@ -101,14 +79,6 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href={signedIn ? "/account" : "/login"}
-            onClick={() => setOpen(false)}
-            className="mt-2 inline-flex items-center justify-center gap-2 rounded-full border border-border/70 bg-card px-5 py-3 text-sm font-semibold text-foreground/90"
-          >
-            <User className="size-4" />
-            {signedIn === false ? "Sign in" : "My Account"}
-          </Link>
           <Link
             href="/book"
             onClick={() => setOpen(false)}
