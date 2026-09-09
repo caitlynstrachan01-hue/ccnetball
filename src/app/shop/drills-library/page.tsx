@@ -9,10 +9,7 @@ import {
 import { Reveal } from "@/components/motion";
 import { DrillsLibraryPreview } from "@/components/drills-library-preview";
 import { getProductBySlug } from "@/lib/shop-content";
-import {
-  DRILL_CATEGORIES,
-  TOTAL_DRILL_COUNT,
-} from "@/lib/drills-library-content";
+import { DRILL_CATEGORIES } from "@/lib/drills-library-content";
 
 export const metadata = {
   title: "Netball Drills Library — The Netball Shop",
@@ -109,9 +106,9 @@ export default function DrillsLibraryPage() {
               <span className="gradient-text">library</span>.
             </h2>
             <p className="mt-4 text-base text-muted-foreground">
-              {TOTAL_DRILL_COUNT}+ drills across {DRILL_CATEGORIES.length} focus
-              areas — pick a category, tap a drill, and the &quot;up next&quot;
-              list stays inside the same focus area.
+              200+ drills across {DRILL_CATEGORIES.length} focus areas — pick a
+              category, tap a drill, and the &quot;up next&quot; list stays
+              inside the same focus area.
             </p>
           </Reveal>
 
