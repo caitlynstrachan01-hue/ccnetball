@@ -3,6 +3,7 @@ import {
   ArrowRight,
   ClipboardList,
   Compass,
+  PlayCircle,
   Sparkles,
   Target,
   Trophy,
@@ -17,6 +18,7 @@ const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
   target: Target,
   zap: Zap,
   compass: Compass,
+  "play-circle": PlayCircle,
 };
 
 export const metadata = {

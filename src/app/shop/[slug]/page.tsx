@@ -5,6 +5,7 @@ import {
   Check,
   ClipboardList,
   Compass,
+  PlayCircle,
   ShoppingCart,
   Sparkles,
   Target,
@@ -24,6 +25,7 @@ const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
   target: Target,
   zap: Zap,
   compass: Compass,
+  "play-circle": PlayCircle,
 };
 
 export function generateStaticParams() {

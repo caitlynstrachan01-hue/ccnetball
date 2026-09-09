@@ -23,10 +23,37 @@ export type ShopProduct = {
     | "trophy"
     | "target"
     | "zap"
-    | "compass";
+    | "compass"
+    | "play-circle";
 };
 
 export const SHOP_PRODUCTS: ShopProduct[] = [
+  {
+    slug: "drills-library",
+    name: "Netball Drills Library",
+    short:
+      "A growing library of elite-level netball drills, organised by focus area — new sessions added every week.",
+    description:
+      "Every drill is designed and filmed by Caitlyn — the same work she uses with junior athletes, club squads, rep programs and coaches. Videos are grouped into focus areas — warm-up, attacking plays, defensive systems, shooting, footwork, small-sided games and cool-down — and ordered so you can move through a category in the sequence Caitlyn recommends. When you're watching one drill, the next drills in the same focus area appear alongside so you can build a whole session in one sitting.",
+    features: [
+      "Growing library across seven focus areas",
+      "Every drill filmed and coached by Caitlyn",
+      "Videos ordered inside each category",
+      "Suggestions from the same category while watching",
+      "New drills added every week",
+      "Cancel any time",
+    ],
+    price: "$49 AUD per month",
+    pricingNote:
+      "Rolling monthly subscription — cancel any time from your account.",
+    highlights: [
+      "500+ Elite Drills",
+      "Weekly New Content",
+      "All Focus Areas",
+      "Cancel Anytime",
+    ],
+    icon: "play-circle",
+  },
   {
     slug: "trial-app",
     name: "Trial App",
