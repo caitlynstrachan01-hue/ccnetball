@@ -11,6 +11,8 @@ export type DrillCategory = {
   name: string;
   short: string;
   drills: Drill[];
+  /** Override the numeric count shown in the tab/badge (e.g. "50+" for a demo of a larger category). */
+  displayCount?: string;
 };
 
 // Demo data — replace with your full library, ordered as you prefer.
@@ -18,25 +20,33 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "warm-up",
     name: "Warm-Up",
-    short: "Prime the body for high-quality training.",
+    short: "Prime the body for high-quality training — no ball required.",
     drills: [
-      { slug: "dynamic-mobility", title: "Dynamic mobility flow", durationMinutes: 6, level: "Beginner", focus: "Movement prep" },
-      { slug: "ball-handling-warmup", title: "Ball handling warm-up", durationMinutes: 8, level: "Beginner", focus: "Ball feel" },
-      { slug: "court-movement-patterns", title: "Court movement patterns", durationMinutes: 7, level: "Intermediate", focus: "Footwork" },
-      { slug: "partner-passing", title: "Partner passing warm-up", durationMinutes: 10, level: "Beginner", focus: "Passing" },
-      { slug: "full-body-activation", title: "Full-body activation", durationMinutes: 6, level: "Beginner", focus: "Activation" },
+      { slug: "pre-activation", title: "Pre-activation", durationMinutes: 6, level: "Beginner", focus: "Activation" },
+      { slug: "movement-pattern-1", title: "Movement pattern #1", durationMinutes: 5, level: "Beginner", focus: "Movement prep" },
+      { slug: "movement-pattern-2", title: "Movement pattern #2", durationMinutes: 5, level: "Beginner", focus: "Movement prep" },
+      { slug: "movement-pattern-3", title: "Movement pattern #3", durationMinutes: 6, level: "Intermediate", focus: "Movement prep" },
+      { slug: "movement-pattern-4", title: "Movement pattern #4", durationMinutes: 6, level: "Intermediate", focus: "Movement prep" },
+      { slug: "jumping-routine-1", title: "Jumping routine #1", durationMinutes: 5, level: "Beginner", focus: "Plyometrics" },
+      { slug: "jumping-routine-2", title: "Jumping routine #2", durationMinutes: 6, level: "Intermediate", focus: "Plyometrics" },
+      { slug: "sprint-variation-1", title: "Sprint variation #1", durationMinutes: 5, level: "Beginner", focus: "Speed" },
+      { slug: "sprint-variation-2", title: "Sprint variation #2", durationMinutes: 5, level: "Beginner", focus: "Speed" },
+      { slug: "sprint-variation-3", title: "Sprint variation #3", durationMinutes: 6, level: "Intermediate", focus: "Speed" },
+      { slug: "sprint-variation-4", title: "Sprint variation #4", durationMinutes: 6, level: "Advanced", focus: "Speed" },
     ],
   },
   {
     slug: "ball-work",
     name: "Ball Work",
-    short: "Every pass, every catch, sharpened.",
+    short: "Dynamic drills, position-specific work, and a team or half-court finisher.",
     drills: [
-      { slug: "two-hand-catch", title: "Two-hand catch fundamentals", durationMinutes: 8, level: "Beginner", focus: "Catching" },
-      { slug: "chest-pass-technique", title: "Chest pass technique", durationMinutes: 9, level: "Beginner", focus: "Passing" },
-      { slug: "shoulder-pass-under-pressure", title: "Shoulder pass under pressure", durationMinutes: 10, level: "Intermediate", focus: "Passing" },
-      { slug: "lob-and-bounce", title: "Lob and bounce pass", durationMinutes: 9, level: "Intermediate", focus: "Passing" },
-      { slug: "pass-and-move-tempo", title: "Pass and move with tempo", durationMinutes: 12, level: "Intermediate", focus: "Ball movement" },
+      { slug: "dynamic-pass-and-move", title: "Dynamic pass and move", durationMinutes: 10, level: "Beginner", focus: "Ball movement" },
+      { slug: "landing-and-pass", title: "Landing and pass on the move", durationMinutes: 9, level: "Intermediate", focus: "Ball movement" },
+      { slug: "two-ball-reactive", title: "Two-ball reactive drill", durationMinutes: 10, level: "Intermediate", focus: "Reactivity" },
+      { slug: "gs-ga-feed-patterns", title: "Position-specific — GS / GA feed patterns", durationMinutes: 12, level: "Intermediate", focus: "Position-specific" },
+      { slug: "midcourt-transition-passing", title: "Position-specific — midcourt transition passing", durationMinutes: 11, level: "Intermediate", focus: "Position-specific" },
+      { slug: "wa-wd-with-ball", title: "Position-specific — WA / WD movement with ball", durationMinutes: 11, level: "Intermediate", focus: "Position-specific" },
+      { slug: "half-court-ball-work", title: "Team drill — half-court ball work", durationMinutes: 15, level: "Advanced", focus: "Team / half court" },
     ],
   },
   {
@@ -55,6 +65,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "attacking-drills",
     name: "Attacking Drills",
     short: "Leads, re-offers, and pressure attacks.",
+    displayCount: "50+",
     drills: [
       { slug: "split-leads", title: "Split leads — reading the player in front", durationMinutes: 10, level: "Intermediate", focus: "Leads" },
       { slug: "art-of-re-offering", title: "The art of re-offering", durationMinutes: 9, level: "Intermediate", focus: "Movement" },
@@ -67,6 +78,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "defending-drills",
     name: "Defending Drills",
     short: "One-on-one work through to reading the intercept.",
+    displayCount: "50+",
     drills: [
       { slug: "1on1-early-skill-learning", title: "1on1 defence — early skill learning", durationMinutes: 8, level: "Beginner", focus: "Fundamentals" },
       { slug: "intercept-timing-beginners", title: "Intercept — timing for beginners", durationMinutes: 8, level: "Beginner", focus: "Timing" },

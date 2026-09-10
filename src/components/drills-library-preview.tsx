@@ -96,7 +96,7 @@ export function DrillsLibraryPreview() {
               <span className="text-border">·</span>
               <span className="inline-flex items-center gap-1.5">
                 <Layers className="size-4" />
-                Video {drillIndex + 1} of {category.drills.length}
+                Video {drillIndex + 1} of {category.displayCount ?? category.drills.length}
               </span>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
@@ -175,7 +175,7 @@ export function DrillsLibraryPreview() {
                       : "rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground"
                   }
                 >
-                  {cat.drills.length}
+                  {cat.displayCount ?? cat.drills.length}
                 </span>
               </button>
             );
@@ -194,7 +194,7 @@ export function DrillsLibraryPreview() {
               </p>
             </div>
             <p className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
-              {category.drills.length} drills · in order
+              {category.displayCount ?? category.drills.length} drills · in order
             </p>
           </div>
 
