@@ -1243,15 +1243,17 @@ function SelectorGameCard({ label }: { label: string }) {
 type TeamKey = "teamA" | "teamB" | "teamC";
 type SectionKey = "shooters" | "midcourt" | "defenders";
 type TeamBucket = Record<SectionKey, string[]>;
-type BuilderState = {
+type TeamState = { name: string; bucket: TeamBucket };
+type AgeGroupState = {
   available: string[];
-  teamA: TeamBucket;
-  teamB: TeamBucket;
-  teamC: TeamBucket;
+  teamA: TeamState;
+  teamB: TeamState;
+  teamC: TeamState;
 };
+type BuilderState = Record<string, AgeGroupState>;
 
 const TEAM_KEYS: TeamKey[] = ["teamA", "teamB", "teamC"];
-const TEAM_LABELS: Record<TeamKey, string> = {
+const DEFAULT_TEAM_NAMES: Record<TeamKey, string> = {
   teamA: "Team A",
   teamB: "Team B",
   teamC: "Team C",
@@ -1266,48 +1268,89 @@ function emptyBucket(): TeamBucket {
   return { shooters: [], midcourt: [], defenders: [] };
 }
 
+function makeAgeGroupState(available: string[]): AgeGroupState {
+  return {
+    available: [...available],
+    teamA: { name: DEFAULT_TEAM_NAMES.teamA, bucket: emptyBucket() },
+    teamB: { name: DEFAULT_TEAM_NAMES.teamB, bucket: emptyBucket() },
+    teamC: { name: DEFAULT_TEAM_NAMES.teamC, bucket: emptyBucket() },
+  };
+}
+
 function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
   const attending = players.filter((p) => p.attended);
-  const [state, setState] = useState<BuilderState>(() => ({
-    available: attending.map((p) => p.name),
-    teamA: emptyBucket(),
-    teamB: emptyBucket(),
-    teamC: emptyBucket(),
-  }));
-  const [dragOver, setDragOver] = useState<string | null>(null);
+  const ageGroups = SAMPLE_TRIAL.ageGroups;
 
+  const [ageGroupIndex, setAgeGroupIndex] = useState(
+    Math.min(1, ageGroups.length - 1),
+  );
+  const currentAgeGroup = ageGroups[ageGroupIndex];
+
+  const [state, setState] = useState<BuilderState>(() => {
+    const initial: BuilderState = {};
+    for (const ag of ageGroups) {
+      initial[ag] = makeAgeGroupState(attending.map((p) => p.name));
+    }
+    return initial;
+  });
+
+  const [dragOver, setDragOver] = useState<string | null>(null);
+  const currentGroup = state[currentAgeGroup];
   const byName = new Map(attending.map((p) => [p.name, p]));
+
+  function updateAgeGroup(patch: (prev: AgeGroupState) => AgeGroupState) {
+    setState((prev) => ({
+      ...prev,
+      [currentAgeGroup]: patch(prev[currentAgeGroup]),
+    }));
+  }
 
   function movePlayer(
     name: string,
     target: { team: TeamKey | "available"; section?: SectionKey },
   ) {
-    setState((prev) => {
-      const next: BuilderState = {
+    updateAgeGroup((prev) => {
+      const next: AgeGroupState = {
         available: prev.available.filter((n) => n !== name),
         teamA: {
-          shooters: prev.teamA.shooters.filter((n) => n !== name),
-          midcourt: prev.teamA.midcourt.filter((n) => n !== name),
-          defenders: prev.teamA.defenders.filter((n) => n !== name),
+          name: prev.teamA.name,
+          bucket: {
+            shooters: prev.teamA.bucket.shooters.filter((n) => n !== name),
+            midcourt: prev.teamA.bucket.midcourt.filter((n) => n !== name),
+            defenders: prev.teamA.bucket.defenders.filter((n) => n !== name),
+          },
         },
         teamB: {
-          shooters: prev.teamB.shooters.filter((n) => n !== name),
-          midcourt: prev.teamB.midcourt.filter((n) => n !== name),
-          defenders: prev.teamB.defenders.filter((n) => n !== name),
+          name: prev.teamB.name,
+          bucket: {
+            shooters: prev.teamB.bucket.shooters.filter((n) => n !== name),
+            midcourt: prev.teamB.bucket.midcourt.filter((n) => n !== name),
+            defenders: prev.teamB.bucket.defenders.filter((n) => n !== name),
+          },
         },
         teamC: {
-          shooters: prev.teamC.shooters.filter((n) => n !== name),
-          midcourt: prev.teamC.midcourt.filter((n) => n !== name),
-          defenders: prev.teamC.defenders.filter((n) => n !== name),
+          name: prev.teamC.name,
+          bucket: {
+            shooters: prev.teamC.bucket.shooters.filter((n) => n !== name),
+            midcourt: prev.teamC.bucket.midcourt.filter((n) => n !== name),
+            defenders: prev.teamC.bucket.defenders.filter((n) => n !== name),
+          },
         },
       };
       if (target.team === "available") {
         next.available.push(name);
       } else if (target.section) {
-        next[target.team][target.section].push(name);
+        next[target.team].bucket[target.section].push(name);
       }
       return next;
     });
+  }
+
+  function renameTeam(key: TeamKey, name: string) {
+    updateAgeGroup((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], name },
+    }));
   }
 
   function handleDrop(
@@ -1322,21 +1365,40 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
   }
 
   function handleReset() {
-    setState({
-      available: attending.map((p) => p.name),
-      teamA: emptyBucket(),
-      teamB: emptyBucket(),
-      teamC: emptyBucket(),
-    });
+    updateAgeGroup(() =>
+      makeAgeGroupState(attending.map((p) => p.name)),
+    );
   }
 
   return (
     <div>
       <StepHeading
         eyebrow="Step 5"
-        title="Team building — drag players into the team you want"
-        blurb="Every attending player sits on the right. Drag them into Team A, B or C — into Shooters, Midcourt or Defenders. Selectors have final say."
+        title="Team building — one workspace per age group"
+        blurb="Pick an age group. Each has its own three teams (rename any of them). Drag players from the panel on the right into Shooters, Midcourt or Defenders. Selectors have final say."
       />
+
+      {/* Age group dropdown */}
+      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border/70 bg-muted/30 p-3">
+        <label className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+          Age group
+        </label>
+        <select
+          value={ageGroupIndex}
+          onChange={(e) => setAgeGroupIndex(Number(e.target.value))}
+          className="rounded-full border border-border/70 bg-background px-4 py-2 text-sm font-semibold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+        >
+          {ageGroups.map((ag, i) => (
+            <option key={ag} value={i}>
+              {ag}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          3 teams per age group ·{" "}
+          <strong>{ageGroups.length * 3} teams total</strong> for this trial.
+        </p>
+      </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
@@ -1344,10 +1406,12 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
           onClick={handleReset}
           className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
         >
-          Reset — move everyone back
+          Reset {currentAgeGroup} — move everyone back
         </button>
         <p className="text-xs text-muted-foreground">
-          {state.available.length} player{state.available.length === 1 ? "" : "s"} still in the pool.
+          {currentGroup.available.length} player
+          {currentGroup.available.length === 1 ? "" : "s"} still in the{" "}
+          {currentAgeGroup} pool.
         </p>
       </div>
 
@@ -1355,21 +1419,25 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
         {/* TEAMS (left) */}
         <div className="space-y-5 lg:col-span-8">
           {TEAM_KEYS.map((teamKey) => {
-            const bucket = state[teamKey];
+            const team = currentGroup[teamKey];
             const total =
-              bucket.shooters.length +
-              bucket.midcourt.length +
-              bucket.defenders.length;
+              team.bucket.shooters.length +
+              team.bucket.midcourt.length +
+              team.bucket.defenders.length;
             return (
               <article
                 key={teamKey}
                 className="rounded-2xl border border-border/70 bg-background p-5"
               >
-                <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
-                  <p className="font-display text-lg font-bold">
-                    {TEAM_LABELS[teamKey]}
-                  </p>
-                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
+                  <input
+                    type="text"
+                    value={team.name}
+                    onChange={(e) => renameTeam(teamKey, e.target.value)}
+                    placeholder={DEFAULT_TEAM_NAMES[teamKey]}
+                    className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 font-display text-lg font-bold text-foreground transition hover:border-border/70 focus:border-primary focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                     {total} player{total === 1 ? "" : "s"}
                   </span>
                 </div>
@@ -1379,7 +1447,7 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
                     (section) => {
                       const dropKey = `${teamKey}-${section}`;
                       const isHover = dragOver === dropKey;
-                      const items = bucket[section];
+                      const items = team.bucket[section];
                       return (
                         <div
                           key={section}
@@ -1459,22 +1527,22 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
           >
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                Players
+                {currentAgeGroup} players
               </p>
               <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                {state.available.length}
+                {currentGroup.available.length}
               </span>
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground">
               Drag any player into a team.
             </p>
             <ul className="mt-3 max-h-[560px] space-y-1.5 overflow-y-auto pr-1">
-              {state.available.length === 0 && (
+              {currentGroup.available.length === 0 && (
                 <li className="rounded-lg bg-muted/40 px-3 py-3 text-center text-xs italic text-muted-foreground">
                   Every player is in a team. Drag them back here to un-assign.
                 </li>
               )}
-              {state.available.map((name) => {
+              {currentGroup.available.map((name) => {
                 const p = byName.get(name);
                 if (!p) return null;
                 return (
