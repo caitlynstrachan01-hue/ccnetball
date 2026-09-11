@@ -329,77 +329,77 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Fees
             </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  CC Netball fee (per participant)
-                </p>
-                <p className="mt-1 font-display text-2xl font-extrabold text-foreground">
-                  ${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}
-                </p>
-              </div>
-              <div
-                className={
-                  SAMPLE_TRIAL.associationPaysFees
-                    ? "flex items-center gap-3 rounded-xl border border-primary/40 bg-primary/5 p-3"
-                    : "flex items-center gap-3 rounded-xl border border-border/70 bg-muted/40 p-3"
-                }
-              >
-                <span
-                  className={
-                    SAMPLE_TRIAL.associationPaysFees
-                      ? "flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground"
-                      : "flex size-6 items-center justify-center rounded-md border border-border/70 bg-background"
-                  }
-                >
-                  {SAMPLE_TRIAL.associationPaysFees && (
-                    <Check className="size-3.5" />
-                  )}
+
+            <div className="mt-4 rounded-xl border border-border/60 bg-muted/40 px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    ${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}{" "}
+                    <span className="font-normal text-muted-foreground">
+                      per participant
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    CC Netball — platform fee
+                  </p>
+                </div>
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Base
                 </span>
-                <p className="text-xs font-semibold text-foreground/90">
-                  Association to pay the platform fees
-                  <span className="mt-0.5 block font-normal text-[11px] text-muted-foreground">
-                    {SAMPLE_TRIAL.associationPaysFees
-                      ? "One invoice generated after trials for total participants × CC Netball fee."
-                      : "Each participant pays the CC Netball fee on registration."}
-                  </span>
-                </p>
               </div>
             </div>
 
-            <div className="mt-6">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                Association add-ons (optional)
-              </p>
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Add extras your club or association wants to pass on — leave
-                blank to only charge the CC Netball fee.
+            <div className="mt-5">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                Additional charges
               </p>
               <ul className="mt-3 space-y-2">
                 {SAMPLE_TRIAL.additionalFees.map((f) => (
                   <li
                     key={f.label}
-                    className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background px-3 py-2 text-sm"
                   >
-                    <span className="font-medium text-foreground/90">
-                      {f.label}
+                    <span className="text-muted-foreground">
+                      ${f.amount.toFixed(0)}
                     </span>
-                    <span className="font-semibold text-primary">
-                      +${f.amount.toFixed(2)}
+                    <span className="flex-1 pl-3 font-medium text-foreground/90">
+                      {f.label}
                     </span>
                   </li>
                 ))}
               </ul>
+              <p className="mt-2 text-[11px] italic text-muted-foreground">
+                Add any amount to pass a charge through to participants.
+              </p>
             </div>
+
+            <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background p-4 transition hover:border-primary/40 hover:bg-muted/40">
+              <input
+                type="checkbox"
+                defaultChecked={SAMPLE_TRIAL.associationPaysFees}
+                className="mt-0.5 size-5 shrink-0 cursor-pointer rounded border-border accent-[var(--brand-raspberry,#c2185b)]"
+              />
+              <span className="text-sm text-foreground/90">
+                <span className="block font-semibold">
+                  Tick this box if your Club/Association will cover the cost
+                  of the participant registration.
+                </span>
+                <span className="mt-1 block text-[11px] text-muted-foreground">
+                  {SAMPLE_TRIAL.associationPaysFees
+                    ? "One invoice generated after trials for total participants × CC Netball fee."
+                    : "Each participant pays the CC Netball fee on registration."}
+                </span>
+              </span>
+            </label>
           </div>
         </div>
 
         <aside className="lg:col-span-4">
-          <div className="rounded-2xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)] p-6 text-white shadow-lg shadow-primary/25">
+          <div className="rounded-2xl bg-[#0b3d91] p-6 text-white shadow-lg shadow-[#0b3d91]/25">
             <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-90">
-              Total per player
+              Total per participant
             </p>
-            <p className="mt-2 font-display text-4xl font-extrabold">
+            <p className="mt-2 font-display text-5xl font-extrabold">
               ${totalFee.toFixed(2)}
             </p>
             <p className="mt-4 text-sm opacity-90">
@@ -410,7 +410,7 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
 
             <div className="mt-6 space-y-2 border-t border-white/20 pt-5 text-sm">
               <MiniLine
-                label="CC Netball fee"
+                label="CC Netball platform fee"
                 value={`$${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}`}
               />
               {SAMPLE_TRIAL.additionalFees.map((f) => (
