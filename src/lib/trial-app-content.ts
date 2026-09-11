@@ -26,6 +26,43 @@ export type SampleTrial = {
   shareUrl: string;
 };
 
+// A club/association keeps a single account and creates new trials over
+// time. When a trial finishes, participant data is deleted 1 month later —
+// but a compact summary (participant count + age groups + finance) is kept
+// forever so the association can see their history.
+export type PastTrialSummary = {
+  name: string;
+  ageGroups: string[];
+  participantCount: number;
+  clubRevenue: number;
+  ccnetballFees: number;
+  finalisedOn: string;
+};
+
+export const SAMPLE_ACCOUNT = {
+  email: "manager@brisbanebudgies.com.au",
+  club: "Brisbane Budgies Netball Club",
+};
+
+export const SAMPLE_PAST_TRIALS: PastTrialSummary[] = [
+  {
+    name: "2025 Rep Trials",
+    ageGroups: ["Under 13", "Under 15", "Under 17"],
+    participantCount: 48,
+    clubRevenue: 0,
+    ccnetballFees: 105.6,
+    finalisedOn: "Finalised Feb 2025",
+  },
+  {
+    name: "2026 Rep Trials",
+    ageGroups: ["Under 13", "Under 15", "Under 17"],
+    participantCount: 52,
+    clubRevenue: 260.0,
+    ccnetballFees: 114.4,
+    finalisedOn: "Finalised Feb 2026",
+  },
+];
+
 export const SAMPLE_TRIAL: SampleTrial = {
   name: "Brisbane Budgies Netball Club Trials 2027",
   club: "Brisbane Budgies",
