@@ -1564,14 +1564,21 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
 function ExportStep({
   players,
   attendedCount,
-  totalFee,
 }: {
   players: SamplePlayer[];
   attendedCount: number;
   totalFee: number;
 }) {
   const associationPays = SAMPLE_TRIAL.associationPaysFees;
-  const invoiceable = attendedCount * SAMPLE_TRIAL.feePerParticipant;
+  const platformFeePerParticipant = SAMPLE_TRIAL.feePerParticipant;
+  const clubAddOnPerParticipant = SAMPLE_TRIAL.additionalFees.reduce(
+    (s, f) => s + f.amount,
+    0,
+  );
+  const payingCount = associationPays ? attendedCount : players.length;
+  const platformFeesTotal = payingCount * platformFeePerParticipant;
+  const clubRevenueTotal = players.length * clubAddOnPerParticipant;
+  const invoiceable = attendedCount * platformFeePerParticipant;
 
   return (
     <div>
@@ -1615,14 +1622,23 @@ function ExportStep({
           <SummaryStat label="Registered" value={players.length.toString()} />
           <SummaryStat label="Attended" value={attendedCount.toString()} />
           <SummaryStat
-            label="Age groups"
-            value={SAMPLE_TRIAL.ageGroups.length.toString()}
+            label="Club / Association revenue"
+            value={`$${clubRevenueTotal.toFixed(2)}`}
           />
           <SummaryStat
-            label={associationPays ? "Invoice total" : "Revenue collected"}
-            value={`$${(associationPays ? invoiceable : players.length * totalFee).toFixed(2)}`}
+            label="CC Netball platform fees"
+            value={`$${platformFeesTotal.toFixed(2)}`}
           />
         </div>
+        <p className="mt-4 rounded-lg bg-muted/40 px-4 py-3 text-[11px] text-muted-foreground">
+          <strong className="text-foreground">Club / Association revenue</strong>{" "}
+          is the total from your Additional Charges (Independent Selector,
+          Umpires, Court hire, Other) across all participants — this goes to
+          the club.{" "}
+          <strong className="text-foreground">CC Netball platform fees</strong>{" "}
+          is the ${platformFeePerParticipant.toFixed(2)} platform fee per{" "}
+          {associationPays ? "attending player" : "registered participant"}.
+        </p>
       </div>
     </div>
   );
