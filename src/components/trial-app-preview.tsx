@@ -372,7 +372,7 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
         </div>
 
         <aside className="lg:col-span-4">
-          <div className="rounded-2xl bg-[#0b3d91] p-6 text-white shadow-lg shadow-[#0b3d91]/25">
+          <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground shadow-lg shadow-[var(--brand-navy)]/25">
             <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-90">
               Total per participant
             </p>
