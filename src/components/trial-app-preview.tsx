@@ -259,15 +259,6 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
                 Clubs can add more age groups any time.
               </p>
             </div>
-            <Field
-              label="Teams to select (per age group)"
-              value={
-                SAMPLE_TRIAL.teamsToSelect === "all"
-                  ? "Include all players"
-                  : `${SAMPLE_TRIAL.teamsToSelect} teams`
-              }
-            />
-            <Field label="Player capacity" value="Unlimited" />
           </div>
 
           {/* Schedule */}
