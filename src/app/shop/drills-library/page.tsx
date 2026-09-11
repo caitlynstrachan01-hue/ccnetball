@@ -2,14 +2,12 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Check,
-  Lock,
   PlayCircle,
   ShoppingCart,
   Sparkles,
 } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { getProductBySlug } from "@/lib/shop-content";
-import { DRILL_CATEGORIES } from "@/lib/drills-library-content";
 
 export const metadata = {
   title: "Netball Drills Library — The Netball Shop",
@@ -97,48 +95,6 @@ export default function DrillsLibraryPage() {
               Cancel any time from your account. No lock-in.
             </p>
           </Reveal>
-        </div>
-      </section>
-
-      {/* WHAT'S INSIDE — categories only, no drill titles */}
-      <section className="py-16">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              What&apos;s inside
-            </p>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-4xl">
-              170+ drills across{" "}
-              <span className="gradient-text">
-                {DRILL_CATEGORIES.length} focus areas
-              </span>
-              .
-            </h2>
-            <p className="mt-4 text-base text-muted-foreground">
-              Every drill filmed and coached by Caitlyn. New drills added
-              regularly.
-            </p>
-          </Reveal>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {DRILL_CATEGORIES.map((cat) => (
-              <Reveal key={cat.slug} delay={0.03}>
-                <article className="relative flex h-full flex-col rounded-2xl border border-border/70 bg-card p-6">
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Lock className="size-5" />
-                    </span>
-                    <h3 className="font-display text-lg font-bold leading-snug">
-                      {cat.name}
-                    </h3>
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {cat.short}
-                  </p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 

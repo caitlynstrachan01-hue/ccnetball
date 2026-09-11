@@ -160,6 +160,29 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
       { slug: "3-person-weave-with-defence", title: "3-Person Weave with Defence", durationMinutes: 12, level: "Advanced", focus: "Whole team" },
     ],
   },
+  {
+    slug: "shooting",
+    name: "Shooting",
+    short: "From base technique through to contested shots.",
+    drills: [
+      { slug: "base-technique", title: "Base shooting technique", durationMinutes: 10, level: "Beginner", focus: "Technique" },
+      { slug: "movement-in-circle", title: "Movement in the circle", durationMinutes: 11, level: "Intermediate", focus: "Circle movement" },
+      { slug: "contested-shots", title: "Contested shots", durationMinutes: 12, level: "Advanced", focus: "Pressure" },
+      { slug: "high-post-feed", title: "High-post feed patterns", durationMinutes: 10, level: "Intermediate", focus: "Feeding" },
+      { slug: "rebound-plays", title: "Rebound plays", durationMinutes: 9, level: "Intermediate", focus: "Rebounding" },
+    ],
+  },
+  {
+    slug: "recovery",
+    name: "Recovery",
+    short: "Cool-downs, mobility and recovery routines to finish the session.",
+    drills: [
+      { slug: "static-stretches", title: "Static stretch routine", durationMinutes: 8, level: "Beginner", focus: "Flexibility" },
+      { slug: "recovery-breathing", title: "Recovery breathing", durationMinutes: 5, level: "Beginner", focus: "Nervous system" },
+      { slug: "foam-roller", title: "Foam roller routine", durationMinutes: 10, level: "Beginner", focus: "Soft tissue" },
+      { slug: "reflection-routine", title: "Session reflection", durationMinutes: 5, level: "Beginner", focus: "Mental" },
+    ],
+  },
 ];
 
 export const TOTAL_DRILL_COUNT = DRILL_CATEGORIES.reduce(
