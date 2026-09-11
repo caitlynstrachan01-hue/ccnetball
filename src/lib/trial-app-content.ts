@@ -32,10 +32,11 @@ export const SAMPLE_TRIAL: SampleTrial = {
   venue: "Nissen Arena",
   courts: 1,
   ageGroups: ["Under 13", "Under 15"],
-  days: 2,
+  days: 3,
   schedule: [
     { date: "Wednesday 3 Feb 2027",  ageGroup: "Under 13", timeSlot: "5:30 pm – 7:00 pm" },
     { date: "Wednesday 10 Feb 2027", ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm" },
+    { date: "Friday 12 Feb 2027",    ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm" },
   ],
   teamsToSelect: 3,
   feePerParticipant: 2.2,

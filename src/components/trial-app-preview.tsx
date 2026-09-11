@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
+  ArrowUpDown,
   Check,
   ClipboardList,
   Copy,
@@ -290,15 +291,12 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
                   Schedule
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  This trial runs across{" "}
-                  <strong>
-                    {SAMPLE_TRIAL.days} day{SAMPLE_TRIAL.days === 1 ? "" : "s"}
-                  </strong>
-                  . Each day covers one age group.
+                  Add as many sessions as you like per age group — each
+                  session runs on its own night.
                 </p>
               </div>
               <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                {SAMPLE_TRIAL.days}-day trial
+                {SAMPLE_TRIAL.schedule.length} sessions
               </span>
             </div>
             <ul className="mt-4 space-y-2">
@@ -423,16 +421,6 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
             </div>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-border/70 bg-background p-4 text-xs">
-            <p className="font-semibold text-foreground">
-              One day per age group
-            </p>
-            <p className="mt-1 text-muted-foreground">
-              Add as many age groups as you like — each one runs on its own
-              day. The app builds a single registration link that covers all
-              of them.
-            </p>
-          </div>
         </aside>
       </div>
     </div>
@@ -717,6 +705,16 @@ function isOutOfPosition(
 }
 
 function TeamsStep() {
+  const ageGroups = SAMPLE_TRIAL.ageGroups;
+  const [ageGroupIndex, setAgeGroupIndex] = useState(
+    Math.min(1, ageGroups.length - 1), // default to U15 in the demo
+  );
+  const currentAgeGroup = ageGroups[ageGroupIndex];
+  const isDemoAgeGroup = currentAgeGroup === "Under 15";
+  const sessionsInAgeGroup = SAMPLE_TRIAL.schedule.filter(
+    (s) => s.ageGroup === currentAgeGroup,
+  ).length;
+
   const outOfPositionCount = SAMPLE_GAMES.reduce(
     (sum, g) =>
       sum +
@@ -734,76 +732,157 @@ function TeamsStep() {
     <div>
       <StepHeading
         eyebrow="Step 4"
-        title="Games populated automatically — unbiased and balanced"
-        blurb="Every player is placed in one of their two preferred positions where possible. Anyone playing out of position is highlighted in red so selectors can see the trade-off. Two blank games sit at the end of each session for you to match specific players head-to-head."
+        title="Team allocation — one view per age group"
+        blurb="Switch between age groups with the tabs below. Each view shows the auto-populated games for that age group, plus two blank games at the end of every session for selectors to match specific players head-to-head."
       />
 
-      {/* Rules cheatsheet */}
-      <div className="mt-6 grid gap-3 rounded-2xl border border-border/70 bg-muted/30 p-4 text-xs sm:grid-cols-2">
-        <div>
-          <p className="font-bold text-foreground">Allowed cross-overs</p>
-          <ul className="mt-2 space-y-1 text-muted-foreground">
-            <li>• GA covers WA when short</li>
-            <li>• C or WA covers WD</li>
-            <li>• GD covers WD</li>
-            <li>• A player who picks WA + WD as their two preferred can play C</li>
-          </ul>
-        </div>
-        <div>
-          <p className="font-bold text-foreground">Never allowed</p>
-          <ul className="mt-2 space-y-1 text-muted-foreground">
-            <li>• GK or GD in a shooting position (GS / GA) — too specific</li>
-          </ul>
-          <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-rose-700">
-            <AlertTriangle className="size-3.5" />
-            {outOfPositionCount} out-of-position placement
-            {outOfPositionCount === 1 ? "" : "s"} across the auto games —
-            highlighted below.
+      {/* Age group switcher */}
+      <div className="mt-6 flex flex-wrap items-center gap-2 rounded-2xl border border-border/70 bg-muted/30 p-2">
+        {ageGroups.map((ag, i) => {
+          const active = i === ageGroupIndex;
+          return (
+            <button
+              key={ag}
+              type="button"
+              onClick={() => setAgeGroupIndex(i)}
+              className={
+                active
+                  ? "inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm"
+                  : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-background"
+              }
+            >
+              {ag}
+              <span
+                className={
+                  active
+                    ? "rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold"
+                    : "rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
+                }
+              >
+                {
+                  SAMPLE_TRIAL.schedule.filter((s) => s.ageGroup === ag)
+                    .length
+                }{" "}
+                session
+                {SAMPLE_TRIAL.schedule.filter((s) => s.ageGroup === ag)
+                  .length === 1
+                  ? ""
+                  : "s"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {isDemoAgeGroup ? (
+        <>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Showing games for <strong>{currentAgeGroup}</strong> —{" "}
+            {sessionsInAgeGroup} session{sessionsInAgeGroup === 1 ? "" : "s"}
+            . Team allocations rotate between sessions.
+          </p>
+
+          {/* Rules cheatsheet */}
+          <div className="mt-4 grid gap-3 rounded-2xl border border-border/70 bg-muted/30 p-4 text-xs sm:grid-cols-2">
+            <div>
+              <p className="font-bold text-foreground">Allowed cross-overs</p>
+              <ul className="mt-2 space-y-1 text-muted-foreground">
+                <li>• GA covers WA when short</li>
+                <li>• C or WA covers WD</li>
+                <li>• GD covers WD</li>
+                <li>• A player who picks WA + WD as their two preferred can play C</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-bold text-foreground">Never allowed</p>
+              <ul className="mt-2 space-y-1 text-muted-foreground">
+                <li>• GK or GD in a shooting position (GS / GA) — too specific</li>
+              </ul>
+              <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-rose-700">
+                <AlertTriangle className="size-3.5" />
+                {outOfPositionCount} out-of-position placement
+                {outOfPositionCount === 1 ? "" : "s"} across the auto games —
+                highlighted below.
+              </p>
+            </div>
+          </div>
+
+          {/* Court time note */}
+          <div className="mt-4 rounded-2xl bg-primary/5 px-4 py-3 text-xs text-foreground/80">
+            <strong className="text-primary">Court time is balanced.</strong>{" "}
+            Because most squads have more midcourters than shooters or
+            defenders, each midcourter usually plays fewer games while
+            shooters and defenders run more. The algorithm rotates
+            midcourters through games so nobody sits out for too long.
+          </div>
+
+          <div className="mt-6 space-y-6">
+            {SAMPLE_GAMES.map((game) => (
+              <GameCard
+                key={game.name}
+                game={game}
+                currentAgeGroup={currentAgeGroup}
+                otherAgeGroups={ageGroups.filter((a) => a !== currentAgeGroup)}
+              />
+            ))}
+
+            {/* Two blank games for selectors */}
+            <SelectorGameCard label="Selector Game 1 · Blank" />
+            <SelectorGameCard label="Selector Game 2 · Blank" />
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:scale-[1.03]"
+            >
+              Regenerate games
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-5 py-2 text-sm font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+            >
+              Swap two players
+            </button>
+            <p className="text-xs text-muted-foreground">
+              Selectors have final say — swap manually any time.
+            </p>
+          </div>
+        </>
+      ) : (
+        <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-background p-10 text-center">
+          <p className="font-semibold text-foreground">
+            Teams not yet populated for {currentAgeGroup}.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Once attendance is captured for the {currentAgeGroup} trial, hit
+            Populate on the Attendance step to generate games for this age
+            group.
           </p>
         </div>
-      </div>
-
-      {/* Court time note */}
-      <div className="mt-4 rounded-2xl bg-primary/5 px-4 py-3 text-xs text-foreground/80">
-        <strong className="text-primary">Court time is balanced.</strong>{" "}
-        Because most squads have more midcourters than shooters or defenders,
-        each midcourter usually plays fewer games while shooters and defenders
-        run more. The algorithm rotates midcourters through games so nobody
-        sits out for too long.
-      </div>
-
-      <div className="mt-6 space-y-6">
-        {SAMPLE_GAMES.map((game) => (
-          <GameCard key={game.name} game={game} />
-        ))}
-
-        {/* Two blank games for selectors */}
-        <SelectorGameCard label="Selector Game 1 · Blank" />
-        <SelectorGameCard label="Selector Game 2 · Blank" />
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:scale-[1.03]"
-        >
-          Regenerate games
-        </button>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-5 py-2 text-sm font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
-        >
-          Swap two players
-        </button>
-        <p className="text-xs text-muted-foreground">
-          Selectors have final say — swap manually any time.
-        </p>
-      </div>
+      )}
     </div>
   );
 }
 
-function GameCard({ game }: { game: (typeof SAMPLE_GAMES)[number] }) {
+function GameCard({
+  game,
+  currentAgeGroup,
+  otherAgeGroups,
+}: {
+  game: (typeof SAMPLE_GAMES)[number];
+  currentAgeGroup: string;
+  otherAgeGroups: string[];
+}) {
+  const [movePlayer, setMovePlayer] = useState<string | null>(null);
+  const [movedNote, setMovedNote] = useState<string | null>(null);
+
+  function handleMove(name: string, targetAgeGroup: string) {
+    setMovedNote(`${name} moved from ${currentAgeGroup} to ${targetAgeGroup}.`);
+    setMovePlayer(null);
+    setTimeout(() => setMovedNote(null), 3000);
+  }
+
   return (
     <article className="rounded-2xl border border-border/70 bg-background p-5 md:p-6">
       <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-4">
@@ -812,6 +891,12 @@ function GameCard({ game }: { game: (typeof SAMPLE_GAMES)[number] }) {
           {game.teams[0].lineup.length} vs {game.teams[1].lineup.length}
         </span>
       </div>
+
+      {movedNote && (
+        <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary">
+          {movedNote}
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {game.teams.map((team) => (
@@ -822,31 +907,78 @@ function GameCard({ game }: { game: (typeof SAMPLE_GAMES)[number] }) {
             <ul className="mt-3 space-y-1.5">
               {team.lineup.map((p) => {
                 const oop = isOutOfPosition(p.name, p.position);
+                const menuOpen = movePlayer === `${game.name}-${team.label}-${p.name}`;
                 return (
                   <li
                     key={`${team.label}-${p.position}`}
                     className={
                       oop
-                        ? "flex items-center justify-between gap-3 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm"
-                        : "flex items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm"
+                        ? "relative rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm"
+                        : "relative rounded-lg bg-background px-3 py-2 text-sm"
                     }
                   >
-                    <span
-                      className={
-                        oop
-                          ? "inline-flex min-w-9 justify-center rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white"
-                          : "inline-flex min-w-9 justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"
-                      }
-                    >
-                      {p.position}
-                    </span>
-                    <span className="flex-1 font-medium text-foreground">
-                      {p.name}
-                    </span>
-                    {oop && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-700">
-                        <AlertTriangle className="size-3" /> Out of position
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={
+                          oop
+                            ? "inline-flex min-w-9 justify-center rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white"
+                            : "inline-flex min-w-9 justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"
+                        }
+                      >
+                        {p.position}
                       </span>
+                      <span className="flex-1 font-medium text-foreground">
+                        {p.name}
+                      </span>
+                      {oop && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-700">
+                          <AlertTriangle className="size-3" /> OOP
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMovePlayer(
+                            menuOpen
+                              ? null
+                              : `${game.name}-${team.label}-${p.name}`,
+                          )
+                        }
+                        aria-label={`Move ${p.name} to another age group`}
+                        className="rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-primary"
+                      >
+                        <ArrowUpDown className="size-3.5" />
+                      </button>
+                    </div>
+                    {menuOpen && (
+                      <div className="absolute right-3 top-full z-10 mt-1 w-56 rounded-xl border border-border/70 bg-card p-2 text-xs shadow-lg">
+                        <p className="px-2 pb-2 font-semibold text-muted-foreground">
+                          Move {p.name} to
+                        </p>
+                        {otherAgeGroups.map((ag) => (
+                          <button
+                            key={ag}
+                            type="button"
+                            onClick={() => handleMove(p.name, ag)}
+                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left font-semibold text-foreground transition hover:bg-primary/10 hover:text-primary"
+                          >
+                            <ArrowUpDown className="size-3" />
+                            {ag}
+                          </button>
+                        ))}
+                        {otherAgeGroups.length === 0 && (
+                          <p className="px-2 py-1 text-muted-foreground">
+                            No other age groups available.
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setMovePlayer(null)}
+                          className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-muted-foreground transition hover:bg-muted"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     )}
                   </li>
                 );
