@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import {
   SAMPLE_ACCOUNT,
+  SAMPLE_ACTIVE_TRIALS,
   SAMPLE_GAMES,
   SAMPLE_PAST_TRIALS,
   SAMPLE_PLAYERS,
@@ -323,25 +324,67 @@ function AssociationDashboard() {
             </ul>
           </div>
 
-          {/* Current trial + add another */}
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-primary/10 px-4 py-3">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Sparkles className="size-3.5" />
-              </span>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-                  Active trial
-                </p>
-                <p className="mt-0.5 text-sm font-semibold text-foreground">
-                  {SAMPLE_TRIAL.name}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {SAMPLE_TRIAL.ageGroups.join(", ")} ·{" "}
-                  {SAMPLE_TRIAL.schedule.length} sessions · in progress below.
-                </p>
-              </div>
+          {/* Trials in progress */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between gap-3">
+              <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                <Sparkles className="size-3.5" /> Trials in progress
+              </p>
+              <p className="text-[11px] italic text-muted-foreground">
+                Same login runs multiple trials in parallel.
+              </p>
             </div>
+            <ul className="mt-3 space-y-2">
+              {SAMPLE_ACTIVE_TRIALS.map((t) => (
+                <li
+                  key={t.name}
+                  className={
+                    t.isPrimaryWorkflow
+                      ? "rounded-xl border-2 border-primary bg-primary/10 px-4 py-3 text-sm"
+                      : "rounded-xl border border-border/70 bg-background px-4 py-3 text-sm"
+                  }
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-foreground">{t.name}</p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {t.ageGroups.join(", ")} · {t.sessionsBooked} session
+                        {t.sessionsBooked === 1 ? "" : "s"} booked
+                      </p>
+                    </div>
+                    <span
+                      className={
+                        t.isPrimaryWorkflow
+                          ? "rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground"
+                          : "rounded-full bg-muted px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground/80"
+                      }
+                    >
+                      {t.status}
+                    </span>
+                  </div>
+                  {t.isPrimaryWorkflow ? (
+                    <p className="mt-2 text-[11px] font-semibold text-primary">
+                      ↓ You&apos;re working on this trial in the steps below.
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary transition hover:gap-2"
+                    >
+                      Open this trial <ArrowRight className="size-3" />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Add another trial */}
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-muted/40 px-4 py-3">
+            <p className="text-xs text-muted-foreground">
+              Want to run yet another block? Add it any time — the workflow
+              below stays open on the trial you&apos;re currently editing.
+            </p>
             <button
               type="button"
               onClick={() => setShowNewTrial((v) => !v)}
@@ -1916,7 +1959,7 @@ function ExportStep({
 
       <div className="mt-6 rounded-2xl border border-border/70 bg-background p-6">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-          At a glance
+          At a glance — this trial
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-4">
           <SummaryStat label="Registered" value={players.length.toString()} />
@@ -1939,6 +1982,103 @@ function ExportStep({
           is the ${platformFeePerParticipant.toFixed(2)} CC Netball fee per{" "}
           {associationPays ? "attending player" : "registered participant"}.
         </p>
+      </div>
+
+      {/* Per-trial breakdown across every trial in progress */}
+      <div className="mt-6 rounded-2xl border border-border/70 bg-background p-6">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+          Per-trial finance breakdown
+        </p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Every trial you run stays in its own row so the money is never
+          mixed. Add another trial to the account and it appears here too.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {SAMPLE_ACTIVE_TRIALS.map((t, i) => (
+            <li
+              key={t.name}
+              className={
+                t.isPrimaryWorkflow
+                  ? "grid gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:items-center sm:gap-6"
+                  : "grid gap-2 rounded-xl bg-muted/40 px-4 py-3 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:items-center sm:gap-6"
+              }
+            >
+              <div>
+                <p className="font-semibold text-foreground">
+                  Trial #{i + 1} · {t.name}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {t.ageGroups.join(", ")} · {t.sessionsBooked} session
+                  {t.sessionsBooked === 1 ? "" : "s"} · {t.status}
+                </p>
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-foreground">
+                  {t.participantCount}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Participants
+                </p>
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-foreground">
+                  ${t.clubRevenue.toFixed(2)}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Assoc / Club
+                </p>
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-foreground">
+                  ${t.ccnetballFees.toFixed(2)}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  CC Netball
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 grid gap-2 rounded-xl bg-secondary px-4 py-3 text-sm text-secondary-foreground sm:grid-cols-[1fr_auto_auto_auto] sm:items-center sm:gap-6">
+          <p className="font-display text-base font-bold">
+            All in-progress trials — combined
+          </p>
+          <div className="text-xs">
+            <p className="font-bold">
+              {SAMPLE_ACTIVE_TRIALS.reduce(
+                (s, t) => s + t.participantCount,
+                0,
+              )}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider opacity-80">
+              Participants
+            </p>
+          </div>
+          <div className="text-xs">
+            <p className="font-bold">
+              $
+              {SAMPLE_ACTIVE_TRIALS.reduce(
+                (s, t) => s + t.clubRevenue,
+                0,
+              ).toFixed(2)}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider opacity-80">
+              Assoc / Club
+            </p>
+          </div>
+          <div className="text-xs">
+            <p className="font-bold">
+              $
+              {SAMPLE_ACTIVE_TRIALS.reduce(
+                (s, t) => s + t.ccnetballFees,
+                0,
+              ).toFixed(2)}
+            </p>
+            <p className="text-[10px] uppercase tracking-wider opacity-80">
+              CC Netball
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

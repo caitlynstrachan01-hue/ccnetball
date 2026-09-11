@@ -44,6 +44,41 @@ export const SAMPLE_ACCOUNT = {
   club: "Brisbane Budgies Netball Club",
 };
 
+export type ActiveTrialSummary = {
+  name: string;
+  ageGroups: string[];
+  sessionsBooked: number;
+  status: "In progress" | "Attendance pending" | "Populating";
+  participantCount: number;
+  clubRevenue: number;
+  ccnetballFees: number;
+  /** true for the trial the workflow below is currently editing. */
+  isPrimaryWorkflow: boolean;
+};
+
+export const SAMPLE_ACTIVE_TRIALS: ActiveTrialSummary[] = [
+  {
+    name: "Brisbane Budgies Netball Club Trials 2027",
+    ageGroups: ["Under 13", "Under 15"],
+    sessionsBooked: 3,
+    status: "In progress",
+    participantCount: 20,
+    clubRevenue: 0,
+    ccnetballFees: 44.0,
+    isPrimaryWorkflow: true,
+  },
+  {
+    name: "Brisbane Budgies Skills Squad 2027",
+    ageGroups: ["Under 11"],
+    sessionsBooked: 1,
+    status: "Attendance pending",
+    participantCount: 14,
+    clubRevenue: 0,
+    ccnetballFees: 30.8,
+    isPrimaryWorkflow: false,
+  },
+];
+
 export const SAMPLE_PAST_TRIALS: PastTrialSummary[] = [
   {
     name: "2025 Rep Trials",
