@@ -110,7 +110,7 @@ export function TrialAppPreview() {
       {/* EXPORT / PRINT BAR */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/40 px-4 py-3">
         <p className="text-xs text-muted-foreground">
-          Every screen exports and prints for your association.
+          Every screen exports and prints for your association/club.
         </p>
         <div className="flex items-center gap-2">
           <button
