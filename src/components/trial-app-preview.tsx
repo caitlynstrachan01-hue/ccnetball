@@ -1317,21 +1317,6 @@ function GameCard({
         ))}
       </div>
 
-      {game.bench.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-            Bench this game:
-          </p>
-          {game.bench.map((name) => (
-            <span
-              key={`${game.name}-bench-${name}`}
-              className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground/80"
-            >
-              {name}
-            </span>
-          ))}
-        </div>
-      )}
     </article>
   );
 }
