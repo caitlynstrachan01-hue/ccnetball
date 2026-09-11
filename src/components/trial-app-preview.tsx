@@ -12,7 +12,6 @@ import {
   Send,
   Share2,
   Sparkles,
-  Star,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -523,62 +522,268 @@ function TeamsStep() {
 }
 
 // ==========================================================================
-// STEP 5 — Team building view
+// STEP 5 — Team building view (drag-and-drop)
 // ==========================================================================
+type TeamKey = "teamA" | "teamB" | "teamC";
+type SectionKey = "shooters" | "midcourt" | "defenders";
+type TeamBucket = Record<SectionKey, string[]>;
+type BuilderState = {
+  available: string[];
+  teamA: TeamBucket;
+  teamB: TeamBucket;
+  teamC: TeamBucket;
+};
+
+const TEAM_KEYS: TeamKey[] = ["teamA", "teamB", "teamC"];
+const TEAM_LABELS: Record<TeamKey, string> = {
+  teamA: "Team A",
+  teamB: "Team B",
+  teamC: "Team C",
+};
+const SECTION_LABELS: Record<SectionKey, string> = {
+  shooters: "Shooters",
+  midcourt: "Midcourt",
+  defenders: "Defenders",
+};
+
+function emptyBucket(): TeamBucket {
+  return { shooters: [], midcourt: [], defenders: [] };
+}
+
 function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
   const attending = players.filter((p) => p.attended);
+  const [state, setState] = useState<BuilderState>(() => ({
+    available: attending.map((p) => p.name),
+    teamA: emptyBucket(),
+    teamB: emptyBucket(),
+    teamC: emptyBucket(),
+  }));
+  const [dragOver, setDragOver] = useState<string | null>(null);
+
+  const byName = new Map(attending.map((p) => [p.name, p]));
+
+  function movePlayer(
+    name: string,
+    target: { team: TeamKey | "available"; section?: SectionKey },
+  ) {
+    setState((prev) => {
+      const next: BuilderState = {
+        available: prev.available.filter((n) => n !== name),
+        teamA: {
+          shooters: prev.teamA.shooters.filter((n) => n !== name),
+          midcourt: prev.teamA.midcourt.filter((n) => n !== name),
+          defenders: prev.teamA.defenders.filter((n) => n !== name),
+        },
+        teamB: {
+          shooters: prev.teamB.shooters.filter((n) => n !== name),
+          midcourt: prev.teamB.midcourt.filter((n) => n !== name),
+          defenders: prev.teamB.defenders.filter((n) => n !== name),
+        },
+        teamC: {
+          shooters: prev.teamC.shooters.filter((n) => n !== name),
+          midcourt: prev.teamC.midcourt.filter((n) => n !== name),
+          defenders: prev.teamC.defenders.filter((n) => n !== name),
+        },
+      };
+      if (target.team === "available") {
+        next.available.push(name);
+      } else if (target.section) {
+        next[target.team][target.section].push(name);
+      }
+      return next;
+    });
+  }
+
+  function handleDrop(
+    e: React.DragEvent,
+    target: { team: TeamKey | "available"; section?: SectionKey },
+  ) {
+    e.preventDefault();
+    setDragOver(null);
+    const name = e.dataTransfer.getData("text/plain");
+    if (!name) return;
+    movePlayer(name, target);
+  }
+
+  function handleReset() {
+    setState({
+      available: attending.map((p) => p.name),
+      teamA: emptyBucket(),
+      teamB: emptyBucket(),
+      teamC: emptyBucket(),
+    });
+  }
+
   return (
     <div>
       <StepHeading
         eyebrow="Step 5"
-        title="Team building view for selectors"
-        blurb="Every attending player at a glance — positions, notes, and a star rating so selectors can compare like-for-like."
+        title="Team building — drag players into the team you want"
+        blurb="Every attending player sits on the right. Drag them into Team A, B or C — into Shooters, Midcourt or Defenders. Selectors have final say."
       />
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border/70">
-        <table className="w-full min-w-max text-sm">
-          <thead className="bg-muted/60">
-            <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <th className="px-4 py-3 font-semibold">Player</th>
-              <th className="px-4 py-3 font-semibold">Age</th>
-              <th className="px-4 py-3 font-semibold">Club</th>
-              <th className="px-4 py-3 font-semibold">Positions</th>
-              <th className="px-4 py-3 font-semibold">Rating</th>
-              <th className="px-4 py-3 font-semibold">Selector notes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60 bg-background">
-            {attending.map((p) => (
-              <tr key={p.name}>
-                <td className="px-4 py-3 font-semibold text-foreground">
-                  {p.name}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{p.age}</td>
-                <td className="px-4 py-3 text-muted-foreground">{p.club}</td>
-                <td className="px-4 py-3">
-                  <PositionsChips positions={p.positions} compact />
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Star
-                        key={n}
-                        className={
-                          n <= (p.rating ?? 0)
-                            ? "size-3.5 fill-primary text-primary"
-                            : "size-3.5 text-muted-foreground/30"
-                        }
-                      />
-                    ))}
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">
-                  {p.notes ?? "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={handleReset}
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+        >
+          Reset — move everyone back
+        </button>
+        <p className="text-xs text-muted-foreground">
+          {state.available.length} player{state.available.length === 1 ? "" : "s"} still in the pool.
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-12">
+        {/* TEAMS (left) */}
+        <div className="space-y-5 lg:col-span-8">
+          {TEAM_KEYS.map((teamKey) => {
+            const bucket = state[teamKey];
+            const total =
+              bucket.shooters.length +
+              bucket.midcourt.length +
+              bucket.defenders.length;
+            return (
+              <article
+                key={teamKey}
+                className="rounded-2xl border border-border/70 bg-background p-5"
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
+                  <p className="font-display text-lg font-bold">
+                    {TEAM_LABELS[teamKey]}
+                  </p>
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                    {total} player{total === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {(["shooters", "midcourt", "defenders"] as SectionKey[]).map(
+                    (section) => {
+                      const dropKey = `${teamKey}-${section}`;
+                      const isHover = dragOver === dropKey;
+                      const items = bucket[section];
+                      return (
+                        <div
+                          key={section}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setDragOver(dropKey);
+                          }}
+                          onDragLeave={() => setDragOver(null)}
+                          onDrop={(e) =>
+                            handleDrop(e, { team: teamKey, section })
+                          }
+                          className={
+                            isHover
+                              ? "min-h-32 rounded-xl border-2 border-dashed border-primary bg-primary/10 p-3 transition"
+                              : "min-h-32 rounded-xl border-2 border-dashed border-border/60 bg-muted/30 p-3 transition"
+                          }
+                        >
+                          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                            {SECTION_LABELS[section]}
+                          </p>
+                          <ul className="mt-2 space-y-1.5">
+                            {items.length === 0 ? (
+                              <li className="rounded-md bg-background/60 px-2 py-1.5 text-[11px] italic text-muted-foreground">
+                                Drop players here…
+                              </li>
+                            ) : (
+                              items.map((name) => {
+                                const p = byName.get(name);
+                                if (!p) return null;
+                                return (
+                                  <li
+                                    key={name}
+                                    draggable
+                                    onDragStart={(e) =>
+                                      e.dataTransfer.setData(
+                                        "text/plain",
+                                        name,
+                                      )
+                                    }
+                                    className="cursor-grab rounded-md bg-background px-2 py-1.5 text-xs shadow-sm transition active:cursor-grabbing"
+                                  >
+                                    <p className="font-semibold text-foreground">
+                                      {p.name}
+                                    </p>
+                                    <p className="text-[10px] font-semibold text-primary">
+                                      {p.positions.join(", ")}
+                                    </p>
+                                  </li>
+                                );
+                              })
+                            )}
+                          </ul>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* AVAILABLE PLAYERS (right) */}
+        <aside className="lg:col-span-4">
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver("available");
+            }}
+            onDragLeave={() => setDragOver(null)}
+            onDrop={(e) => handleDrop(e, { team: "available" })}
+            className={
+              dragOver === "available"
+                ? "sticky top-24 rounded-2xl border-2 border-dashed border-primary bg-primary/5 p-5 transition"
+                : "sticky top-24 rounded-2xl border border-border/70 bg-background p-5"
+            }
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                Players
+              </p>
+              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
+                {state.available.length}
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Drag any player into a team.
+            </p>
+            <ul className="mt-3 max-h-[560px] space-y-1.5 overflow-y-auto pr-1">
+              {state.available.length === 0 && (
+                <li className="rounded-lg bg-muted/40 px-3 py-3 text-center text-xs italic text-muted-foreground">
+                  Every player is in a team. Drag them back here to un-assign.
+                </li>
+              )}
+              {state.available.map((name) => {
+                const p = byName.get(name);
+                if (!p) return null;
+                return (
+                  <li
+                    key={name}
+                    draggable
+                    onDragStart={(e) =>
+                      e.dataTransfer.setData("text/plain", name)
+                    }
+                    className="flex cursor-grab items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm shadow-sm transition hover:bg-muted active:cursor-grabbing"
+                  >
+                    <span>
+                      <span className="block font-semibold text-foreground">
+                        {p.name}
+                      </span>
+                      <span className="text-[11px] font-semibold text-primary">
+                        {p.positions.join(", ")}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </aside>
       </div>
     </div>
   );
