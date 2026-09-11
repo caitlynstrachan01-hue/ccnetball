@@ -1,12 +1,7 @@
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Check,
-  PlayCircle,
-  ShoppingCart,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, Check, PlayCircle, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion";
+import { SubscribeButton } from "@/components/subscribe-button";
 import { getProductBySlug } from "@/lib/shop-content";
 
 export const metadata = {
@@ -76,16 +71,9 @@ export default function DrillsLibraryPage() {
                   </span>
                 </p>
               </div>
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                <ShoppingCart className="size-5" />
-                Subscribe — coming soon
-              </button>
+              <SubscribeButton label="Subscribe — $49 / month" />
               <Link
-                href="/contact"
+                href="/login?next=/account"
                 className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card px-6 py-4 text-sm font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
               >
                 Members log in
@@ -125,14 +113,9 @@ export default function DrillsLibraryPage() {
               <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
                 Unlock the full library for $49 / month
               </h3>
-              <button
-                type="button"
-                disabled
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                <ShoppingCart className="size-5" />
-                Subscribe — coming soon
-              </button>
+              <div className="mt-6 flex justify-center">
+                <SubscribeButton label="Subscribe — $49 / month" />
+              </div>
             </div>
           </Reveal>
         </div>

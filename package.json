@@ -11,7 +11,8 @@
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
     "@hookform/resolvers": "^5.2.2",
-    "@supabase/supabase-js": "^2.105.1",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
@@ -24,6 +25,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.74.0",
     "resend": "^6.12.2",
+    "stripe": "^22.6.2",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^4.4.1"
