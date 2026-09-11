@@ -1503,12 +1503,65 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
     );
   }
 
+  /** Move a player from the currently-selected age group to another age
+   *  group. They land in that age group's available pool. */
+  function moveToAgeGroup(name: string, targetAgeGroup: string) {
+    if (targetAgeGroup === currentAgeGroup) return;
+    setState((prev) => {
+      const src = prev[currentAgeGroup];
+      const tgt = prev[targetAgeGroup];
+      return {
+        ...prev,
+        [currentAgeGroup]: {
+          available: src.available.filter((n) => n !== name),
+          teamA: {
+            name: src.teamA.name,
+            bucket: {
+              shooters: src.teamA.bucket.shooters.filter((n) => n !== name),
+              midcourt: src.teamA.bucket.midcourt.filter((n) => n !== name),
+              defenders: src.teamA.bucket.defenders.filter((n) => n !== name),
+            },
+          },
+          teamB: {
+            name: src.teamB.name,
+            bucket: {
+              shooters: src.teamB.bucket.shooters.filter((n) => n !== name),
+              midcourt: src.teamB.bucket.midcourt.filter((n) => n !== name),
+              defenders: src.teamB.bucket.defenders.filter((n) => n !== name),
+            },
+          },
+          teamC: {
+            name: src.teamC.name,
+            bucket: {
+              shooters: src.teamC.bucket.shooters.filter((n) => n !== name),
+              midcourt: src.teamC.bucket.midcourt.filter((n) => n !== name),
+              defenders: src.teamC.bucket.defenders.filter((n) => n !== name),
+            },
+          },
+        },
+        [targetAgeGroup]: {
+          ...tgt,
+          available: tgt.available.includes(name)
+            ? tgt.available
+            : [...tgt.available, name],
+        },
+      };
+    });
+    setMoveMenuFor(null);
+    setMoveFlash(`${name} moved to ${targetAgeGroup}.`);
+    setTimeout(() => setMoveFlash(null), 2500);
+  }
+
+  const [moveMenuFor, setMoveMenuFor] = useState<string | null>(null);
+  const [moveFlash, setMoveFlash] = useState<string | null>(null);
+  const otherAgeGroups = ageGroups.filter((ag) => ag !== currentAgeGroup);
+
   return (
     <div>
       <StepHeading
         eyebrow="Step 5"
         title="Team building — one workspace per age group"
-        blurb="Pick an age group. Each has its own three teams (rename any of them). Drag players from the panel on the right into Shooters, Midcourt or Defenders. Selectors have final say."
+        blurb="Pick an age group. Each has its own three teams (rename any of them). Drag players from the panel on the right into Shooters, Midcourt or Defenders. Need a player in a different age group? Click the ↕ icon on their card and move them across — Selectors have final say."
       />
 
       {/* Age group dropdown */}
@@ -1547,6 +1600,12 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
           {currentAgeGroup} pool.
         </p>
       </div>
+
+      {moveFlash && (
+        <div className="mt-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-semibold text-primary">
+          {moveFlash}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-12">
         {/* TEAMS (left) */}
@@ -1610,24 +1669,75 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
                               items.map((name) => {
                                 const p = byName.get(name);
                                 if (!p) return null;
+                                const menuKey = `${teamKey}-${section}-${name}`;
+                                const isMenuOpen = moveMenuFor === menuKey;
                                 return (
                                   <li
                                     key={name}
-                                    draggable
-                                    onDragStart={(e) =>
-                                      e.dataTransfer.setData(
-                                        "text/plain",
-                                        name,
-                                      )
-                                    }
-                                    className="cursor-grab rounded-md bg-background px-2 py-1.5 text-xs shadow-sm transition active:cursor-grabbing"
+                                    className="relative"
                                   >
-                                    <p className="font-semibold text-foreground">
-                                      {p.name}
-                                    </p>
-                                    <p className="text-[10px] font-semibold text-primary">
-                                      {p.positions.join(", ")}
-                                    </p>
+                                    <div
+                                      draggable
+                                      onDragStart={(e) =>
+                                        e.dataTransfer.setData(
+                                          "text/plain",
+                                          name,
+                                        )
+                                      }
+                                      className="flex cursor-grab items-start justify-between gap-2 rounded-md bg-background px-2 py-1.5 text-xs shadow-sm transition active:cursor-grabbing"
+                                    >
+                                      <div>
+                                        <p className="font-semibold text-foreground">
+                                          {p.name}
+                                        </p>
+                                        <p className="text-[10px] font-semibold text-primary">
+                                          {p.positions.join(", ")}
+                                        </p>
+                                      </div>
+                                      {otherAgeGroups.length > 0 && (
+                                        <button
+                                          type="button"
+                                          aria-label={`Move ${p.name} to another age group`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setMoveMenuFor(
+                                              isMenuOpen ? null : menuKey,
+                                            );
+                                          }}
+                                          onMouseDown={(e) => e.stopPropagation()}
+                                          className="shrink-0 rounded-md p-0.5 text-muted-foreground transition hover:bg-muted hover:text-primary"
+                                        >
+                                          <ArrowUpDown className="size-3" />
+                                        </button>
+                                      )}
+                                    </div>
+                                    {isMenuOpen && (
+                                      <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-xl border border-border/70 bg-card p-2 text-[11px] shadow-lg">
+                                        <p className="px-2 pb-1 font-semibold text-muted-foreground">
+                                          Move {p.name} to
+                                        </p>
+                                        {otherAgeGroups.map((ag) => (
+                                          <button
+                                            key={ag}
+                                            type="button"
+                                            onClick={() =>
+                                              moveToAgeGroup(name, ag)
+                                            }
+                                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left font-semibold text-foreground transition hover:bg-primary/10 hover:text-primary"
+                                          >
+                                            <ArrowUpDown className="size-3" />
+                                            {ag}
+                                          </button>
+                                        ))}
+                                        <button
+                                          type="button"
+                                          onClick={() => setMoveMenuFor(null)}
+                                          className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-muted-foreground transition hover:bg-muted"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    )}
                                   </li>
                                 );
                               })
@@ -1678,23 +1788,65 @@ function TeamBuildingStep({ players }: { players: SamplePlayer[] }) {
               {currentGroup.available.map((name) => {
                 const p = byName.get(name);
                 if (!p) return null;
+                const menuKey = `available-${name}`;
+                const isMenuOpen = moveMenuFor === menuKey;
                 return (
-                  <li
-                    key={name}
-                    draggable
-                    onDragStart={(e) =>
-                      e.dataTransfer.setData("text/plain", name)
-                    }
-                    className="flex cursor-grab items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm shadow-sm transition hover:bg-muted active:cursor-grabbing"
-                  >
-                    <span>
-                      <span className="block font-semibold text-foreground">
-                        {p.name}
+                  <li key={name} className="relative">
+                    <div
+                      draggable
+                      onDragStart={(e) =>
+                        e.dataTransfer.setData("text/plain", name)
+                      }
+                      className="flex cursor-grab items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm shadow-sm transition hover:bg-muted active:cursor-grabbing"
+                    >
+                      <span>
+                        <span className="block font-semibold text-foreground">
+                          {p.name}
+                        </span>
+                        <span className="text-[11px] font-semibold text-primary">
+                          {p.positions.join(", ")}
+                        </span>
                       </span>
-                      <span className="text-[11px] font-semibold text-primary">
-                        {p.positions.join(", ")}
-                      </span>
-                    </span>
+                      {otherAgeGroups.length > 0 && (
+                        <button
+                          type="button"
+                          aria-label={`Move ${p.name} to another age group`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMoveMenuFor(isMenuOpen ? null : menuKey);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          className="shrink-0 rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-primary"
+                        >
+                          <ArrowUpDown className="size-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    {isMenuOpen && (
+                      <div className="absolute right-2 top-full z-20 mt-1 w-52 rounded-xl border border-border/70 bg-card p-2 text-xs shadow-lg">
+                        <p className="px-2 pb-1 font-semibold text-muted-foreground">
+                          Move {p.name} to
+                        </p>
+                        {otherAgeGroups.map((ag) => (
+                          <button
+                            key={ag}
+                            type="button"
+                            onClick={() => moveToAgeGroup(name, ag)}
+                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left font-semibold text-foreground transition hover:bg-primary/10 hover:text-primary"
+                          >
+                            <ArrowUpDown className="size-3" />
+                            {ag}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setMoveMenuFor(null)}
+                          className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-muted-foreground transition hover:bg-muted"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </li>
                 );
               })}
