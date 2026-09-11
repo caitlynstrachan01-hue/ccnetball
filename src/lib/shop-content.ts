@@ -62,11 +62,11 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     short:
       "Run trials that pick themselves — registration, attendance, and unbiased team allocation, done in one place.",
     description:
-      "Trial App takes the chaos out of trial night. Set up your trial (one day or across three), share a registration link, and players sign up themselves. Capture attendance live on the night — for one age group or several — then hit Populate and the app generates balanced games with every player rotated through their two preferred positions. Players used out of position are highlighted so selectors can see the trade-off. Two blank games sit at the end of every session for selectors to match specific players head-to-head.",
+      "Trial App takes the chaos out of trial night. Set up your trial across one or more age groups, share a registration link, and players sign up themselves. Capture attendance live on the night — one age group at a time — then hit Populate and the app generates balanced games with every player rotated through their two preferred positions. Players used out of position are highlighted so selectors can see the trade-off. Two blank games sit at the end of every session for selectors to match specific players head-to-head.",
     features: [
       "Shareable player registration link — unlimited players",
-      "One, two or three days of trials, with multiple age groups",
-      "Live attendance recorded per trial day",
+      "One day per age group — trial as many age groups as you like",
+      "Live attendance recorded per age group",
       "Populate teams with an unbiased algorithm",
       "Every player placed in their two preferred positions",
       "Out-of-position players highlighted for selectors",

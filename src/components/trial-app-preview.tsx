@@ -425,11 +425,12 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
 
           <div className="mt-4 rounded-2xl border border-border/70 bg-background p-4 text-xs">
             <p className="font-semibold text-foreground">
-              Days across the trial
+              One day per age group
             </p>
             <p className="mt-1 text-muted-foreground">
-              1, 2 or 3 days — the association picks. The app builds a single
-              registration link that covers every day and age group.
+              Add as many age groups as you like — each one runs on its own
+              day. The app builds a single registration link that covers all
+              of them.
             </p>
           </div>
         </aside>

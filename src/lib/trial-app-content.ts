@@ -15,7 +15,7 @@ export type SampleTrial = {
   venue: string;
   courts: number;
   ageGroups: string[];
-  days: 1 | 2 | 3;
+  days: number;
   schedule: TrialSession[];
   /** Number of teams to be selected per age group, or 'all' to include every attending player. */
   teamsToSelect: number | "all";
