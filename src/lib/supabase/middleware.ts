@@ -34,9 +34,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /account and /admin/* — force sign-in first.
+  // Protect /account, /admin/* and /library — force sign-in first.
   const path = request.nextUrl.pathname;
-  const isProtected = path.startsWith("/account") || path.startsWith("/admin/");
+  const isProtected =
+    path.startsWith("/account") ||
+    path.startsWith("/admin/") ||
+    path === "/library" ||
+    path.startsWith("/library/");
 
   if (isProtected && !user) {
     const redirectUrl = request.nextUrl.clone();
