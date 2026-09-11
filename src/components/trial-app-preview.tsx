@@ -263,20 +263,13 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
 
           {/* Schedule */}
           <div className="mt-5 rounded-2xl border border-border/70 bg-background p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                  Schedule
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Add as many sessions as you like per age group — each
-                  session runs on its own night.
-                </p>
-              </div>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                {SAMPLE_TRIAL.schedule.length} sessions
-              </span>
-            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              Schedule
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add as many sessions as you like per age group — each session
+              runs on its own night.
+            </p>
             <ul className="mt-4 space-y-2">
               {SAMPLE_TRIAL.schedule.map((s, i) => (
                 <li
