@@ -28,15 +28,15 @@ export type SampleTrial = {
 
 export const SAMPLE_TRIAL: SampleTrial = {
   name: "2027 Rep Trials",
-  club: "Underwood Netball Association",
+  club: "Brisbane Budgies",
   courts: 1,
   ageGroups: ["Under 13", "Under 15", "Under 17"],
   days: 4,
   schedule: [
-    { date: "Wednesday 3 Feb 2027",  ageGroup: "Under 13", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissen Arena" },
-    { date: "Wednesday 10 Feb 2027", ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissen Arena" },
+    { date: "Wednesday 3 Feb 2027",  ageGroup: "Under 13", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissan Arena" },
+    { date: "Wednesday 10 Feb 2027", ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissan Arena" },
     { date: "Friday 12 Feb 2027",    ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm", venue: "Beenleigh Sports Centre" },
-    { date: "Wednesday 17 Feb 2027", ageGroup: "Under 17", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissen Arena" },
+    { date: "Wednesday 17 Feb 2027", ageGroup: "Under 17", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissan Arena" },
   ],
   teamsToSelect: 3,
   feePerParticipant: 2.2,
@@ -47,7 +47,7 @@ export const SAMPLE_TRIAL: SampleTrial = {
     { label: "Other", amount: 0 },
   ],
   associationPaysFees: false,
-  shareUrl: "ccnetball.com/trials/underwood-2027",
+  shareUrl: "ccnetball.com/trials/brisbane-budgies-2027",
 };
 
 export type SamplePlayer = {

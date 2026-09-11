@@ -105,7 +105,7 @@ export default function TrialAppPage() {
             </h2>
             <p className="mt-4 text-base text-muted-foreground">
               Click through the flow with a real sample trial —{" "}
-              <strong>Underwood Netball Association U15 rep trials</strong> —
+              <strong>Brisbane Budgies U15 rep trials</strong> —
               and see exactly how the app runs on the night.
             </p>
           </Reveal>
