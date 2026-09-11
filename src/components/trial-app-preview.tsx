@@ -37,7 +37,7 @@ const STEPS: { key: StepKey; label: string; icon: typeof Users }[] = [
   { key: "create",          label: "1. Create trial",   icon: Sparkles },
   { key: "registrations",   label: "2. Registrations",  icon: Send },
   { key: "attendance",      label: "3. Attendance",     icon: UserCheck },
-  { key: "teams",           label: "4. Team allocation", icon: Users },
+  { key: "teams",           label: "4. Trial games",    icon: Users },
   { key: "team-building",   label: "5. Team building",  icon: ClipboardList },
   { key: "export",          label: "6. Export",         icon: Download },
 ];
@@ -880,8 +880,8 @@ function TeamsStep() {
     <div>
       <StepHeading
         eyebrow="Step 4"
-        title="Team allocation — one view per age group"
-        blurb="Switch between age groups with the tabs below. Each view shows the auto-populated games for that age group, plus two blank games at the end of every session for selectors to match specific players head-to-head."
+        title="Trial games — one view per age group"
+        blurb="This page is blank until attendance is captured and Populate is hit. Once populated, it shows the last set of auto-generated trial games for the selected age group, plus two blank games at the end for selectors to match specific players head-to-head."
       />
 
       {/* Age group switcher */}
@@ -926,9 +926,10 @@ function TeamsStep() {
         <>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              Showing games for <strong>{currentAgeGroup}</strong> —{" "}
+              Last populated games for <strong>{currentAgeGroup}</strong> —{" "}
               {sessionsInAgeGroup} session{sessionsInAgeGroup === 1 ? "" : "s"}
-              . Team allocations rotate between sessions.
+              . Team allocations rotate between sessions and carry each
+              player&apos;s prior court time forward.
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -986,6 +987,15 @@ function TeamsStep() {
             defenders, each midcourter usually plays fewer games while
             shooters and defenders run more. The algorithm rotates
             midcourters through games so nobody sits out for too long.
+            <br />
+            <br />
+            <strong className="text-primary">Across multiple sessions:</strong>{" "}
+            when an age group trials over more than one night, every playing
+            list is stored. The next Populate carries forward each player&apos;s
+            prior court time so future games balance them against the players
+            who&apos;ve been on the bench most. Only auto-populated games count
+            here — the two selector-controlled blank games at the end of each
+            session are excluded from the fairness calculation.
           </div>
 
           <div className="mt-6 space-y-6">
