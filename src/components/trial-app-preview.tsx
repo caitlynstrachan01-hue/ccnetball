@@ -1228,13 +1228,18 @@ function GameCard({
       )}
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {game.teams.map((team) => (
+        {game.teams.map((team, teamIndex) => {
+          // Team A shows GS → GK; Team B shows GK → GS so the rows
+          // line up as head-to-head match-ups across the two columns.
+          const displayLineup =
+            teamIndex === 1 ? [...team.lineup].reverse() : team.lineup;
+          return (
           <div key={team.label} className="rounded-xl bg-muted/40 p-4">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
               {team.label}
             </p>
             <ul className="mt-3 space-y-1.5">
-              {team.lineup.map((p) => {
+              {displayLineup.map((p) => {
                 const oop = isOutOfPosition(p.name, p.position);
                 const menuOpen = movePlayer === `${game.name}-${team.label}-${p.name}`;
                 return (
@@ -1314,7 +1319,8 @@ function GameCard({
               })}
             </ul>
           </div>
-        ))}
+          );
+        })}
       </div>
 
     </article>
