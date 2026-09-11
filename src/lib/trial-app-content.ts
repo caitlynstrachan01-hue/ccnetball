@@ -27,7 +27,7 @@ export type SampleTrial = {
 };
 
 export const SAMPLE_TRIAL: SampleTrial = {
-  name: "2027 Rep Trials",
+  name: "Brisbane Budgies Netball Club Trials 2027",
   club: "Brisbane Budgies",
   courts: 1,
   ageGroups: ["Under 13", "Under 15", "Under 17"],
@@ -53,32 +53,32 @@ export const SAMPLE_TRIAL: SampleTrial = {
 export type SamplePlayer = {
   name: string;
   age: number;
-  club: string;
+  suburb: string;
   positions: Position[];
   attended: boolean;
 };
 
 export const SAMPLE_PLAYERS: SamplePlayer[] = [
-  { name: "Amelia Chen",        age: 14, club: "Underwood",  positions: ["GS", "GA"],  attended: true  },
-  { name: "Sophie Nguyen",      age: 14, club: "Underwood",  positions: ["GA", "WA"],  attended: true  },
-  { name: "Isla Martin",        age: 15, club: "Sunnybank",  positions: ["WA", "C"],   attended: true  },
-  { name: "Charlotte Reilly",   age: 14, club: "Beenleigh",  positions: ["C", "WD"],   attended: true  },
-  { name: "Mia Anderson",       age: 15, club: "Underwood",  positions: ["WD", "GD"],  attended: true  },
-  { name: "Grace Davies",       age: 14, club: "MacGregor",  positions: ["GD", "GK"],  attended: true  },
-  { name: "Ruby Patel",         age: 14, club: "Sunnybank",  positions: ["GK", "GD"],  attended: true  },
-  { name: "Olivia Smith",       age: 15, club: "Underwood",  positions: ["GS"],        attended: true  },
-  { name: "Emma Wilson",        age: 14, club: "Beenleigh",  positions: ["GA", "WA"],  attended: true  },
-  { name: "Zoe Bailey",         age: 14, club: "Underwood",  positions: ["WA", "C"],   attended: true  },
-  { name: "Chloe Henderson",    age: 15, club: "MacGregor",  positions: ["C"],         attended: true  },
-  { name: "Hannah Costa",       age: 14, club: "Underwood",  positions: ["WD"],        attended: true  },
-  { name: "Layla Barros",       age: 15, club: "Sunnybank",  positions: ["GD", "WD"],  attended: true  },
-  { name: "Ava Thompson",       age: 14, club: "Underwood",  positions: ["GK"],        attended: true  },
-  { name: "Poppy Walsh",        age: 15, club: "Beenleigh",  positions: ["GS", "GA"],  attended: false },
-  { name: "Freya O'Brien",      age: 14, club: "MacGregor",  positions: ["WA"],        attended: true  },
-  { name: "Bella Rodriguez",    age: 14, club: "Underwood",  positions: ["C", "WA"],   attended: true  },
-  { name: "Willow Tanaka",      age: 15, club: "Sunnybank",  positions: ["WD", "C"],   attended: true  },
-  { name: "Elsie Papadopoulos", age: 14, club: "Underwood",  positions: ["GD"],        attended: true  },
-  { name: "Harper Singh",       age: 15, club: "Beenleigh",  positions: ["GK", "GD"],  attended: true  },
+  { name: "Amelia Chen",        age: 14, suburb: "South Brisbane", positions: ["GS", "GA"],  attended: true  },
+  { name: "Sophie Nguyen",      age: 14, suburb: "East Brisbane",  positions: ["GA", "WA"],  attended: true  },
+  { name: "Isla Martin",        age: 15, suburb: "Southbank",      positions: ["WA", "C"],   attended: true  },
+  { name: "Charlotte Reilly",   age: 14, suburb: "New Farm",       positions: ["C", "WD"],   attended: true  },
+  { name: "Mia Anderson",       age: 15, suburb: "Albion",         positions: ["WD", "GD"],  attended: true  },
+  { name: "Grace Davies",       age: 14, suburb: "Hamilton",       positions: ["GD", "GK"],  attended: true  },
+  { name: "Ruby Patel",         age: 14, suburb: "Coorparoo",      positions: ["GK", "GD"],  attended: true  },
+  { name: "Olivia Smith",       age: 15, suburb: "South Brisbane", positions: ["GS"],        attended: true  },
+  { name: "Emma Wilson",        age: 14, suburb: "East Brisbane",  positions: ["GA", "WA"],  attended: true  },
+  { name: "Zoe Bailey",         age: 14, suburb: "Southbank",      positions: ["WA", "C"],   attended: true  },
+  { name: "Chloe Henderson",    age: 15, suburb: "New Farm",       positions: ["C"],         attended: true  },
+  { name: "Hannah Costa",       age: 14, suburb: "Albion",         positions: ["WD"],        attended: true  },
+  { name: "Layla Barros",       age: 15, suburb: "Hamilton",       positions: ["GD", "WD"],  attended: true  },
+  { name: "Ava Thompson",       age: 14, suburb: "Coorparoo",      positions: ["GK"],        attended: true  },
+  { name: "Poppy Walsh",        age: 15, suburb: "South Brisbane", positions: ["GS", "GA"],  attended: false },
+  { name: "Freya O'Brien",      age: 14, suburb: "East Brisbane",  positions: ["WA"],        attended: true  },
+  { name: "Bella Rodriguez",    age: 14, suburb: "Southbank",      positions: ["C", "WA"],   attended: true  },
+  { name: "Willow Tanaka",      age: 15, suburb: "New Farm",       positions: ["WD", "C"],   attended: true  },
+  { name: "Elsie Papadopoulos", age: 14, suburb: "Albion",         positions: ["GD"],        attended: true  },
+  { name: "Harper Singh",       age: 15, suburb: "Hamilton",       positions: ["GK", "GD"],  attended: true  },
 ];
 
 export type SampleGameTeam = {

@@ -73,11 +73,11 @@ export function TrialAppPreview() {
   }
 
   function handleExportCsv() {
-    const header = ["Name", "Age", "Club", "Preferred positions", "Attended"];
+    const header = ["Name", "Age", "Suburb", "Preferred positions", "Attended"];
     const rows = players.map((p) => [
       p.name,
       String(p.age),
-      p.club,
+      p.suburb,
       p.positions.join(";"),
       p.attended ? "Yes" : "No",
     ]);
@@ -494,7 +494,7 @@ function RegistrationsStep({
                   {p.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Age {p.age} · {p.club}
+                  Age {p.age} · {p.suburb}
                 </p>
               </div>
               <PositionsChips positions={p.positions} />
@@ -629,7 +629,7 @@ function AttendanceStep({
                         {p.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Age {p.age} · {p.club}
+                        Age {p.age} · {p.suburb}
                       </p>
                     </div>
                   </div>
