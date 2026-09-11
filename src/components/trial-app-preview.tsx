@@ -1946,8 +1946,8 @@ function ExportStep({
           active={openPreview === "data"}
         />
         <ExportCard
-          title="Team-building sheet (PDF)"
-          hint="One page per age group listing every selected team."
+          title="Team allocation sheet (PDF)"
+          hint="One printable page per game — Team A vs Team B side by side with deep notes cells for selectors."
           cta="Download PDF"
           onPreview={() =>
             setOpenPreview(openPreview === "sheet" ? null : "sheet")
@@ -2311,49 +2311,94 @@ function FullDataPreview({ players }: { players: SamplePlayer[] }) {
 }
 
 function TeamBuildingSheetPreview() {
-  const positions: Position[] = ["GS", "GA", "WA", "C", "WD", "GD", "GK"];
+  const game = SAMPLE_GAMES[0];
+  const teamA = game.teams[0];
+  const teamB = game.teams[1];
+  // Team B is reversed so each row is a head-to-head match-up.
+  const teamBReversed = [...teamB.lineup].reverse();
+
   return (
     <div className="mt-4 rounded-2xl border border-border/70 bg-white p-6 text-foreground shadow-sm">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-        Preview — Team-building sheet (PDF)
+        Preview — Team allocation sheet (PDF)
       </p>
       <p className="mt-1 text-[11px] text-muted-foreground">
-        One printable page per age group. Selectors write players into the
-        slots by hand.
+        One printable page per game. Team A on the left GS → GK, Team B on
+        the right GK → GS so head-to-head match-ups sit on the same row.
+        Deep note cells for hand-written selector observations.
       </p>
 
       <div className="mt-5 rounded-xl border border-border p-6 font-serif">
-        <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground">
-          Brisbane Budgies Netball Club Trials 2027 — Under 15
-        </p>
-        <p className="mt-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
-          Selector team building sheet
-        </p>
-        <div className="mt-6 grid grid-cols-3 gap-6 text-sm">
-          {["Team A", "Team B", "Team C"].map((teamLabel) => (
-            <div key={teamLabel}>
-              <p className="border-b border-foreground/40 pb-1 text-center font-bold uppercase tracking-wider">
-                {teamLabel}
-              </p>
-              {positions.map((pos) => (
-                <div
-                  key={`${teamLabel}-${pos}`}
-                  className="flex items-baseline gap-2 border-b border-dashed border-foreground/30 py-2 text-xs"
-                >
-                  <span className="w-8 font-bold">{pos}</span>
-                  <span className="flex-1 text-muted-foreground">
-                    ______________________
-                  </span>
-                </div>
-              ))}
-            </div>
-          ))}
+        <div className="flex items-baseline justify-between gap-4 border-b border-foreground/40 pb-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Brisbane Budgies Netball Club Trials 2027
+            </p>
+            <p className="font-display text-lg font-extrabold">
+              Under 15 · {game.name}
+            </p>
+          </div>
+          <div className="text-right text-[10px] uppercase tracking-widest text-muted-foreground">
+            <p>Selector: _________________________</p>
+            <p className="mt-1">Date: _________________</p>
+          </div>
         </div>
-        <div className="mt-6 border-t border-foreground/40 pt-4 text-xs text-muted-foreground">
-          <p>Selector name: __________________________________</p>
-          <p className="mt-2">Signature / date: ___________________________</p>
+
+        <div className="mt-4 grid grid-cols-2 gap-4 text-center text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p>{teamA.label}</p>
+          <p>{teamB.label}</p>
+        </div>
+
+        <div className="mt-2 divide-y divide-foreground/30 border border-foreground/30">
+          {teamA.lineup.map((leftPlayer, idx) => {
+            const rightPlayer = teamBReversed[idx];
+            return (
+              <div
+                key={`row-${idx}`}
+                className="grid grid-cols-2 divide-x divide-foreground/30"
+              >
+                {[leftPlayer, rightPlayer].map((p, side) => (
+                  <div
+                    key={`${side}-${p.position}`}
+                    className="min-h-24 px-3 py-2 text-xs"
+                  >
+                    <div className="flex items-center gap-2 border-b border-dashed border-foreground/20 pb-1">
+                      <span className="inline-flex min-w-9 justify-center rounded border border-foreground/50 px-1.5 py-0.5 text-[10px] font-bold">
+                        {p.position}
+                      </span>
+                      <span className="font-semibold">{p.name}</span>
+                    </div>
+                    <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Notes
+                    </p>
+                    <div className="mt-1 space-y-3">
+                      <div className="h-4 border-b border-dotted border-foreground/40" />
+                      <div className="h-4 border-b border-dotted border-foreground/40" />
+                      <div className="h-4 border-b border-dotted border-foreground/40" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 rounded border border-foreground/30 p-3 text-xs">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Overall observations · match-ups to flag
+          </p>
+          <div className="mt-2 space-y-3">
+            <div className="h-4 border-b border-dotted border-foreground/40" />
+            <div className="h-4 border-b border-dotted border-foreground/40" />
+            <div className="h-4 border-b border-dotted border-foreground/40" />
+          </div>
         </div>
       </div>
+
+      <p className="mt-3 text-[11px] italic text-muted-foreground">
+        The download produces one of these pages per game across every age
+        group (Game 1, Game 2, and the two blank selector games).
+      </p>
     </div>
   );
 }
