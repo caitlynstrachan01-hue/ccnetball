@@ -3,36 +3,50 @@ export type Position =
 
 export const ALL_POSITIONS: Position[] = ["GS", "GA", "WA", "C", "WD", "GD", "GK"];
 
+export type TrialSession = {
+  date: string;
+  ageGroup: string;
+  timeSlot: string;
+};
+
 export type SampleTrial = {
   name: string;
   club: string;
-  date: string;
   venue: string;
   courts: number;
-  ageGroup: string;
-  maxPlayers: number;
+  ageGroups: string[];
+  days: 1 | 2 | 3;
+  schedule: TrialSession[];
+  /** Number of teams to be selected per age group, or 'all' to include every attending player. */
+  teamsToSelect: number | "all";
   feePerParticipant: number;
   additionalFees: { label: string; amount: number }[];
-  feeAbsorbedByClub: boolean;
+  /** If true, the association is invoiced after trials for participant × fee. */
+  associationPaysFees: boolean;
   shareUrl: string;
 };
 
 export const SAMPLE_TRIAL: SampleTrial = {
-  name: "2027 Under-15 Rep Trials",
+  name: "2027 Rep Trials",
   club: "Underwood Netball Association",
-  date: "Wednesday 3 Feb 2027, 5:30 pm – 8:00 pm",
   venue: "Nissen Arena",
   courts: 1,
-  ageGroup: "Under 15",
-  maxPlayers: 32,
+  ageGroups: ["Under 13", "Under 15", "Under 17"],
+  days: 3,
+  schedule: [
+    { date: "Wednesday 3 Feb 2027",  ageGroup: "Under 13", timeSlot: "5:30 pm – 7:00 pm" },
+    { date: "Wednesday 10 Feb 2027", ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm" },
+    { date: "Wednesday 17 Feb 2027", ageGroup: "Under 17", timeSlot: "5:30 pm – 7:00 pm" },
+  ],
+  teamsToSelect: 3,
   feePerParticipant: 2.2,
   additionalFees: [
     { label: "Independent selectors", amount: 4 },
     { label: "Umpires", amount: 3 },
     { label: "Court hire", amount: 2 },
   ],
-  feeAbsorbedByClub: false,
-  shareUrl: "ccnetball.com/trials/underwood-u15-2027",
+  associationPaysFees: false,
+  shareUrl: "ccnetball.com/trials/underwood-2027",
 };
 
 export type SamplePlayer = {
@@ -41,31 +55,29 @@ export type SamplePlayer = {
   club: string;
   positions: Position[];
   attended: boolean;
-  rating?: number; // 1–5, filled by selectors on the night
-  notes?: string;
 };
 
 export const SAMPLE_PLAYERS: SamplePlayer[] = [
-  { name: "Amelia Chen",       age: 14, club: "Underwood",   positions: ["GS", "GA"],  attended: true,  rating: 5, notes: "Composed under pressure, high shooting %." },
-  { name: "Sophie Nguyen",     age: 14, club: "Underwood",   positions: ["GA", "WA"],  attended: true,  rating: 4 },
-  { name: "Isla Martin",       age: 15, club: "Sunnybank",   positions: ["WA", "C"],   attended: true,  rating: 5, notes: "Strong court vision, great feed timing." },
-  { name: "Charlotte Reilly",  age: 14, club: "Beenleigh",   positions: ["C", "WD"],   attended: true,  rating: 4 },
-  { name: "Mia Anderson",      age: 15, club: "Underwood",   positions: ["WD", "GD"],  attended: true,  rating: 4, notes: "Consistent defensive pressure." },
-  { name: "Grace Davies",      age: 14, club: "MacGregor",   positions: ["GD", "GK"],  attended: true,  rating: 5 },
-  { name: "Ruby Patel",        age: 14, club: "Sunnybank",   positions: ["GK", "GD"],  attended: true,  rating: 4 },
-  { name: "Olivia Smith",      age: 15, club: "Underwood",   positions: ["GS"],        attended: true,  rating: 3 },
-  { name: "Emma Wilson",       age: 14, club: "Beenleigh",   positions: ["GA", "WA"],  attended: true,  rating: 4 },
-  { name: "Zoe Bailey",        age: 14, club: "Underwood",   positions: ["WA", "C"],   attended: true,  rating: 3 },
-  { name: "Chloe Henderson",   age: 15, club: "MacGregor",   positions: ["C"],         attended: true,  rating: 4 },
-  { name: "Hannah Costa",      age: 14, club: "Underwood",   positions: ["WD"],        attended: true,  rating: 3 },
-  { name: "Layla Barros",      age: 15, club: "Sunnybank",   positions: ["GD", "WD"],  attended: true,  rating: 4 },
-  { name: "Ava Thompson",      age: 14, club: "Underwood",   positions: ["GK"],        attended: true,  rating: 3 },
-  { name: "Poppy Walsh",       age: 15, club: "Beenleigh",   positions: ["GS", "GA"],  attended: false, notes: "Illness — deferred to Week 2 trial." },
-  { name: "Freya O'Brien",     age: 14, club: "MacGregor",   positions: ["WA"],        attended: true,  rating: 3 },
-  { name: "Bella Rodriguez",   age: 14, club: "Underwood",   positions: ["C", "WA"],   attended: true,  rating: 4 },
-  { name: "Willow Tanaka",     age: 15, club: "Sunnybank",   positions: ["WD", "C"],   attended: true,  rating: 3 },
-  { name: "Elsie Papadopoulos",age: 14, club: "Underwood",   positions: ["GD"],        attended: true,  rating: 3 },
-  { name: "Harper Singh",      age: 15, club: "Beenleigh",   positions: ["GK", "GD"],  attended: true,  rating: 4 },
+  { name: "Amelia Chen",        age: 14, club: "Underwood",  positions: ["GS", "GA"],  attended: true  },
+  { name: "Sophie Nguyen",      age: 14, club: "Underwood",  positions: ["GA", "WA"],  attended: true  },
+  { name: "Isla Martin",        age: 15, club: "Sunnybank",  positions: ["WA", "C"],   attended: true  },
+  { name: "Charlotte Reilly",   age: 14, club: "Beenleigh",  positions: ["C", "WD"],   attended: true  },
+  { name: "Mia Anderson",       age: 15, club: "Underwood",  positions: ["WD", "GD"],  attended: true  },
+  { name: "Grace Davies",       age: 14, club: "MacGregor",  positions: ["GD", "GK"],  attended: true  },
+  { name: "Ruby Patel",         age: 14, club: "Sunnybank",  positions: ["GK", "GD"],  attended: true  },
+  { name: "Olivia Smith",       age: 15, club: "Underwood",  positions: ["GS"],        attended: true  },
+  { name: "Emma Wilson",        age: 14, club: "Beenleigh",  positions: ["GA", "WA"],  attended: true  },
+  { name: "Zoe Bailey",         age: 14, club: "Underwood",  positions: ["WA", "C"],   attended: true  },
+  { name: "Chloe Henderson",    age: 15, club: "MacGregor",  positions: ["C"],         attended: true  },
+  { name: "Hannah Costa",       age: 14, club: "Underwood",  positions: ["WD"],        attended: true  },
+  { name: "Layla Barros",       age: 15, club: "Sunnybank",  positions: ["GD", "WD"],  attended: true  },
+  { name: "Ava Thompson",       age: 14, club: "Underwood",  positions: ["GK"],        attended: true  },
+  { name: "Poppy Walsh",        age: 15, club: "Beenleigh",  positions: ["GS", "GA"],  attended: false },
+  { name: "Freya O'Brien",      age: 14, club: "MacGregor",  positions: ["WA"],        attended: true  },
+  { name: "Bella Rodriguez",    age: 14, club: "Underwood",  positions: ["C", "WA"],   attended: true  },
+  { name: "Willow Tanaka",      age: 15, club: "Sunnybank",  positions: ["WD", "C"],   attended: true  },
+  { name: "Elsie Papadopoulos", age: 14, club: "Underwood",  positions: ["GD"],        attended: true  },
+  { name: "Harper Singh",       age: 15, club: "Beenleigh",  positions: ["GK", "GD"],  attended: true  },
 ];
 
 export type SampleGameTeam = {
