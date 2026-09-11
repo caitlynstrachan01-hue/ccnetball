@@ -32,23 +32,23 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     slug: "drills-library",
     name: "Netball Drills Library",
     short:
-      "A growing library of elite netball drills and skills, organised by focus area — new drills added regularly.",
+      "A growing library of 200+ elite netball drills and skills — with a new shooting drill added every month.",
     description:
-      "Every drill is designed and filmed by Caitlyn — the same work she uses with junior athletes, club squads, rep programs and coaches. Videos are grouped into focus areas — attacking movement, defending, team drills and more — and ordered so you can move through a category in the sequence Caitlyn recommends. When you're watching one drill, the next drills in the same focus area appear alongside so you can build a whole session in one sitting.",
+      "Every drill is designed and filmed by Caitlyn — the same work she uses with junior athletes, club squads, rep programs and coaches. Videos are grouped into focus areas — attacking movement, defending, team drills and more — and ordered so you can move through a category in the sequence Caitlyn recommends. When you're watching one drill, the next drills in the same focus area appear alongside so you can build a whole session in one sitting. A new shooting drill is added to the library every month.",
     features: [
-      "Growing library across every focus area",
+      "200+ drills across every focus area",
       "Every drill filmed and coached by Caitlyn",
       "Videos ordered inside each category",
       "Suggestions from the same category while watching",
-      "New drills added regularly",
+      "New shooting drill added every month",
       "Cancel any time",
     ],
     price: "$49 AUD per month",
     pricingNote:
       "Rolling monthly subscription — cancel any time from your account.",
     highlights: [
-      "170+ Drills / Skills",
-      "Drills Added Regularly",
+      "200+ Drills / Skills",
+      "New Shooting Drill Monthly",
       "All Focus Areas",
       "Cancel Anytime",
     ],

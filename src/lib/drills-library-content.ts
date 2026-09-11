@@ -164,6 +164,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "shooting",
     name: "Shooting",
     short: "From base technique through to contested shots.",
+    displayCount: "15",
     drills: [
       { slug: "base-technique", title: "Base shooting technique", durationMinutes: 10, level: "Beginner", focus: "Technique" },
       { slug: "movement-in-circle", title: "Movement in the circle", durationMinutes: 11, level: "Intermediate", focus: "Circle movement" },
@@ -176,6 +177,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "recovery",
     name: "Recovery",
     short: "Cool-downs, mobility and recovery routines to finish the session.",
+    displayCount: "15",
     drills: [
       { slug: "static-stretches", title: "Static stretch routine", durationMinutes: 8, level: "Beginner", focus: "Flexibility" },
       { slug: "recovery-breathing", title: "Recovery breathing", durationMinutes: 5, level: "Beginner", focus: "Nervous system" },
