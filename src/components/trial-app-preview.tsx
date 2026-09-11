@@ -12,7 +12,6 @@ import {
   MapPin,
   Printer,
   Send,
-  Share2,
   Sparkles,
   UserCheck,
   Users,
@@ -465,12 +464,6 @@ function RegistrationsStep({
                 <Copy className="size-3.5" /> Copy link
               </>
             )}
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
-          >
-            <Share2 className="size-3.5" /> Send to clubs
           </button>
         </div>
       </div>
