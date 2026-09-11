@@ -108,7 +108,7 @@ export default function DrillsLibraryPage() {
               What&apos;s inside
             </p>
             <h2 className="mt-3 font-display text-3xl font-bold tracking-tight md:text-4xl">
-              200+ drills across{" "}
+              170+ drills across{" "}
               <span className="gradient-text">
                 {DRILL_CATEGORIES.length} focus areas
               </span>

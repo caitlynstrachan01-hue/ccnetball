@@ -31,6 +31,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "warm-up",
     name: "Warm-Up",
     short: "Prime the body for high-quality training — no ball required.",
+    displayCount: "42",
     drills: [
       { slug: "pre-activation", title: "Pre-activation", durationMinutes: 6, level: "Beginner", focus: "Activation" },
       { slug: "movement-pattern-1", title: "Movement pattern #1", durationMinutes: 5, level: "Beginner", focus: "Movement prep" },
@@ -49,6 +50,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "ball-work",
     name: "Ball Work",
     short: "Dynamic drills, position-specific work, and a team or half-court finisher.",
+    displayCount: "25",
     drills: [
       { slug: "dynamic-pass-and-move", title: "Dynamic pass and move", durationMinutes: 10, level: "Beginner", focus: "Ball movement" },
       { slug: "landing-and-pass", title: "Landing and pass on the move", durationMinutes: 9, level: "Intermediate", focus: "Ball movement" },
@@ -63,6 +65,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "footwork",
     name: "Footwork",
     short: "The foundation everything else is built on.",
+    displayCount: "19",
     drills: [
       { slug: "landing-technique", title: "Landing technique", durationMinutes: 8, level: "Beginner", focus: "Landings" },
       { slug: "change-of-direction", title: "Change of direction", durationMinutes: 10, level: "Intermediate", focus: "Agility" },
@@ -75,7 +78,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "attacking-drills",
     name: "Attacking Drills",
     short: "Leads, re-offers, and pressure attacks.",
-    displayCount: "50+",
+    displayCount: "20",
     drills: [
       {
         slug: "split-leads",
@@ -111,7 +114,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "defending-drills",
     name: "Defending Drills",
     short: "One-on-one work through to reading the intercept.",
-    displayCount: "50+",
+    displayCount: "20",
     drills: [
       { slug: "1on1-early-skill-learning", title: "1on1 defence — early skill learning", durationMinutes: 8, level: "Beginner", focus: "Fundamentals" },
       { slug: "intercept-timing-beginners", title: "Intercept — timing for beginners", durationMinutes: 8, level: "Beginner", focus: "Timing" },
@@ -124,6 +127,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "attack-centre-pass",
     name: "Attack Centre Pass Structures",
     short: "Structures for when your team has the centre pass.",
+    displayCount: "15",
     drills: [
       { slug: "basic-cp-entry", title: "Basic centre pass entry", durationMinutes: 10, level: "Beginner", focus: "Set plays" },
       { slug: "two-way-cp-split", title: "Two-way centre pass split", durationMinutes: 11, level: "Intermediate", focus: "Set plays" },
@@ -135,11 +139,25 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     slug: "defence-centre-pass",
     name: "Defence Centre Pass Structures",
     short: "Structures for when the opposition has the centre pass.",
+    displayCount: "12",
     drills: [
       { slug: "match-up-cp-defence", title: "Match-up centre pass defence", durationMinutes: 10, level: "Beginner", focus: "Team defence" },
       { slug: "zone-press-cp", title: "Zone press on centre pass", durationMinutes: 12, level: "Intermediate", focus: "Team defence" },
       { slug: "defending-the-wa", title: "Defending the WA", durationMinutes: 10, level: "Intermediate", focus: "One-on-one" },
       { slug: "reading-second-phase", title: "Reading second-phase movement", durationMinutes: 12, level: "Advanced", focus: "Reading play" },
+    ],
+  },
+  {
+    slug: "team-drills",
+    name: "Team Drills",
+    short: "Whole-squad drills to run at training.",
+    displayCount: "17",
+    drills: [
+      { slug: "windmill", title: "Windmill", durationMinutes: 12, level: "Intermediate", focus: "Whole team" },
+      { slug: "clover", title: "Clover", durationMinutes: 12, level: "Intermediate", focus: "Whole team" },
+      { slug: "milk-shake", title: "Milk Shake", durationMinutes: 10, level: "Intermediate", focus: "Whole team" },
+      { slug: "6-point-drill", title: "6 Point Drill", durationMinutes: 14, level: "Advanced", focus: "Whole team" },
+      { slug: "3-person-weave-with-defence", title: "3-Person Weave with Defence", durationMinutes: 12, level: "Advanced", focus: "Whole team" },
     ],
   },
 ];

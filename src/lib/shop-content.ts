@@ -47,7 +47,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     pricingNote:
       "Rolling monthly subscription — cancel any time from your account.",
     highlights: [
-      "200+ Drills / Skills",
+      "170+ Drills / Skills",
       "Drills Added Regularly",
       "All Focus Areas",
       "Cancel Anytime",
