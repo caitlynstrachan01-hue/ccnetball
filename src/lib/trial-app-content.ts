@@ -103,9 +103,9 @@ export const SAMPLE_GAMES: SampleGame[] = [
         lineup: [
           { position: "GS", name: "Amelia Chen" },
           { position: "GA", name: "Sophie Nguyen" },
-          { position: "WA", name: "Isla Martin" },
+          { position: "WA", name: "Hannah Costa" },     // out of position (prefers WD)
           { position: "C",  name: "Charlotte Reilly" },
-          { position: "WD", name: "Hannah Costa" },
+          { position: "WD", name: "Isla Martin" },      // out of position (prefers WA/C)
           { position: "GD", name: "Grace Davies" },
           { position: "GK", name: "Ava Thompson" },
         ],

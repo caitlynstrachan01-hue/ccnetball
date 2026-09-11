@@ -2,17 +2,20 @@
 
 import { useState } from "react";
 import {
+  AlertTriangle,
   ArrowRight,
   Check,
   ClipboardList,
   Copy,
   Download,
   MapPin,
+  Printer,
   Send,
   Share2,
   Sparkles,
   UserCheck,
   Users,
+  Zap,
 } from "lucide-react";
 import {
   SAMPLE_GAMES,
@@ -65,10 +68,68 @@ export function TrialAppPreview() {
     setTimeout(() => setCopied(false), 1600);
   }
 
+  function handlePrint() {
+    if (typeof window !== "undefined") window.print();
+  }
+
+  function handleExportCsv() {
+    const header = ["Name", "Age", "Club", "Preferred positions", "Attended"];
+    const rows = players.map((p) => [
+      p.name,
+      String(p.age),
+      p.club,
+      p.positions.join(";"),
+      p.attended ? "Yes" : "No",
+    ]);
+    const csv = [header, ...rows]
+      .map((r) =>
+        r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+      )
+      .join("\n");
+    if (typeof window !== "undefined") {
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${SAMPLE_TRIAL.name.toLowerCase().replace(/\s+/g, "-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function goToStep(next: StepKey) {
+    setStep(next);
+  }
+
   const currentIndex = STEPS.findIndex((s) => s.key === step);
 
   return (
     <div className="rounded-3xl border border-border/70 bg-card p-4 md:p-6">
+      {/* EXPORT / PRINT BAR */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/60 bg-muted/40 px-4 py-3">
+        <p className="text-xs text-muted-foreground">
+          Every screen exports and prints for your association.
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
+          >
+            <Download className="size-3.5" /> Export CSV
+          </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
+          >
+            <Printer className="size-3.5" /> Print
+          </button>
+        </div>
+      </div>
+
       {/* STEPPER */}
       <div className="overflow-x-auto">
         <div className="flex min-w-max gap-2 p-1">
@@ -111,6 +172,7 @@ export function TrialAppPreview() {
             players={players}
             attendedCount={attendedCount}
             onToggle={toggleAttendance}
+            onPopulate={() => goToStep("teams")}
           />
         )}
         {step === "teams" && <TeamsStep />}
@@ -150,6 +212,13 @@ export function TrialAppPreview() {
           Next <ArrowRight className="size-3.5" />
         </button>
       </div>
+
+      {/* DATA RETENTION FOOTER */}
+      <p className="mt-4 rounded-xl bg-muted/40 px-4 py-3 text-[11px] italic text-muted-foreground">
+        Participant data is stored securely for the trial and is permanently
+        deleted 1 month after the last trial day. Exports and prints are yours
+        to keep.
+      </p>
     </div>
   );
 }
@@ -477,68 +546,157 @@ function AttendanceStep({
   players,
   attendedCount,
   onToggle,
+  onPopulate,
 }: {
   players: SamplePlayer[];
   attendedCount: number;
   onToggle: (index: number) => void;
+  onPopulate: () => void;
 }) {
+  const days = SAMPLE_TRIAL.schedule;
+  const [dayIndex, setDayIndex] = useState(
+    Math.min(1, days.length - 1), // default to Under 15 day for the demo
+  );
+  const activeDay = days[dayIndex];
+  const isDemoDay = activeDay.ageGroup === "Under 15";
+
   return (
     <div>
       <StepHeading
         eyebrow="Step 3"
-        title="Tick players in as they arrive"
-        blurb="Open this on your phone at the courts — one tap per player. When you're ready, generate the teams."
+        title="Attendance registry — day by day"
+        blurb="Open the registry on your phone at the courts. If the trial runs across several days, tick players in for each day separately."
       />
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <MetricCard label="Attending" value={attendedCount.toString()} />
-        <MetricCard
-          label="No-shows"
-          value={(players.length - attendedCount).toString()}
-        />
-        <MetricCard label="Total registered" value={players.length.toString()} />
-      </div>
-
-      <ul className="mt-6 grid gap-2 sm:grid-cols-2">
-        {players.map((p, i) => (
-          <li key={p.name}>
-            <button
-              type="button"
-              onClick={() => onToggle(i)}
-              className={
-                p.attended
-                  ? "flex w-full items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary/5 px-4 py-3 text-left transition"
-                  : "flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-4 py-3 text-left transition hover:bg-muted"
-              }
-            >
-              <div className="flex items-center gap-3">
+      {/* Day tabs */}
+      {days.length > 1 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {days.map((s, i) => {
+            const active = i === dayIndex;
+            return (
+              <button
+                key={`${s.date}-${s.ageGroup}`}
+                type="button"
+                onClick={() => setDayIndex(i)}
+                className={
+                  active
+                    ? "inline-flex flex-col items-start gap-0.5 rounded-2xl bg-primary px-4 py-2 text-left text-xs font-semibold text-primary-foreground"
+                    : "inline-flex flex-col items-start gap-0.5 rounded-2xl border border-border/70 bg-background px-4 py-2 text-left text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+                }
+              >
+                <span className="text-[11px] uppercase tracking-[0.18em] opacity-90">
+                  Day {i + 1} · {s.ageGroup}
+                </span>
                 <span
                   className={
-                    p.attended
-                      ? "flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                      : "flex size-8 items-center justify-center rounded-full border border-border/70 bg-background text-muted-foreground"
+                    active ? "text-[11px] opacity-90" : "text-[11px] text-muted-foreground"
                   }
                 >
-                  {p.attended ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <span className="text-xs font-bold">{i + 1}</span>
-                  )}
+                  {s.date.replace(", 2027", "")}
                 </span>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {p.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Age {p.age} · {p.club}
-                  </p>
-                </div>
-              </div>
-              <PositionsChips positions={p.positions} compact />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="mt-4 rounded-2xl border border-border/70 bg-muted/30 px-4 py-3 text-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+          {activeDay.ageGroup} · {activeDay.date}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Time slot: <strong>{activeDay.timeSlot}</strong> · Venue:{" "}
+          <strong>{SAMPLE_TRIAL.venue}</strong>
+        </p>
+      </div>
+
+      {isDemoDay ? (
+        <>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <MetricCard label="Attending" value={attendedCount.toString()} />
+            <MetricCard
+              label="No-shows"
+              value={(players.length - attendedCount).toString()}
+            />
+            <MetricCard
+              label="Registered for this day"
+              value={players.length.toString()}
+            />
+          </div>
+
+          <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+            {players.map((p, i) => (
+              <li key={p.name}>
+                <button
+                  type="button"
+                  onClick={() => onToggle(i)}
+                  className={
+                    p.attended
+                      ? "flex w-full items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary/5 px-4 py-3 text-left transition"
+                      : "flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-4 py-3 text-left transition hover:bg-muted"
+                  }
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={
+                        p.attended
+                          ? "flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                          : "flex size-8 items-center justify-center rounded-full border border-border/70 bg-background text-muted-foreground"
+                      }
+                    >
+                      {p.attended ? (
+                        <Check className="size-4" />
+                      ) : (
+                        <span className="text-xs font-bold">{i + 1}</span>
+                      )}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {p.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Age {p.age} · {p.club}
+                      </p>
+                    </div>
+                  </div>
+                  <PositionsChips positions={p.positions} compact />
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-4">
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                Attendance for {activeDay.ageGroup} locked in.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Hit Populate — the app allocates {activeDay.ageGroup}{" "}
+                games automatically and places players in their two preferred
+                positions.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onPopulate}
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.03]"
+            >
+              <Zap className="size-4" />
+              Populate teams
             </button>
-          </li>
-        ))}
-      </ul>
+          </div>
+        </>
+      ) : (
+        <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-background p-8 text-center">
+          <p className="font-semibold text-foreground">
+            No registrations yet for {activeDay.ageGroup}.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Registrations appear here as players sign up for this age group.
+            Once the trial day starts, tick players in and hit Populate.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -546,73 +704,81 @@ function AttendanceStep({
 // ==========================================================================
 // STEP 4 — Team allocation
 // ==========================================================================
+const BLANK_POSITIONS: Position[] = ["GS", "GA", "WA", "C", "WD", "GD", "GK"];
+
+function isOutOfPosition(
+  playerName: string,
+  assigned: Position,
+): boolean {
+  const player = SAMPLE_PLAYERS.find((p) => p.name === playerName);
+  if (!player) return false;
+  return !player.positions.includes(assigned);
+}
+
 function TeamsStep() {
+  const outOfPositionCount = SAMPLE_GAMES.reduce(
+    (sum, g) =>
+      sum +
+      g.teams.reduce(
+        (t, team) =>
+          t +
+          team.lineup.filter((p) => isOutOfPosition(p.name, p.position))
+            .length,
+        0,
+      ),
+    0,
+  );
+
   return (
     <div>
       <StepHeading
         eyebrow="Step 4"
-        title="Games generated automatically — unbiased and balanced"
-        blurb="Every player is placed in their preferred position. Lineups rotate across games so every attending player gets time on court. Regenerate as often as you like."
+        title="Games populated automatically — unbiased and balanced"
+        blurb="Every player is placed in one of their two preferred positions where possible. Anyone playing out of position is highlighted in red so selectors can see the trade-off. Two blank games sit at the end of each session for you to match specific players head-to-head."
       />
+
+      {/* Rules cheatsheet */}
+      <div className="mt-6 grid gap-3 rounded-2xl border border-border/70 bg-muted/30 p-4 text-xs sm:grid-cols-2">
+        <div>
+          <p className="font-bold text-foreground">Allowed cross-overs</p>
+          <ul className="mt-2 space-y-1 text-muted-foreground">
+            <li>• GA covers WA when short</li>
+            <li>• C or WA covers WD</li>
+            <li>• GD covers WD</li>
+            <li>• A player who picks WA + WD as their two preferred can play C</li>
+          </ul>
+        </div>
+        <div>
+          <p className="font-bold text-foreground">Never allowed</p>
+          <ul className="mt-2 space-y-1 text-muted-foreground">
+            <li>• GK or GD in a shooting position (GS / GA) — too specific</li>
+          </ul>
+          <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-rose-700">
+            <AlertTriangle className="size-3.5" />
+            {outOfPositionCount} out-of-position placement
+            {outOfPositionCount === 1 ? "" : "s"} across the auto games —
+            highlighted below.
+          </p>
+        </div>
+      </div>
+
+      {/* Court time note */}
+      <div className="mt-4 rounded-2xl bg-primary/5 px-4 py-3 text-xs text-foreground/80">
+        <strong className="text-primary">Court time is balanced.</strong>{" "}
+        Because most squads have more midcourters than shooters or defenders,
+        each midcourter usually plays fewer games while shooters and defenders
+        run more. The algorithm rotates midcourters through games so nobody
+        sits out for too long.
+      </div>
 
       <div className="mt-6 space-y-6">
         {SAMPLE_GAMES.map((game) => (
-          <article
-            key={game.name}
-            className="rounded-2xl border border-border/70 bg-background p-5 md:p-6"
-          >
-            <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-4">
-              <p className="font-display text-lg font-bold">{game.name}</p>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                {game.teams[0].lineup.length} vs {game.teams[1].lineup.length}
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {game.teams.map((team) => (
-                <div
-                  key={team.label}
-                  className="rounded-xl bg-muted/40 p-4"
-                >
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                    {team.label}
-                  </p>
-                  <ul className="mt-3 space-y-1.5">
-                    {team.lineup.map((p) => (
-                      <li
-                        key={`${team.label}-${p.position}`}
-                        className="flex items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm"
-                      >
-                        <span className="inline-flex min-w-9 justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                          {p.position}
-                        </span>
-                        <span className="flex-1 font-medium text-foreground">
-                          {p.name}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            {game.bench.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Bench this game:
-                </p>
-                {game.bench.map((name) => (
-                  <span
-                    key={`${game.name}-bench-${name}`}
-                    className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground/80"
-                  >
-                    {name}
-                  </span>
-                ))}
-              </div>
-            )}
-          </article>
+          <GameCard key={game.name} game={game} />
         ))}
+
+        {/* Two blank games for selectors */}
+        <SelectorGameCard label="Selector Game 1 · Blank" />
+        <SelectorGameCard label="Selector Game 2 · Blank" />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -633,6 +799,121 @@ function TeamsStep() {
         </p>
       </div>
     </div>
+  );
+}
+
+function GameCard({ game }: { game: (typeof SAMPLE_GAMES)[number] }) {
+  return (
+    <article className="rounded-2xl border border-border/70 bg-background p-5 md:p-6">
+      <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-4">
+        <p className="font-display text-lg font-bold">{game.name}</p>
+        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+          {game.teams[0].lineup.length} vs {game.teams[1].lineup.length}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {game.teams.map((team) => (
+          <div key={team.label} className="rounded-xl bg-muted/40 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              {team.label}
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {team.lineup.map((p) => {
+                const oop = isOutOfPosition(p.name, p.position);
+                return (
+                  <li
+                    key={`${team.label}-${p.position}`}
+                    className={
+                      oop
+                        ? "flex items-center justify-between gap-3 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-sm"
+                        : "flex items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm"
+                    }
+                  >
+                    <span
+                      className={
+                        oop
+                          ? "inline-flex min-w-9 justify-center rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white"
+                          : "inline-flex min-w-9 justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"
+                      }
+                    >
+                      {p.position}
+                    </span>
+                    <span className="flex-1 font-medium text-foreground">
+                      {p.name}
+                    </span>
+                    {oop && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-700">
+                        <AlertTriangle className="size-3" /> Out of position
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {game.bench.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            Bench this game:
+          </p>
+          {game.bench.map((name) => (
+            <span
+              key={`${game.name}-bench-${name}`}
+              className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground/80"
+            >
+              {name}
+            </span>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function SelectorGameCard({ label }: { label: string }) {
+  return (
+    <article className="rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-5 md:p-6">
+      <div className="flex items-center justify-between gap-2 border-b border-primary/20 pb-4">
+        <div>
+          <p className="font-display text-lg font-bold">{label}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            Selectors fill this one — pick specific match-ups.
+          </p>
+        </div>
+        <span className="rounded-full bg-primary text-primary-foreground px-3 py-1 text-xs font-bold">
+          Selector control
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        {(["Team A", "Team B"] as const).map((label) => (
+          <div key={label} className="rounded-xl bg-background p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              {label}
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {BLANK_POSITIONS.map((pos) => (
+                <li
+                  key={`${label}-${pos}`}
+                  className="flex items-center gap-3 rounded-lg border border-dashed border-border/70 bg-background px-3 py-2 text-sm"
+                >
+                  <span className="inline-flex min-w-9 justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                    {pos}
+                  </span>
+                  <span className="flex-1 text-xs italic text-muted-foreground">
+                    Drag a player in…
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </article>
   );
 }
 

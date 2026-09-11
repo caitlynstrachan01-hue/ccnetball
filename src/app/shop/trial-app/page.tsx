@@ -46,9 +46,9 @@ export default function TrialAppPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
               <Sparkles className="size-3.5" />
-              Preview — full app coming soon
+              Live now
             </div>
           </Reveal>
 
@@ -70,19 +70,25 @@ export default function TrialAppPage() {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                   Pricing
                 </p>
-                <p className="mt-1 font-display text-2xl font-extrabold text-foreground md:text-3xl">
-                  Coming soon
+                <p className="mt-1 font-display text-3xl font-extrabold text-foreground md:text-4xl">
+                  $2.20
+                  <span className="ml-1 text-base font-semibold text-muted-foreground">
+                    per participant
+                  </span>
                 </p>
               </div>
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition disabled:cursor-not-allowed disabled:opacity-70"
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
               >
                 <ShoppingCart className="size-5" />
-                Notify me at launch
-              </button>
+                Set up your trial
+              </Link>
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Pay per participant or invoice the association at the end.
+              Participant data is deleted 1 month after trials finish.
+            </p>
           </Reveal>
         </div>
       </section>
