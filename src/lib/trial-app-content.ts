@@ -7,12 +7,12 @@ export type TrialSession = {
   date: string;
   ageGroup: string;
   timeSlot: string;
+  venue: string;
 };
 
 export type SampleTrial = {
   name: string;
   club: string;
-  venue: string;
   courts: number;
   ageGroups: string[];
   days: number;
@@ -29,14 +29,13 @@ export type SampleTrial = {
 export const SAMPLE_TRIAL: SampleTrial = {
   name: "2027 Rep Trials",
   club: "Underwood Netball Association",
-  venue: "Nissen Arena",
   courts: 1,
   ageGroups: ["Under 13", "Under 15"],
   days: 3,
   schedule: [
-    { date: "Wednesday 3 Feb 2027",  ageGroup: "Under 13", timeSlot: "5:30 pm – 7:00 pm" },
-    { date: "Wednesday 10 Feb 2027", ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm" },
-    { date: "Friday 12 Feb 2027",    ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm" },
+    { date: "Wednesday 3 Feb 2027",  ageGroup: "Under 13", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissen Arena" },
+    { date: "Wednesday 10 Feb 2027", ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm", venue: "Nissen Arena" },
+    { date: "Friday 12 Feb 2027",    ageGroup: "Under 15", timeSlot: "5:30 pm – 7:00 pm", venue: "Beenleigh Sports Centre" },
   ],
   teamsToSelect: 3,
   feePerParticipant: 2.2,

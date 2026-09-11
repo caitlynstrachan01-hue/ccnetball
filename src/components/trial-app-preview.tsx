@@ -242,15 +242,6 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
           <div className="grid gap-4 rounded-2xl border border-border/70 bg-background p-6 sm:grid-cols-2">
             <Field label="Trial name" value={SAMPLE_TRIAL.name} />
             <Field label="Club / Association" value={SAMPLE_TRIAL.club} />
-            <Field
-              label="Venue"
-              value={SAMPLE_TRIAL.venue}
-              icon={<MapPin className="size-4" />}
-            />
-            <Field
-              label="Courts available"
-              value={SAMPLE_TRIAL.courts.toString()}
-            />
             <div className="sm:col-span-2">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Age groups
@@ -277,10 +268,7 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
                   : `${SAMPLE_TRIAL.teamsToSelect} teams`
               }
             />
-            <Field
-              label="Player capacity"
-              value="Unlimited"
-            />
+            <Field label="Player capacity" value="Unlimited" />
           </div>
 
           {/* Schedule */}
@@ -302,24 +290,32 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
             <ul className="mt-4 space-y-2">
               {SAMPLE_TRIAL.schedule.map((s, i) => (
                 <li
-                  key={`${s.date}-${s.ageGroup}`}
-                  className="grid gap-1 rounded-xl bg-muted/40 px-4 py-3 text-sm sm:grid-cols-[auto_1fr_1fr] sm:items-center sm:gap-4"
+                  key={`${s.date}-${s.ageGroup}-${i}`}
+                  className="grid gap-2 rounded-xl bg-muted/40 px-4 py-3 text-sm sm:grid-cols-[auto_1fr_auto] sm:items-start sm:gap-4"
                 >
                   <span className="inline-flex size-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                     {i + 1}
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-semibold text-foreground">{s.date}</p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
                       {s.timeSlot}
                     </p>
+                    <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-foreground/80">
+                      <MapPin className="size-3.5 text-primary" />
+                      {s.venue}
+                    </p>
                   </div>
-                  <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  <span className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary sm:justify-self-end">
                     {s.ageGroup}
                   </span>
                 </li>
               ))}
             </ul>
+            <p className="mt-3 text-[11px] italic text-muted-foreground">
+              Each session sets its own venue — different nights can run at
+              different courts.
+            </p>
           </div>
 
           {/* Fees */}
@@ -549,6 +545,10 @@ function AttendanceStep({
   const activeDay = days[dayIndex];
   const isDemoDay = activeDay.ageGroup === "Under 15";
 
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [slotChoice, setSlotChoice] = useState<"custom" | "fair">("fair");
+  const [customSlots, setCustomSlots] = useState<number>(4);
+
   return (
     <div>
       <StepHeading
@@ -595,7 +595,7 @@ function AttendanceStep({
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
           Time slot: <strong>{activeDay.timeSlot}</strong> · Venue:{" "}
-          <strong>{SAMPLE_TRIAL.venue}</strong>
+          <strong>{activeDay.venue}</strong>
         </p>
       </div>
 
@@ -654,26 +654,145 @@ function AttendanceStep({
             ))}
           </ul>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-4">
-            <div>
-              <p className="text-sm font-bold text-foreground">
-                Attendance for {activeDay.ageGroup} locked in.
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Hit Populate — the app allocates {activeDay.ageGroup}{" "}
-                games automatically and places players in their two preferred
-                positions.
-              </p>
+          {!showPrompt ? (
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-4">
+              <div>
+                <p className="text-sm font-bold text-foreground">
+                  Attendance for {activeDay.ageGroup} locked in.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Hit Populate — the app allocates {activeDay.ageGroup}{" "}
+                  games automatically and places players in their two
+                  preferred positions.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPrompt(true)}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.03]"
+              >
+                <Zap className="size-4" />
+                Populate teams
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={onPopulate}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.03]"
-            >
-              <Zap className="size-4" />
-              Populate teams
-            </button>
-          </div>
+          ) : (
+            <div className="mt-8 rounded-2xl border border-primary/30 bg-primary/5 p-6">
+              <div className="flex items-start gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Zap className="size-4" />
+                </span>
+                <div>
+                  <p className="font-display text-base font-bold text-foreground">
+                    How many time slots are available tonight?
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    This tells the algorithm how many games to build for{" "}
+                    {activeDay.ageGroup} at {activeDay.venue}.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {/* Option 1 — custom */}
+                <label
+                  className={
+                    slotChoice === "custom"
+                      ? "flex cursor-pointer flex-col gap-3 rounded-xl border-2 border-primary bg-background p-4 transition"
+                      : "flex cursor-pointer flex-col gap-3 rounded-xl border-2 border-border/60 bg-background p-4 transition hover:border-primary/40"
+                  }
+                >
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="radio"
+                      name="slotChoice"
+                      value="custom"
+                      checked={slotChoice === "custom"}
+                      onChange={() => setSlotChoice("custom")}
+                      className="mt-0.5 size-4 accent-[var(--brand-raspberry,#c2185b)]"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        Option 1 — Type a specific number
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        You know exactly how many time slots you have on the
+                        courts tonight.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pl-6">
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={customSlots}
+                      onChange={(e) =>
+                        setCustomSlots(Math.max(1, Number(e.target.value) || 1))
+                      }
+                      onFocus={() => setSlotChoice("custom")}
+                      className="w-24 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      time slots
+                    </span>
+                  </div>
+                </label>
+
+                {/* Option 2 — fair rotation */}
+                <label
+                  className={
+                    slotChoice === "fair"
+                      ? "flex cursor-pointer flex-col gap-2 rounded-xl border-2 border-primary bg-background p-4 transition"
+                      : "flex cursor-pointer flex-col gap-2 rounded-xl border-2 border-border/60 bg-background p-4 transition hover:border-primary/40"
+                  }
+                >
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="radio"
+                      name="slotChoice"
+                      value="fair"
+                      checked={slotChoice === "fair"}
+                      onChange={() => setSlotChoice("fair")}
+                      className="mt-0.5 size-4 accent-[var(--brand-raspberry,#c2185b)]"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        Option 2 — Fair rotation
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Enough for every player to play both preferred
+                        positions twice. The app works out the fairest number
+                        for you.
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={onPopulate}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.03]"
+                >
+                  <Zap className="size-4" />
+                  Populate now
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPrompt(false)}
+                  className="rounded-full border border-border/70 bg-background px-5 py-2.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+                >
+                  Back
+                </button>
+                <p className="text-xs text-muted-foreground">
+                  {slotChoice === "custom"
+                    ? `Building ${customSlots} games for tonight.`
+                    : "The app will calculate the fairest number for tonight."}
+                </p>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <div className="mt-6 rounded-2xl border border-dashed border-border/70 bg-background p-8 text-center">
@@ -702,6 +821,50 @@ function isOutOfPosition(
   const player = SAMPLE_PLAYERS.find((p) => p.name === playerName);
   if (!player) return false;
   return !player.positions.includes(assigned);
+}
+
+function exportTeamsCsv(ageGroup: string) {
+  const header = ["Age group", "Game", "Team", "Position", "Player"];
+  const rows: string[][] = [];
+
+  // Auto-populated games from the allocator.
+  for (const game of SAMPLE_GAMES) {
+    for (const team of game.teams) {
+      for (const p of team.lineup) {
+        rows.push([ageGroup, game.name, team.label, p.position, p.name]);
+      }
+    }
+    for (const b of game.bench) {
+      rows.push([ageGroup, game.name, "Bench", "-", b]);
+    }
+  }
+
+  // Two blank forms for selectors — every slot empty for them to fill in.
+  for (const label of ["Selector Game 1 · Blank", "Selector Game 2 · Blank"]) {
+    for (const team of ["Team A", "Team B"]) {
+      for (const pos of BLANK_POSITIONS) {
+        rows.push([ageGroup, label, team, pos, ""]);
+      }
+    }
+  }
+
+  const csv = [header, ...rows]
+    .map((r) =>
+      r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
+    )
+    .join("\n");
+
+  if (typeof window !== "undefined") {
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `team-allocation-${ageGroup.toLowerCase().replace(/\s+/g, "-")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
 }
 
 function TeamsStep() {
@@ -776,10 +939,34 @@ function TeamsStep() {
 
       {isDemoAgeGroup ? (
         <>
-          <p className="mt-4 text-xs text-muted-foreground">
-            Showing games for <strong>{currentAgeGroup}</strong> —{" "}
-            {sessionsInAgeGroup} session{sessionsInAgeGroup === 1 ? "" : "s"}
-            . Team allocations rotate between sessions.
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              Showing games for <strong>{currentAgeGroup}</strong> —{" "}
+              {sessionsInAgeGroup} session{sessionsInAgeGroup === 1 ? "" : "s"}
+              . Team allocations rotate between sessions.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => exportTeamsCsv(currentAgeGroup)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:scale-[1.03]"
+              >
+                <Download className="size-3.5" /> Export teams
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  typeof window !== "undefined" && window.print()
+                }
+                className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
+              >
+                <Printer className="size-3.5" /> Print
+              </button>
+            </div>
+          </div>
+          <p className="mt-1 text-[11px] italic text-muted-foreground">
+            Exports include both auto-populated games <em>and</em> two blank
+            forms for selectors to fill in by hand.
           </p>
 
           {/* Rules cheatsheet */}
