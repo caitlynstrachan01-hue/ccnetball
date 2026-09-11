@@ -25,6 +25,8 @@ export type ShopProduct = {
     | "zap"
     | "compass"
     | "play-circle";
+  /** Temporarily hide from the shop grid. Detail page URL still works. */
+  hidden?: boolean;
 };
 
 export const SHOP_PRODUCTS: ShopProduct[] = [
@@ -143,6 +145,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Game Summary",
     ],
     icon: "target",
+    hidden: true,
   },
   {
     slug: "game-day-tournament",
@@ -169,6 +172,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Game Summary",
     ],
     icon: "zap",
+    hidden: true,
   },
   {
     slug: "campaign-plan",
@@ -191,6 +195,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Coaching Accountability",
     ],
     icon: "compass",
+    hidden: true,
   },
 ];
 
