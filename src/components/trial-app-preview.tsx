@@ -1616,7 +1616,7 @@ function ExportStep({
           <SummaryStat label="Registered" value={players.length.toString()} />
           <SummaryStat label="Attended" value={attendedCount.toString()} />
           <SummaryStat
-            label="Club / Association revenue"
+            label="Association / Club revenue"
             value={`$${clubRevenueTotal.toFixed(2)}`}
           />
           <SummaryStat
@@ -1625,10 +1625,10 @@ function ExportStep({
           />
         </div>
         <p className="mt-4 rounded-lg bg-muted/40 px-4 py-3 text-[11px] text-muted-foreground">
-          <strong className="text-foreground">Club / Association revenue</strong>{" "}
+          <strong className="text-foreground">Association / Club revenue</strong>{" "}
           is the total from your Additional Charges (Independent Selector,
           Umpires, Court hire, Other) across all participants — this goes to
-          the club.{" "}
+          the association or club.{" "}
           <strong className="text-foreground">CC Netball platform fees</strong>{" "}
           is the ${platformFeePerParticipant.toFixed(2)} platform fee per{" "}
           {associationPays ? "attending player" : "registered participant"}.
