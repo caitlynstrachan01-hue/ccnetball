@@ -1923,6 +1923,10 @@ function ExportStep({
   const clubRevenueTotal = players.length * clubAddOnPerParticipant;
   const invoiceable = attendedCount * platformFeePerParticipant;
 
+  const [openPreview, setOpenPreview] = useState<
+    "data" | "sheet" | "invoice" | null
+  >(null);
+
   return (
     <div>
       <StepHeading
@@ -1936,11 +1940,19 @@ function ExportStep({
           title="Full trial data (CSV)"
           hint="Every player, position, attendance and team allocation."
           cta="Download CSV"
+          onPreview={() =>
+            setOpenPreview(openPreview === "data" ? null : "data")
+          }
+          active={openPreview === "data"}
         />
         <ExportCard
           title="Team-building sheet (PDF)"
           hint="One page per age group listing every selected team."
           cta="Download PDF"
+          onPreview={() =>
+            setOpenPreview(openPreview === "sheet" ? null : "sheet")
+          }
+          active={openPreview === "sheet"}
         />
         <ExportCard
           title={
@@ -1954,8 +1966,26 @@ function ExportStep({
               : "Attendance, revenue, no-shows and headline stats."
           }
           cta={associationPays ? "Generate invoice" : "Send email"}
+          onPreview={() =>
+            setOpenPreview(openPreview === "invoice" ? null : "invoice")
+          }
+          active={openPreview === "invoice"}
         />
       </div>
+
+      {openPreview === "data" && (
+        <FullDataPreview players={players} />
+      )}
+      {openPreview === "sheet" && <TeamBuildingSheetPreview />}
+      {openPreview === "invoice" && (
+        <InvoicePreview
+          associationPays={associationPays}
+          attendedCount={attendedCount}
+          registeredCount={players.length}
+          feePerParticipant={platformFeePerParticipant}
+          clubAddOnPerParticipant={clubAddOnPerParticipant}
+        />
+      )}
 
       <div className="mt-6 rounded-2xl border border-border/70 bg-background p-6">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
@@ -2182,24 +2212,278 @@ function ExportCard({
   title,
   hint,
   cta,
+  onPreview,
+  active,
 }: {
   title: string;
   hint: string;
   cta: string;
+  onPreview?: () => void;
+  active?: boolean;
 }) {
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-border/70 bg-background p-5">
+    <div
+      className={
+        active
+          ? "flex h-full flex-col rounded-2xl border-2 border-primary bg-primary/5 p-5"
+          : "flex h-full flex-col rounded-2xl border border-border/70 bg-background p-5"
+      }
+    >
       <p className="font-display text-base font-bold leading-snug">{title}</p>
       <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground">
         {hint}
       </p>
-      <button
-        type="button"
-        className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:scale-[1.03]"
-      >
-        <Download className="size-3.5" />
-        {cta}
-      </button>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:scale-[1.03]"
+        >
+          <Download className="size-3.5" />
+          {cta}
+        </button>
+        {onPreview && (
+          <button
+            type="button"
+            onClick={onPreview}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+          >
+            {active ? "Hide preview" : "Preview"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================================
+// Preview panels — inline sample renders of each export
+// ==========================================================================
+function FullDataPreview({ players }: { players: SamplePlayer[] }) {
+  const previewRows = players.slice(0, 6);
+  return (
+    <div className="mt-4 rounded-2xl border border-border/70 bg-white p-5 text-foreground shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+        Preview — Full trial data (CSV)
+      </p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        First {previewRows.length} of {players.length} rows shown.
+      </p>
+      <div className="mt-4 overflow-x-auto rounded-xl border border-border/60">
+        <table className="w-full min-w-max text-xs">
+          <thead className="bg-muted/50">
+            <tr className="text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+              <th className="px-3 py-2 font-semibold">Name</th>
+              <th className="px-3 py-2 font-semibold">Age</th>
+              <th className="px-3 py-2 font-semibold">Suburb</th>
+              <th className="px-3 py-2 font-semibold">Positions</th>
+              <th className="px-3 py-2 font-semibold">Attended</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/60">
+            {previewRows.map((p) => (
+              <tr key={p.name}>
+                <td className="px-3 py-2 font-semibold text-foreground">
+                  {p.name}
+                </td>
+                <td className="px-3 py-2 text-muted-foreground">{p.age}</td>
+                <td className="px-3 py-2 text-muted-foreground">{p.suburb}</td>
+                <td className="px-3 py-2 text-muted-foreground">
+                  {p.positions.join(";")}
+                </td>
+                <td className="px-3 py-2 text-muted-foreground">
+                  {p.attended ? "Yes" : "No"}
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td
+                colSpan={5}
+                className="px-3 py-2 text-center text-[11px] italic text-muted-foreground"
+              >
+                … {players.length - previewRows.length} more rows in the download.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function TeamBuildingSheetPreview() {
+  const positions: Position[] = ["GS", "GA", "WA", "C", "WD", "GD", "GK"];
+  return (
+    <div className="mt-4 rounded-2xl border border-border/70 bg-white p-6 text-foreground shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+        Preview — Team-building sheet (PDF)
+      </p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        One printable page per age group. Selectors write players into the
+        slots by hand.
+      </p>
+
+      <div className="mt-5 rounded-xl border border-border p-6 font-serif">
+        <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground">
+          Brisbane Budgies Netball Club Trials 2027 — Under 15
+        </p>
+        <p className="mt-1 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
+          Selector team building sheet
+        </p>
+        <div className="mt-6 grid grid-cols-3 gap-6 text-sm">
+          {["Team A", "Team B", "Team C"].map((teamLabel) => (
+            <div key={teamLabel}>
+              <p className="border-b border-foreground/40 pb-1 text-center font-bold uppercase tracking-wider">
+                {teamLabel}
+              </p>
+              {positions.map((pos) => (
+                <div
+                  key={`${teamLabel}-${pos}`}
+                  className="flex items-baseline gap-2 border-b border-dashed border-foreground/30 py-2 text-xs"
+                >
+                  <span className="w-8 font-bold">{pos}</span>
+                  <span className="flex-1 text-muted-foreground">
+                    ______________________
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 border-t border-foreground/40 pt-4 text-xs text-muted-foreground">
+          <p>Selector name: __________________________________</p>
+          <p className="mt-2">Signature / date: ___________________________</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InvoicePreview({
+  associationPays,
+  attendedCount,
+  registeredCount,
+  feePerParticipant,
+  clubAddOnPerParticipant,
+}: {
+  associationPays: boolean;
+  attendedCount: number;
+  registeredCount: number;
+  feePerParticipant: number;
+  clubAddOnPerParticipant: number;
+}) {
+  const paying = associationPays ? attendedCount : registeredCount;
+  const total = paying * feePerParticipant;
+  const clubTotal = registeredCount * clubAddOnPerParticipant;
+  return (
+    <div className="mt-4 rounded-2xl border border-border/70 bg-white p-6 text-foreground shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+        Preview —{" "}
+        {associationPays ? "Invoice (association pays)" : "Committee summary"}
+      </p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {associationPays
+          ? "Auto-generated once trials finish — sent to the association email."
+          : "Quick email PDF for the committee — no invoice generated when participants pay."}
+      </p>
+
+      <div className="mt-5 rounded-xl border border-border p-6 text-sm">
+        <div className="flex items-start justify-between gap-6 border-b border-border pb-4">
+          <div>
+            <p className="font-display text-lg font-extrabold">CC Netball</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              ABN 00 000 000 000 · info.ccnetball@gmail.com
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              {associationPays ? "Tax Invoice" : "Summary"}
+            </p>
+            <p className="mt-1 font-bold">#INV-2027-001</p>
+            <p className="text-[11px] text-muted-foreground">
+              Issued: 12 Feb 2027
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 text-xs sm:grid-cols-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Bill to
+            </p>
+            <p className="mt-1 font-semibold">Brisbane Budgies Netball Club</p>
+            <p className="text-muted-foreground">
+              manager@brisbanebudgies.com.au
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Trial
+            </p>
+            <p className="mt-1 font-semibold">
+              Brisbane Budgies Netball Club Trials 2027
+            </p>
+            <p className="text-muted-foreground">
+              U13 · U15 · 3 sessions across Feb 2027
+            </p>
+          </div>
+        </div>
+
+        <table className="mt-5 w-full text-xs">
+          <thead>
+            <tr className="border-b border-border text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+              <th className="py-2 font-semibold">Description</th>
+              <th className="py-2 text-right font-semibold">Qty</th>
+              <th className="py-2 text-right font-semibold">Rate</th>
+              <th className="py-2 text-right font-semibold">Amount</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/60">
+            <tr>
+              <td className="py-2">CC Netball fees — Trial App</td>
+              <td className="py-2 text-right">{paying}</td>
+              <td className="py-2 text-right">
+                ${feePerParticipant.toFixed(2)}
+              </td>
+              <td className="py-2 text-right font-semibold">
+                ${total.toFixed(2)}
+              </td>
+            </tr>
+            {clubAddOnPerParticipant > 0 && (
+              <tr>
+                <td className="py-2 text-muted-foreground">
+                  Association add-ons (retained by club)
+                </td>
+                <td className="py-2 text-right text-muted-foreground">
+                  {registeredCount}
+                </td>
+                <td className="py-2 text-right text-muted-foreground">
+                  ${clubAddOnPerParticipant.toFixed(2)}
+                </td>
+                <td className="py-2 text-right text-muted-foreground">
+                  ${clubTotal.toFixed(2)}
+                </td>
+              </tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-border">
+              <td colSpan={3} className="py-3 text-right font-bold">
+                Total due to CC Netball (AUD, incl. GST)
+              </td>
+              <td className="py-3 text-right font-display text-base font-extrabold text-primary">
+                ${total.toFixed(2)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        {associationPays && (
+          <div className="mt-4 rounded-lg bg-muted/40 px-4 py-3 text-[11px] text-muted-foreground">
+            Payment terms: 14 days from issue. Bank: BSB 000-000 · Acct
+            000000. Reference: INV-2027-001.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
