@@ -468,19 +468,11 @@ function RegistrationsStep({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <MetricCard label="Registered" value={players.length.toString()} />
         <MetricCard
           label="Age groups"
           value={SAMPLE_TRIAL.ageGroups.length.toString()}
-        />
-        <MetricCard
-          label={
-            SAMPLE_TRIAL.associationPaysFees
-              ? "Invoiceable so far"
-              : "Fees collected"
-          }
-          value={`$${(players.length * (SAMPLE_TRIAL.feePerParticipant + SAMPLE_TRIAL.additionalFees.reduce((s, f) => s + f.amount, 0))).toFixed(2)}`}
         />
       </div>
 
