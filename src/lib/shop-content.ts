@@ -78,7 +78,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: "$2.20 AUD per participant",
     pricingNote:
-      "Pay per participant at registration, or tick 'Association pays platform fees' and get one invoice at the end of trials.",
+      "Pay per participant at registration, or tick 'Association pays CC Netball fees' and get one invoice at the end of trials.",
     highlights: ["Netball Trials", "Club & Rep Teams", "Unbiased Population"],
     icon: "clipboard-list",
   },

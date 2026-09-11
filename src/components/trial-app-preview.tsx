@@ -317,7 +317,7 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
                     </span>
                   </p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    CC Netball — platform fee
+                    CC Netball fees
                   </p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
@@ -387,7 +387,7 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
 
             <div className="mt-6 space-y-2 border-t border-white/20 pt-5 text-sm">
               <MiniLine
-                label="CC Netball platform fee"
+                label="CC Netball fees"
                 value={`$${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}`}
               />
               {SAMPLE_TRIAL.additionalFees.map((f) => (
@@ -1579,7 +1579,7 @@ function ExportStep({
       <StepHeading
         eyebrow="Step 6"
         title="Save everything or send it on"
-        blurb="Download the raw data, print the team-building sheet for selectors, and — if the association picked up the platform fees — generate the invoice."
+        blurb="Download the raw data, print the team-building sheet for selectors, and — if the association picked up the CC Netball fees — generate the invoice."
       />
 
       <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -1620,7 +1620,7 @@ function ExportStep({
             value={`$${clubRevenueTotal.toFixed(2)}`}
           />
           <SummaryStat
-            label="CC Netball platform fees"
+            label="CC Netball fees"
             value={`$${platformFeesTotal.toFixed(2)}`}
           />
         </div>
@@ -1629,8 +1629,8 @@ function ExportStep({
           is the total from your Additional Charges (Independent Selector,
           Umpires, Court hire, Other) across all participants — this goes to
           the association or club.{" "}
-          <strong className="text-foreground">CC Netball platform fees</strong>{" "}
-          is the ${platformFeePerParticipant.toFixed(2)} platform fee per{" "}
+          <strong className="text-foreground">CC Netball fees</strong>{" "}
+          is the ${platformFeePerParticipant.toFixed(2)} CC Netball fee per{" "}
           {associationPays ? "attending player" : "registered participant"}.
         </p>
       </div>
