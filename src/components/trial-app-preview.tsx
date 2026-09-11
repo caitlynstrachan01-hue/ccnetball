@@ -17,8 +17,8 @@ import {
   Users,
 } from "lucide-react";
 import {
+  SAMPLE_GAMES,
   SAMPLE_PLAYERS,
-  SAMPLE_TEAMS,
   SAMPLE_TRIAL,
   type SamplePlayer,
   type Position,
@@ -193,16 +193,21 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
               value={SAMPLE_TRIAL.courts.toString()}
             />
             <Field
-              label="Fee per participant"
-              value={`$${SAMPLE_TRIAL.feePerParticipant}.00`}
+              label="CC Netball fee (per participant)"
+              value={`$${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}`}
             />
           </div>
 
           <div className="mt-5 rounded-2xl border border-border/70 bg-background p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              Add-on fees
+              Association add-ons (optional)
             </p>
-            <ul className="mt-3 space-y-2">
+            <p className="mt-2 text-xs text-muted-foreground">
+              Add any extras your club or association wants to pass on —
+              independent selectors, umpires, court hire, or anything else.
+              Leave the section blank to only charge the CC Netball fee.
+            </p>
+            <ul className="mt-4 space-y-2">
               {SAMPLE_TRIAL.additionalFees.map((f) => (
                 <li
                   key={f.label}
@@ -235,9 +240,16 @@ function CreateTrialStep({ totalFee }: { totalFee: number }) {
             </p>
 
             <div className="mt-6 space-y-2 border-t border-white/20 pt-5 text-sm">
-              <MiniLine label="Trial fee" value={`$${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}`} />
+              <MiniLine
+                label="CC Netball fee"
+                value={`$${SAMPLE_TRIAL.feePerParticipant.toFixed(2)}`}
+              />
               {SAMPLE_TRIAL.additionalFees.map((f) => (
-                <MiniLine key={f.label} label={f.label} value={`+$${f.amount.toFixed(2)}`} />
+                <MiniLine
+                  key={f.label}
+                  label={f.label}
+                  value={`+$${f.amount.toFixed(2)}`}
+                />
               ))}
             </div>
           </div>
@@ -425,35 +437,66 @@ function TeamsStep() {
     <div>
       <StepHeading
         eyebrow="Step 4"
-        title="Teams generated automatically — unbiased and balanced"
-        blurb="Every player is placed in their preferred position. Teams are balanced by attendance count. Regenerate as often as you like."
+        title="Games generated automatically — unbiased and balanced"
+        blurb="Every player is placed in their preferred position. Lineups rotate across games so every attending player gets time on court. Regenerate as often as you like."
       />
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        {SAMPLE_TEAMS.map((team) => (
+      <div className="mt-6 space-y-6">
+        {SAMPLE_GAMES.map((game) => (
           <article
-            key={team.name}
-            className="rounded-2xl border border-border/70 bg-background p-5"
+            key={game.name}
+            className="rounded-2xl border border-border/70 bg-background p-5 md:p-6"
           >
-            <div className="flex items-center justify-between gap-2">
-              <p className="font-display text-base font-bold">{team.name}</p>
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                {team.players.length} players
+            <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-4">
+              <p className="font-display text-lg font-bold">{game.name}</p>
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                {game.teams[0].lineup.length} vs {game.teams[1].lineup.length}
               </span>
             </div>
-            <ul className="mt-3 space-y-1.5">
-              {team.players.map((p) => (
-                <li
-                  key={p.name}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm"
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {game.teams.map((team) => (
+                <div
+                  key={team.label}
+                  className="rounded-xl bg-muted/40 p-4"
                 >
-                  <span className="font-medium text-foreground">{p.name}</span>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                    {p.position}
-                  </span>
-                </li>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                    {team.label}
+                  </p>
+                  <ul className="mt-3 space-y-1.5">
+                    {team.lineup.map((p) => (
+                      <li
+                        key={`${team.label}-${p.position}`}
+                        className="flex items-center justify-between gap-3 rounded-lg bg-background px-3 py-2 text-sm"
+                      >
+                        <span className="inline-flex min-w-9 justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                          {p.position}
+                        </span>
+                        <span className="flex-1 font-medium text-foreground">
+                          {p.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
+
+            {game.bench.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/60 pt-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Bench this game:
+                </p>
+                {game.bench.map((name) => (
+                  <span
+                    key={`${game.name}-bench-${name}`}
+                    className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground/80"
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            )}
           </article>
         ))}
       </div>
@@ -463,7 +506,7 @@ function TeamsStep() {
           type="button"
           className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:scale-[1.03]"
         >
-          Regenerate teams
+          Regenerate games
         </button>
         <button
           type="button"

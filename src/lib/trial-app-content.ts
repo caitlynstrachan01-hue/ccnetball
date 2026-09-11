@@ -21,11 +21,11 @@ export const SAMPLE_TRIAL: SampleTrial = {
   name: "2027 Under-15 Rep Trials",
   club: "Underwood Netball Association",
   date: "Wednesday 3 Feb 2027, 5:30 pm – 8:00 pm",
-  venue: "Underwood Netball Complex — Court 1 & 2",
-  courts: 2,
+  venue: "Nissen Arena",
+  courts: 1,
   ageGroup: "Under 15",
   maxPlayers: 32,
-  feePerParticipant: 15,
+  feePerParticipant: 2.2,
   additionalFees: [
     { label: "Independent selectors", amount: 4 },
     { label: "Umpires", amount: 3 },
@@ -68,46 +68,91 @@ export const SAMPLE_PLAYERS: SamplePlayer[] = [
   { name: "Harper Singh",      age: 15, club: "Beenleigh",   positions: ["GK", "GD"],  attended: true,  rating: 4 },
 ];
 
-export type SampleTeam = {
-  name: string;
-  players: { name: string; position: Position }[];
+export type SampleGameTeam = {
+  label: "Team A" | "Team B";
+  lineup: { position: Position; name: string }[];
 };
 
-// Populated by the mock allocator — one team per court, balanced by position.
-export const SAMPLE_TEAMS: SampleTeam[] = [
+export type SampleGame = {
+  name: string;
+  teams: SampleGameTeam[];
+  bench: string[];
+};
+
+// Populated by the mock allocator — each game has two 7-a-side lineups
+// listed goal shooter through to goalkeeper. Players rotate across games
+// so every attending player gets time on court.
+export const SAMPLE_GAMES: SampleGame[] = [
   {
-    name: "Team A — Court 1",
-    players: [
-      { name: "Amelia Chen",         position: "GS" },
-      { name: "Emma Wilson",         position: "GA" },
-      { name: "Isla Martin",         position: "WA" },
-      { name: "Charlotte Reilly",    position: "C" },
-      { name: "Hannah Costa",        position: "WD" },
-      { name: "Grace Davies",        position: "GD" },
-      { name: "Ava Thompson",        position: "GK" },
+    name: "Game 1",
+    teams: [
+      {
+        label: "Team A",
+        lineup: [
+          { position: "GS", name: "Amelia Chen" },
+          { position: "GA", name: "Sophie Nguyen" },
+          { position: "WA", name: "Isla Martin" },
+          { position: "C",  name: "Charlotte Reilly" },
+          { position: "WD", name: "Hannah Costa" },
+          { position: "GD", name: "Grace Davies" },
+          { position: "GK", name: "Ava Thompson" },
+        ],
+      },
+      {
+        label: "Team B",
+        lineup: [
+          { position: "GS", name: "Olivia Smith" },
+          { position: "GA", name: "Emma Wilson" },
+          { position: "WA", name: "Freya O'Brien" },
+          { position: "C",  name: "Chloe Henderson" },
+          { position: "WD", name: "Mia Anderson" },
+          { position: "GD", name: "Elsie Papadopoulos" },
+          { position: "GK", name: "Ruby Patel" },
+        ],
+      },
+    ],
+    bench: [
+      "Zoe Bailey",
+      "Bella Rodriguez",
+      "Willow Tanaka",
+      "Layla Barros",
+      "Harper Singh",
     ],
   },
   {
-    name: "Team B — Court 1",
-    players: [
-      { name: "Sophie Nguyen",       position: "GS" },
-      { name: "Olivia Smith",        position: "GA" },
-      { name: "Freya O'Brien",       position: "WA" },
-      { name: "Chloe Henderson",     position: "C" },
-      { name: "Mia Anderson",        position: "WD" },
-      { name: "Elsie Papadopoulos",  position: "GD" },
-      { name: "Ruby Patel",          position: "GK" },
+    name: "Game 2",
+    teams: [
+      {
+        label: "Team A",
+        lineup: [
+          { position: "GS", name: "Olivia Smith" },
+          { position: "GA", name: "Emma Wilson" },
+          { position: "WA", name: "Zoe Bailey" },
+          { position: "C",  name: "Chloe Henderson" },
+          { position: "WD", name: "Mia Anderson" },
+          { position: "GD", name: "Layla Barros" },
+          { position: "GK", name: "Ruby Patel" },
+        ],
+      },
+      {
+        label: "Team B",
+        lineup: [
+          { position: "GS", name: "Amelia Chen" },
+          { position: "GA", name: "Sophie Nguyen" },
+          { position: "WA", name: "Bella Rodriguez" },
+          { position: "C",  name: "Isla Martin" },
+          { position: "WD", name: "Willow Tanaka" },
+          { position: "GD", name: "Harper Singh" },
+          { position: "GK", name: "Grace Davies" },
+        ],
+      },
     ],
-  },
-  {
-    name: "Team C — Court 2",
-    players: [
-      { name: "Zoe Bailey",          position: "GS" },
-      { name: "Bella Rodriguez",     position: "GA" },
-      { name: "Willow Tanaka",       position: "WA" },
-      { name: "Layla Barros",        position: "C" },
-      { name: "Harper Singh",        position: "WD" },
-      // spares
+    bench: [
+      "Charlotte Reilly",
+      "Hannah Costa",
+      "Ava Thompson",
+      "Freya O'Brien",
+      "Elsie Papadopoulos",
     ],
   },
 ];
