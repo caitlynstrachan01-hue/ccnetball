@@ -4,6 +4,16 @@ export type Drill = {
   durationMinutes: number;
   level: "Beginner" | "Intermediate" | "Advanced";
   focus: string;
+  /** Optional written description shown under the video. */
+  description?: string;
+  /** Bullet list — how to make the drill easier. */
+  makeItEasier?: string[];
+  /** Bullet list — how to make the drill harder. */
+  makeItHarder?: string[];
+  /** Bullet list — alternate ways to run the drill. */
+  variations?: string[];
+  /** Optional uploaded video URL. */
+  videoUrl?: string;
 };
 
 export type DrillCategory = {
@@ -67,7 +77,30 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     short: "Leads, re-offers, and pressure attacks.",
     displayCount: "50+",
     drills: [
-      { slug: "split-leads", title: "Split leads — reading the player in front", durationMinutes: 10, level: "Intermediate", focus: "Leads" },
+      {
+        slug: "split-leads",
+        title: "Split leads — reading the player in front",
+        durationMinutes: 10,
+        level: "Intermediate",
+        focus: "Leads",
+        description:
+          "The split lead teaches attackers to read the defender in front and drive away from them into space. Set up a passer at the transverse line and a defender-attacker pair 5m out. On the athlete's first move, they take a hard split — right or left — based on the defender's weight and angle. The pass is delivered to the space, not the athlete.",
+        makeItEasier: [
+          "Slow the passer's release so the athlete has more time to read the lead",
+          "Have the defender show a clear preferred side so the read is obvious",
+          "Reduce the space to a smaller square so decisions are simpler",
+        ],
+        makeItHarder: [
+          "Add a live defender who can genuinely contest the pass",
+          "Shrink the time the athlete has to commit to a direction",
+          "Require the athlete to re-offer if the first lead is shut down",
+        ],
+        variations: [
+          "Run the split off a body dodge instead of a stationary start",
+          "Pair with a second attacker for a two-way split",
+          "Progress to a 2v2 with a shooter and a feed on the circle edge",
+        ],
+      },
       { slug: "art-of-re-offering", title: "The art of re-offering", durationMinutes: 9, level: "Intermediate", focus: "Movement" },
       { slug: "circle-edge-movement", title: "Circle edge movement", durationMinutes: 10, level: "Intermediate", focus: "Circle work" },
       { slug: "two-way-splits", title: "Two-way splits", durationMinutes: 9, level: "Intermediate", focus: "Space creation" },
