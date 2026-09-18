@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Send, CheckCircle2, CreditCard, ArrowRight } from "lucide-react";
+import { Send, CheckCircle2, CreditCard, ArrowRight, CalendarDays } from "lucide-react";
 import {
   PROGRAM_ORDER,
   PROGRAM_PAYMENTS,
   type ProgramId,
 } from "@/lib/stripe-links";
+import { CLINICS, CLINIC_ORDER, isClinicId, type ClinicId } from "@/lib/clinics";
 import { PROGRAMS } from "@/lib/site-content";
 
 const HIDDEN_PROGRAM_IDS = new Set(
@@ -17,10 +18,9 @@ const VISIBLE_PROGRAM_ORDER = PROGRAM_ORDER.filter(
   (id) => !HIDDEN_PROGRAM_IDS.has(id),
 );
 
-type DoneState = {
-  programId: ProgramId;
-  athleteName: string;
-};
+type DoneState =
+  | { kind: "program"; programId: ProgramId; athleteName: string }
+  | { kind: "clinic"; clinicId: ClinicId; athleteName: string };
 
 export function BookingForm() {
   const [submitting, setSubmitting] = useState(false);
@@ -28,12 +28,15 @@ export function BookingForm() {
   const [error, setError] = useState<string | null>(null);
   const [program, setProgram] = useState<string>("");
 
-  // Pre-select the program from the URL (?program=1on1) when the page loads.
+  // Pre-select the program or clinic from the URL (?program=1on1) when the page loads.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get("program");
-    if (fromUrl && VISIBLE_PROGRAM_ORDER.includes(fromUrl as ProgramId)) {
+    if (!fromUrl) return;
+    if (VISIBLE_PROGRAM_ORDER.includes(fromUrl as ProgramId)) {
+      setProgram(fromUrl);
+    } else if (isClinicId(fromUrl)) {
       setProgram(fromUrl);
     }
   }, []);
@@ -48,7 +51,7 @@ export function BookingForm() {
     payload.photoConsent = formData.get("photoConsent") === "on";
     payload.termsAccepted = formData.get("termsAccepted") === "on";
 
-    const programId = String(formData.get("program") || "") as ProgramId;
+    const selection = String(formData.get("program") || "");
     const athleteName = String(formData.get("athleteName") || "");
 
     try {
@@ -58,7 +61,15 @@ export function BookingForm() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Submission failed");
-      setDone({ programId, athleteName });
+      if (isClinicId(selection)) {
+        setDone({ kind: "clinic", clinicId: selection, athleteName });
+      } else {
+        setDone({
+          kind: "program",
+          programId: selection as ProgramId,
+          athleteName,
+        });
+      }
     } catch {
       setError("Something went wrong. Please email us instead.");
     } finally {
@@ -67,6 +78,34 @@ export function BookingForm() {
   }
 
   if (done) {
+    if (done.kind === "clinic") {
+      const clinic = CLINICS[done.clinicId];
+      const calUrl = `https://cal.com/ccnetball/${clinic.calSlug}`;
+      return (
+        <div className="rounded-3xl border border-border/70 bg-card p-10 text-center md:p-12">
+          <CheckCircle2 className="mx-auto size-14 text-primary" />
+          <h3 className="mt-4 font-display text-2xl font-bold md:text-3xl">
+            Registration submitted
+          </h3>
+          <p className="mx-auto mt-3 max-w-md text-muted-foreground">
+            One more step — pick a date and time for your{" "}
+            <strong>{clinic.label}</strong> on the calendar. Payment is
+            collected at booking, and the spot is confirmed straight away.
+          </p>
+          <a
+            href={calUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
+          >
+            <CalendarDays className="size-5" />
+            Pick a time on the calendar
+            <ArrowRight className="size-4" />
+          </a>
+        </div>
+      );
+    }
+
     const program = PROGRAM_PAYMENTS[done.programId];
     const payNow = program?.payOnBooking;
 
@@ -113,22 +152,34 @@ export function BookingForm() {
       onSubmit={handleSubmit}
       className="rounded-3xl border border-border/70 bg-card p-8 md:p-10"
     >
-      <SectionHeading title="Program" />
+      <SectionHeading title="Program or clinic" />
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        Online Mentoring sessions require payment at booking. All other sessions
-        are paid once Caitlyn confirms your time and location.
+        Online Mentoring and Clinics require payment at booking. All other
+        programs are paid once Caitlyn confirms your time and location.
       </p>
       <div className="mt-5">
         <SelectField
-          label="Which program are you booking?"
+          label="What are you booking?"
           name="program"
           required
           value={program}
           onChange={setProgram}
-          options={VISIBLE_PROGRAM_ORDER.map((id) => ({
-            value: id,
-            label: PROGRAM_PAYMENTS[id].label,
-          }))}
+          groups={[
+            {
+              label: "Programs",
+              options: VISIBLE_PROGRAM_ORDER.map((id) => ({
+                value: id,
+                label: PROGRAM_PAYMENTS[id].label,
+              })),
+            },
+            {
+              label: "Clinics",
+              options: CLINIC_ORDER.map((id) => ({
+                value: id,
+                label: CLINICS[id].label,
+              })),
+            },
+          ]}
         />
       </div>
 
@@ -267,17 +318,22 @@ function Field({
   );
 }
 
+type SelectOption = { value: string; label: string };
+type SelectGroup = { label: string; options: SelectOption[] };
+
 function SelectField({
   label,
   name,
   options,
+  groups,
   required = false,
   value,
   onChange,
 }: {
   label: string;
   name: string;
-  options: { value: string; label: string }[];
+  options?: SelectOption[];
+  groups?: SelectGroup[];
   required?: boolean;
   value?: string;
   onChange?: (v: string) => void;
@@ -298,13 +354,23 @@ function SelectField({
         className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
         <option value="" disabled>
-          Choose a program
+          Choose an option
         </option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
+        {groups
+          ? groups.map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))
+          : options?.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
       </select>
     </label>
   );

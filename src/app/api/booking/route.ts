@@ -47,6 +47,12 @@ export async function POST(request: Request) {
     "video-analysis": "Video Game Analysis ($200 AUD — paid at booking)",
     online: "Online Mentoring ($160 AUD — paid at booking)",
     "coach-the-coaches": "Coach the Coaches ($80 AUD per coach, min 4 — pay on confirmation)",
+    "ballina-u10-u12": "CLINIC — Ballina School Holiday Clinic U10-U12 (paid via Cal.com at booking)",
+    "ballina-u13-u15": "CLINIC — Ballina School Holiday Clinic U13-U15 (paid via Cal.com at booking)",
+    "coffs-u10-u12": "CLINIC — Coffs Harbour School Holiday Clinic U10-U12 (paid via Cal.com at booking)",
+    "coffs-u13-u15": "CLINIC — Coffs Harbour School Holiday Clinic U13-U15 (paid via Cal.com at booking)",
+    "innisfail-u10-u12": "CLINIC — Innisfail Netball Clinic U10-U12 (paid via Cal.com at booking)",
+    "innisfail-u13-u16": "CLINIC — Innisfail Netball Clinic U13-U16 (paid via Cal.com at booking)",
   };
   const programLabel = PROGRAM_LABELS[String(program)] || String(program);
 
