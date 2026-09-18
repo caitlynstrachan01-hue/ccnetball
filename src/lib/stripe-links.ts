@@ -24,7 +24,7 @@ export const PROGRAM_PAYMENTS: Record<ProgramId, ProgramPayment> = {
     payOnBooking: false,
   },
   team: {
-    label: "Team Training — $250 AUD",
+    label: "Team Training — $300 AUD per hour",
     paymentUrl: "https://buy.stripe.com/6oU4gyaah5Lf1g9fW97AI02",
     payOnBooking: false,
   },

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const PROGRAM_LABELS: Record<string, string> = {
     "1on1": "1-on-1 / 2-on-1 Training ($160 AUD — pay on confirmation)",
     "small-group": "Small Group Training ($60 AUD per athlete — pay on confirmation)",
-    team: "Team Training ($250 AUD — pay on confirmation)",
+    team: "Team Training ($300 AUD per hour — pay on confirmation)",
     "video-analysis": "Video Game Analysis ($200 AUD — paid at booking)",
     online: "Online Mentoring ($160 AUD — paid at booking)",
     "coach-the-coaches": "Coach the Coaches ($80 AUD per coach, min 4 — pay on confirmation)",

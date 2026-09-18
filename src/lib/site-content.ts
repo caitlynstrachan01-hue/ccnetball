@@ -192,8 +192,8 @@ export const PROGRAMS: Program[] = [
     short: "Install the structures elite teams use.",
     description:
       "Whole squad coaching covering attacking plays, defensive systems, and the team patterns Caitlyn ran with the Vixens and Firebirds, adapted to your group. Includes pre-session planning with the head coach.",
-    price: 250,
-    unit: "AUD per session",
+    price: 300,
+    unit: "AUD per hour",
     durationMinutes: 60,
     capacity: "Up to 12 athletes",
     bestFor: "Club teams, school squads, rep programs",
