@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Check,
   ChevronRight,
@@ -61,6 +61,7 @@ export function DrillsLibraryAdmin() {
     DRILL_CATEGORIES[0].drills[0].slug,
   );
   const [savedFlash, setSavedFlash] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const category = useMemo<DrillCategory>(
     () =>
@@ -122,6 +123,14 @@ export function DrillsLibraryAdmin() {
     setTimeout(() => setSavedFlash(false), 1800);
   }
 
+  // On phones the drill list sits above the editor, so jump down to it.
+  function selectDrill(slug: string) {
+    setDrillSlug(slug);
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   function selectCategory(slug: string) {
     setCategorySlug(slug);
     const cat = DRILL_CATEGORIES.find((c) => c.slug === slug);
@@ -170,7 +179,7 @@ export function DrillsLibraryAdmin() {
                 <li key={d.slug}>
                   <button
                     type="button"
-                    onClick={() => setDrillSlug(d.slug)}
+                    onClick={() => selectDrill(d.slug)}
                     className={
                       active
                         ? "flex w-full items-center gap-3 rounded-xl bg-primary/10 px-3 py-2.5 text-left transition"
@@ -222,7 +231,7 @@ export function DrillsLibraryAdmin() {
       </aside>
 
       {/* RIGHT — edit form */}
-      <div className="lg:col-span-8">
+      <div ref={editorRef} className="scroll-mt-24 lg:col-span-8">
         <div className="rounded-2xl border border-border/70 bg-card p-6 md:p-8">
           {/* Video upload area */}
           <div className="flex items-start justify-between gap-4">
