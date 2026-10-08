@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-import { STRIPE_PRICE_IDS } from "@/lib/stripe-config";
+import {
+  DRILLS_LIBRARY_CHECKOUT_OPEN,
+  STRIPE_PRICE_IDS,
+} from "@/lib/stripe-config";
 
 export async function POST(request: Request) {
+  if (!DRILLS_LIBRARY_CHECKOUT_OPEN) {
+    return NextResponse.json(
+      { error: "Subscriptions open soon." },
+      { status: 503 },
+    );
+  }
+
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) {
     return NextResponse.json(

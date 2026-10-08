@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { DRILLS_LIBRARY_CHECKOUT_OPEN } from "@/lib/stripe-config";
 
 type Props = {
   className?: string;
@@ -47,6 +48,22 @@ export function SubscribeButton({ className, label = "Subscribe" }: Props) {
       );
       setBusy(false);
     }
+  }
+
+  if (!DRILLS_LIBRARY_CHECKOUT_OPEN) {
+    return (
+      <button
+        type="button"
+        disabled
+        className={
+          className ??
+          "inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 disabled:cursor-not-allowed disabled:opacity-60"
+        }
+      >
+        <ShoppingCart className="size-5" />
+        Subscriptions open soon
+      </button>
+    );
   }
 
   return (
