@@ -125,7 +125,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "attack-centre-pass",
-    name: "Attack Centre Pass Structures",
+    name: "Centre Pass - Attack",
     short: "Structures for when your team has the centre pass.",
     displayCount: "15",
     drills: [
@@ -137,7 +137,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "defence-centre-pass",
-    name: "Defence Centre Pass Structures",
+    name: "Centre Pass - Defence",
     short: "Structures for when the opposition has the centre pass.",
     displayCount: "12",
     drills: [
