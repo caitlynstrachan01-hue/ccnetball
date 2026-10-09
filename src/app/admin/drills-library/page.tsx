@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Reveal } from "@/components/motion";
 import { DrillsLibraryAdmin } from "@/components/drills-library-admin";
+import { bunnyConfig } from "@/lib/bunny.server";
 import { loadDrillCategories } from "@/lib/drills-store.server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -46,7 +47,10 @@ export default async function DrillsLibraryAdminPage() {
         </Reveal>
 
         <Reveal delay={0.1} className="mt-8">
-          <DrillsLibraryAdmin categories={categories} />
+          <DrillsLibraryAdmin
+            categories={categories}
+            videoHost={bunnyConfig() ? "bunny" : "supabase"}
+          />
         </Reveal>
       </div>
     </section>

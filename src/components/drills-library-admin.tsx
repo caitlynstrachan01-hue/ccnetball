@@ -26,7 +26,12 @@ import {
   type DrillCategory,
   type SessionSlotId,
 } from "@/lib/drills-library-content";
-import { DRILL_VIDEO_BUCKET } from "@/lib/drills-store";
+import * as tus from "tus-js-client";
+import {
+  BUNNY_PREFIX,
+  DRILL_VIDEO_BUCKET,
+  isEmbedUrl,
+} from "@/lib/drills-store";
 import { createClient } from "@/lib/supabase/client";
 
 type EditableDrill = Drill & {
@@ -96,14 +101,67 @@ function stamp() {
   return Date.now().toString(36);
 }
 
+/**
+ * Send a video straight from the browser to Bunny Stream. The upload is
+ * resumable, so a patchy phone connection doesn't lose progress.
+ */
+async function uploadToBunny(
+  file: File,
+  title: string,
+  onProgress: (percent: number) => void,
+): Promise<string> {
+  const res = await fetch("/api/admin/drill-video", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  const ticket = await res.json();
+  if (!res.ok) throw new Error(ticket.error ?? "Couldn't start the upload.");
+
+  await new Promise<void>((resolve, reject) => {
+    const upload = new tus.Upload(file, {
+      endpoint: "https://video.bunnycdn.com/tusupload",
+      retryDelays: [0, 3000, 5000, 10000, 20000, 60000],
+      chunkSize: 25 * 1024 * 1024,
+      headers: {
+        AuthorizationSignature: ticket.signature,
+        AuthorizationExpire: String(ticket.expire),
+        VideoId: ticket.videoId,
+        LibraryId: String(ticket.libraryId),
+      },
+      metadata: { filetype: file.type || "video/mp4", title },
+      onProgress: (sent, total) => onProgress(Math.round((sent / total) * 100)),
+      onError: reject,
+      onSuccess: () => resolve(),
+    });
+    upload.start();
+  });
+  return ticket.videoId as string;
+}
+
+async function removeOldVideo(path: string) {
+  if (path.startsWith(BUNNY_PREFIX)) {
+    await fetch("/api/admin/drill-video", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ videoId: path.slice(BUNNY_PREFIX.length) }),
+    });
+  } else {
+    await createClient().storage.from(DRILL_VIDEO_BUCKET).remove([path]);
+  }
+}
+
 function normaliseTag(raw: string) {
   return raw.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 export function DrillsLibraryAdmin({
   categories,
+  videoHost,
 }: {
   categories: DrillCategory[];
+  /** Where new uploads go — Bunny Stream once it's configured. */
+  videoHost: "bunny" | "supabase";
 }) {
   const [library, setLibrary] = useState<Library>(() =>
     buildInitialLibrary(categories),
@@ -117,6 +175,7 @@ export function DrillsLibraryAdmin({
   // Videos picked but not yet uploaded, keyed by "category/drill".
   const [pendingVideos, setPendingVideos] = useState<Record<string, File>>({});
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
+  const [notice, setNotice] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState("");
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -215,7 +274,22 @@ export function DrillsLibraryAdmin({
     const previousPath = drill.videoPath;
     let videoPath = previousPath;
 
-    if (pendingVideo) {
+    setNotice(null);
+    if (pendingVideo && videoHost === "bunny") {
+      setSaveState({ status: "saving", message: "Uploading video… 0%" });
+      try {
+        const videoId = await uploadToBunny(pendingVideo, drill.title, (pct) =>
+          setSaveState({ status: "saving", message: `Uploading video… ${pct}%` }),
+        );
+        videoPath = `${BUNNY_PREFIX}${videoId}`;
+      } catch (e) {
+        setSaveState({
+          status: "error",
+          message: friendlyError(e instanceof Error ? e.message : String(e)),
+        });
+        return;
+      }
+    } else if (pendingVideo) {
       setSaveState({ status: "saving", message: "Uploading video…" });
       const ext = pendingVideo.name.split(".").pop()?.toLowerCase() || "mp4";
       videoPath = `${categorySlug}/${drill.slug}-${stamp()}.${ext}`;
@@ -269,7 +343,12 @@ export function DrillsLibraryAdmin({
 
     // Replaced video — tidy up the old file so storage doesn't fill up.
     if (pendingVideo && previousPath && previousPath !== videoPath) {
-      await supabase.storage.from(DRILL_VIDEO_BUCKET).remove([previousPath]);
+      await removeOldVideo(previousPath).catch(() => {});
+    }
+    if (pendingVideo && videoHost === "bunny") {
+      setNotice(
+        "Video uploaded. Bunny is preparing it for streaming — members can watch it in a few minutes.",
+      );
     }
 
     updateDrill({ videoPath, unsaved: false });
@@ -340,6 +419,7 @@ export function DrillsLibraryAdmin({
   function selectDrill(slug: string) {
     setDrillSlug(slug);
     setSaveState({ status: "idle" });
+    setNotice(null);
     setTagDraft("");
     if (window.matchMedia("(max-width: 1023px)").matches) {
       editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -494,6 +574,11 @@ export function DrillsLibraryAdmin({
                   {saveState.message}
                 </p>
               )}
+              {notice && (
+                <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                  {notice}
+                </p>
+              )}
               {pendingVideo && saveState.status !== "error" && (
                 <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
                   New video picked — press <strong>Save drill</strong> to upload
@@ -504,7 +589,15 @@ export function DrillsLibraryAdmin({
               {/* Video */}
               <div className="mt-6">
                 <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-muted">
-                  {drill.videoUrl ? (
+                  {isEmbedUrl(drill.videoUrl) ? (
+                    <iframe
+                      src={drill.videoUrl}
+                      title={drill.title}
+                      allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 h-full w-full border-0"
+                    />
+                  ) : drill.videoUrl ? (
                     <video
                       src={drill.videoUrl}
                       controls
@@ -531,7 +624,9 @@ export function DrillsLibraryAdmin({
                         {drill.videoUrl ? "Replace video" : "Upload video"}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        MP4, MOV or WebM · up to 50MB on the current plan
+                        {videoHost === "bunny"
+                          ? "MP4, MOV or WebM · any size — big phone videos are fine"
+                          : "MP4, MOV or WebM · up to 50MB on the current plan"}
                       </span>
                     </span>
                   </span>

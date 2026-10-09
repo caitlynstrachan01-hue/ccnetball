@@ -1,5 +1,7 @@
 import type { DrillCategory } from "@/lib/drills-library-content";
+import { bunnyEmbedUrl } from "@/lib/bunny.server";
 import {
+  BUNNY_PREFIX,
   DRILL_ROW_COLUMNS,
   DRILL_VIDEO_BUCKET,
   mergeDrills,
@@ -38,11 +40,19 @@ async function loadFromDatabase(
   if (error) throw error;
   const drillRows: DrillRow[] = rows ?? [];
 
+  const videoUrls: Record<string, string> = {};
+  for (const r of drillRows) {
+    if (r.video_path?.startsWith(BUNNY_PREFIX)) {
+      const url = bunnyEmbedUrl(r.video_path.slice(BUNNY_PREFIX.length), SIGNED_URL_TTL);
+      if (url) videoUrls[r.video_path] = url;
+    }
+  }
+
+  // Older uploads that went to Supabase Storage.
   const paths = drillRows
     .map((r) => r.video_path)
-    .filter((p): p is string => Boolean(p));
+    .filter((p): p is string => !!p && !p.startsWith(BUNNY_PREFIX));
 
-  const videoUrls: Record<string, string> = {};
   if (paths.length) {
     const { data: signed } = await admin.storage
       .from(DRILL_VIDEO_BUCKET)

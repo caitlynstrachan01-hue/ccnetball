@@ -10,6 +10,14 @@ import {
 
 export const DRILL_VIDEO_BUCKET = "drill-videos";
 
+/** video_path prefix for videos hosted on Bunny Stream. */
+export const BUNNY_PREFIX = "bunny:";
+
+/** Bunny videos play in Bunny's player iframe rather than a <video> tag. */
+export function isEmbedUrl(url: string | undefined) {
+  return Boolean(url?.startsWith("https://iframe.mediadelivery.net/"));
+}
+
 /** A row from the public.drills table. */
 export type DrillRow = {
   category_slug: string;

@@ -16,6 +16,7 @@ import {
   type Drill,
   type DrillCategory,
 } from "@/lib/drills-library-content";
+import { isEmbedUrl } from "@/lib/drills-store";
 
 export function DrillsLibraryPreview({
   categories: allCategories = DRILL_CATEGORIES,
@@ -111,7 +112,19 @@ export function DrillsLibraryPreview({
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Video player mockup */}
         <div className="lg:col-span-8">
-          {activeDrill.videoUrl ? (
+          {isEmbedUrl(activeDrill.videoUrl) ? (
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
+              <iframe
+                key={activeDrill.videoUrl}
+                src={activeDrill.videoUrl}
+                title={activeDrill.title}
+                loading="lazy"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full border-0"
+              />
+            </div>
+          ) : activeDrill.videoUrl ? (
             <video
               key={activeDrill.videoUrl}
               src={activeDrill.videoUrl}
