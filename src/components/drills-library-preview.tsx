@@ -10,32 +10,88 @@ import {
   Target as TargetIcon,
 } from "lucide-react";
 import {
+  AGE_GROUPS,
   DRILL_CATEGORIES,
+  type AgeGroupId,
   type Drill,
   type DrillCategory,
 } from "@/lib/drills-library-content";
 
 export function DrillsLibraryPreview({
-  categories = DRILL_CATEGORIES,
+  categories: allCategories = DRILL_CATEGORIES,
+  initialDrill,
 }: {
   categories?: DrillCategory[];
+  /** "category/drill" to open first, e.g. from a session plan link. */
+  initialDrill?: string;
 }) {
+  const [ageFilter, setAgeFilter] = useState<AgeGroupId | "all">("all");
+
+  // Drills with no age groups set yet show for every age group.
+  const categories = useMemo(
+    () =>
+      allCategories
+        .map((c) => ({
+          ...c,
+          drills: c.drills.filter(
+            (d) =>
+              ageFilter === "all" ||
+              !d.ageGroups?.length ||
+              d.ageGroups.includes(ageFilter),
+          ),
+        }))
+        .filter((c) => c.drills.length > 0),
+    [allCategories, ageFilter],
+  );
+
+  const [initialCat, initialSlug] = (initialDrill ?? "").split("/");
   const [categorySlug, setCategorySlug] = useState<string>(
-    categories[0].slug,
+    initialCat || categories[0]?.slug,
   );
-  const [drillSlug, setDrillSlug] = useState<string>(
-    categories[0].drills[0].slug,
-  );
-
-  const category = useMemo<DrillCategory>(
-    () => categories.find((c) => c.slug === categorySlug) ?? categories[0],
-    [categories, categorySlug],
+  const [drillSlug, setDrillSlug] = useState<string | undefined>(
+    initialSlug || categories[0]?.drills[0]?.slug,
   );
 
-  const activeDrill = useMemo<Drill>(
-    () => category.drills.find((d) => d.slug === drillSlug) ?? category.drills[0],
-    [category, drillSlug],
+  const category = categories.find((c) => c.slug === categorySlug) ?? categories[0];
+  const activeDrill: Drill | undefined =
+    category?.drills.find((d) => d.slug === drillSlug) ?? category?.drills[0];
+
+  const ageFilterBar = (
+    <div className="mb-6 flex flex-wrap items-center gap-2">
+      <span className="mr-1 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        Age group
+      </span>
+      {[{ id: "all" as const, label: "All", range: "" }, ...AGE_GROUPS].map((a) => {
+        const active = ageFilter === a.id;
+        return (
+          <button
+            key={a.id}
+            type="button"
+            onClick={() => setAgeFilter(a.id)}
+            className={
+              active
+                ? "rounded-full bg-foreground px-3 py-1.5 text-xs font-semibold text-background"
+                : "rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40"
+            }
+          >
+            {a.label}
+            {a.range && <span className="ml-1 opacity-70">{a.range}</span>}
+          </button>
+        );
+      })}
+    </div>
   );
+
+  if (!category || !activeDrill) {
+    return (
+      <div className="rounded-3xl border border-border/70 bg-card p-4 md:p-6">
+        {ageFilterBar}
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          No drills for this age group yet.
+        </p>
+      </div>
+    );
+  }
 
   const drillIndex = category.drills.findIndex((d) => d.slug === activeDrill.slug);
   const upNextInCategory = category.drills.filter(
@@ -50,6 +106,7 @@ export function DrillsLibraryPreview({
 
   return (
     <div className="rounded-3xl border border-border/70 bg-card p-4 md:p-6">
+      {ageFilterBar}
       {/* PLAYER + UP-NEXT */}
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Video player mockup */}
@@ -112,14 +169,64 @@ export function DrillsLibraryPreview({
                 Video {drillIndex + 1} of {category.displayCount ?? category.drills.length}
               </span>
             </div>
+            {(activeDrill.ageGroups?.length || activeDrill.tags?.length) ? (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {AGE_GROUPS.filter((a) => activeDrill.ageGroups?.includes(a.id)).map((a) => (
+                  <span
+                    key={a.id}
+                    className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/80"
+                  >
+                    {a.label} {a.range}
+                  </span>
+                ))}
+                {activeDrill.tags?.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary"
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             {activeDrill.description && (
               <p className="mt-4 text-sm leading-relaxed text-foreground/90">
                 {activeDrill.description}
               </p>
             )}
-            <DrillList title="Make it easier" items={activeDrill.makeItEasier} />
-            <DrillList title="Make it harder" items={activeDrill.makeItHarder} />
-            <DrillList title="Variations" items={activeDrill.variations} />
+            {(activeDrill.equipment || activeDrill.groupSize) && (
+              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                {activeDrill.equipment && (
+                  <div className="rounded-xl bg-muted/50 px-4 py-3">
+                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                      Equipment
+                    </dt>
+                    <dd className="mt-1 text-sm text-foreground/90">{activeDrill.equipment}</dd>
+                  </div>
+                )}
+                {activeDrill.groupSize && (
+                  <div className="rounded-xl bg-muted/50 px-4 py-3">
+                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                      Group size
+                    </dt>
+                    <dd className="mt-1 text-sm text-foreground/90">{activeDrill.groupSize}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+            <DrillList title="Drill variations" items={activeDrill.variations} />
+            <DrillList title="How to make it harder" items={activeDrill.makeItHarder} />
+            <DrillList title="How to make it easier" items={activeDrill.makeItEasier} />
+            {AGE_GROUPS.filter((a) => activeDrill.ageNotes?.[a.id]).map((a) => (
+              <div key={a.id} className="mt-5">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                  {a.label} ({a.range}) execution
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/90">
+                  {activeDrill.ageNotes?.[a.id]}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 

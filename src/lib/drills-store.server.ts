@@ -5,7 +5,7 @@ import {
   mergeDrills,
   type DrillRow,
 } from "@/lib/drills-store";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 /** Seconds a member's video link stays valid. */
 const SIGNED_URL_TTL = 60 * 60 * 6;
@@ -32,8 +32,10 @@ async function loadFromDatabase(
   const admin = createAdminClient();
 
   let query = admin.from("drills").select(DRILL_ROW_COLUMNS);
-  if (!includeUnpublished) query = query.eq("published", true);
-  const { data: rows } = await query;
+  // Hidden rows must still load so they can knock out built-in drills.
+  if (!includeUnpublished) query = query.or("published.eq.true,hidden.eq.true");
+  const { data: rows, error } = await query;
+  if (error) throw error;
   const drillRows: DrillRow[] = rows ?? [];
 
   const paths = drillRows
@@ -51,4 +53,39 @@ async function loadFromDatabase(
   }
 
   return mergeDrills(drillRows, videoUrls);
+}
+
+/** Who is viewing and whether they can open the members library. */
+export async function getLibraryAccess() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { supabase, user: null, isAdmin: false, hasAccess: false };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isAdmin = profile?.is_admin === true;
+
+  const { data: entitlement } = await supabase
+    .from("entitlements")
+    .select("expires_at")
+    .eq("user_id", user.id)
+    .eq("product_slug", "drills-library")
+    .eq("status", "active")
+    .maybeSingle();
+  const hasSubscription =
+    Boolean(entitlement) &&
+    (!entitlement?.expires_at || new Date(entitlement.expires_at) > new Date());
+
+  return {
+    supabase,
+    user,
+    isAdmin,
+    hasSubscription,
+    hasAccess: isAdmin || hasSubscription,
+  };
 }

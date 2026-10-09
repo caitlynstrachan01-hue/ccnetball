@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Crown, Lock } from "lucide-react";
+import { ArrowLeft, Crown, Lock, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { DrillsLibraryPreview } from "@/components/drills-library-preview";
-import { createClient } from "@/lib/supabase/server";
-import { loadDrillCategories } from "@/lib/drills-store.server";
+import {
+  getLibraryAccess,
+  loadDrillCategories,
+} from "@/lib/drills-store.server";
 
 export const metadata = {
   title: "Netball Drills Library — Members",
@@ -12,32 +14,15 @@ export const metadata = {
     "Browse the CC Netball drills library — organised by focus area and filmed by Caitlyn.",
 };
 
-export default async function LibraryPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export default async function LibraryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ drill?: string }>;
+}) {
+  const { user, isAdmin, hasSubscription, hasAccess } =
+    await getLibraryAccess();
   if (!user) redirect("/login?next=/library");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin, full_name")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const isAdmin = profile?.is_admin === true;
-
-  const { data: entitlement } = await supabase
-    .from("entitlements")
-    .select("expires_at")
-    .eq("user_id", user.id)
-    .eq("product_slug", "drills-library")
-    .eq("status", "active")
-    .maybeSingle();
-
-  const hasSubscription = Boolean(entitlement);
-  const hasAccess = isAdmin || hasSubscription;
+  const { drill } = await searchParams;
 
   if (!hasAccess) {
     return (
@@ -105,13 +90,19 @@ export default async function LibraryPage() {
               stays inside the same area so you can move through a whole
               session in one sitting.
             </p>
+            <Link
+              href="/library/planner"
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02]"
+            >
+              <Sparkles className="size-4" /> Build a session plan
+            </Link>
           </Reveal>
         </div>
       </section>
 
       <section className="py-10 lg:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <DrillsLibraryPreview categories={categories} />
+          <DrillsLibraryPreview categories={categories} initialDrill={drill} />
         </div>
       </section>
     </>

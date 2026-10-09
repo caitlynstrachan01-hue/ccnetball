@@ -1,3 +1,24 @@
+/** Age-group labels a drill can be tagged with (1–3 per drill). */
+export const AGE_GROUPS = [
+  { id: "netsetgo", label: "NetSetGo", range: "U6–U10" },
+  { id: "junior", label: "Junior", range: "U11–U13" },
+  { id: "senior", label: "Senior", range: "U14–Open" },
+] as const;
+
+export type AgeGroupId = (typeof AGE_GROUPS)[number]["id"];
+
+/** Where a drill fits in a training session — drives the session planner. */
+export const SESSION_SLOTS = [
+  { id: "warm-up", label: "Warm-up" },
+  { id: "ball-footwork", label: "Ball work / footwork" },
+  { id: "team-drill", label: "Team drill" },
+  { id: "skill", label: "Skill" },
+  { id: "scrimmage", label: "Scrimmage / half court" },
+  { id: "cool-down", label: "Cool-down" },
+] as const;
+
+export type SessionSlotId = (typeof SESSION_SLOTS)[number]["id"];
+
 export type Drill = {
   slug: string;
   title: string;
@@ -16,6 +37,18 @@ export type Drill = {
   videoUrl?: string;
   /** Where the uploaded video lives in the drill-videos storage bucket. */
   videoPath?: string;
+  equipment?: string;
+  groupSize?: string;
+  /** Free-form tags Caitlyn creates, e.g. "leads", "timing". */
+  tags?: string[];
+  /** Which age groups the drill suits. Empty = not set yet (treated as all). */
+  ageGroups?: AgeGroupId[];
+  /** How execution changes for each age group. */
+  ageNotes?: Partial<Record<AgeGroupId, string>>;
+  /** Overrides the category's default session slot. */
+  sessionSlot?: SessionSlotId;
+  /** Added through the admin page rather than this file. */
+  custom?: boolean;
 };
 
 export type DrillCategory = {
@@ -25,12 +58,15 @@ export type DrillCategory = {
   drills: Drill[];
   /** Override the numeric count shown in the tab/badge (e.g. "50+" for a demo of a larger category). */
   displayCount?: string;
+  /** Where drills in this category usually sit in a session. */
+  defaultSlot: SessionSlotId;
 };
 
 // Demo data — replace with your full library, ordered as you prefer.
 export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "warm-up",
+    defaultSlot: "warm-up",
     name: "Warm-Up",
     short: "Prime the body for high-quality training — no ball required.",
     displayCount: "42",
@@ -50,6 +86,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "ball-work",
+    defaultSlot: "ball-footwork",
     name: "Ball Work",
     short: "Dynamic drills, position-specific work, and a team or half-court finisher.",
     displayCount: "25",
@@ -65,6 +102,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "footwork",
+    defaultSlot: "ball-footwork",
     name: "Footwork",
     short: "The foundation everything else is built on.",
     displayCount: "19",
@@ -78,6 +116,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "attacking-drills",
+    defaultSlot: "skill",
     name: "Attacking Drills",
     short: "Leads, re-offers, and pressure attacks.",
     displayCount: "20",
@@ -114,6 +153,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "defending-drills",
+    defaultSlot: "skill",
     name: "Defending Drills",
     short: "One-on-one work through to reading the intercept.",
     displayCount: "20",
@@ -127,6 +167,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "attack-centre-pass",
+    defaultSlot: "skill",
     name: "Centre Pass - Attack",
     short: "Structures for when your team has the centre pass.",
     displayCount: "15",
@@ -139,6 +180,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "defence-centre-pass",
+    defaultSlot: "skill",
     name: "Centre Pass - Defence",
     short: "Structures for when the opposition has the centre pass.",
     displayCount: "12",
@@ -151,6 +193,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "team-drills",
+    defaultSlot: "team-drill",
     name: "Team Drills",
     short: "Whole-squad drills to run at training.",
     displayCount: "17",
@@ -164,6 +207,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   },
   {
     slug: "shooting",
+    defaultSlot: "skill",
     name: "Shooting",
     short: "From base technique through to contested shots.",
     displayCount: "15",
@@ -176,7 +220,18 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     ],
   },
   {
+    slug: "scrimmage",
+    defaultSlot: "scrimmage",
+    name: "Scrimmage & Half Court",
+    short: "Game-like finishers that put the session's skills under pressure.",
+    drills: [
+      { slug: "half-court-scrimmage", title: "Half-court scrimmage", durationMinutes: 12, level: "Intermediate", focus: "Match play" },
+      { slug: "conditioned-match-play", title: "Conditioned match play", durationMinutes: 15, level: "Intermediate", focus: "Match play" },
+    ],
+  },
+  {
     slug: "recovery",
+    defaultSlot: "cool-down",
     name: "Recovery",
     short: "Cool-downs, mobility and recovery routines to finish the session.",
     displayCount: "15",
@@ -188,6 +243,15 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     ],
   },
 ];
+
+export function slotLabel(id: SessionSlotId) {
+  return SESSION_SLOTS.find((s) => s.id === id)?.label ?? id;
+}
+
+export function ageGroupLabel(id: AgeGroupId) {
+  const g = AGE_GROUPS.find((a) => a.id === id);
+  return g ? `${g.label} (${g.range})` : id;
+}
 
 export const TOTAL_DRILL_COUNT = DRILL_CATEGORIES.reduce(
   (sum, c) => sum + c.drills.length,
