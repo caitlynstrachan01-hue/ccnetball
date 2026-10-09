@@ -15,19 +15,21 @@ import {
   type DrillCategory,
 } from "@/lib/drills-library-content";
 
-export function DrillsLibraryPreview() {
+export function DrillsLibraryPreview({
+  categories = DRILL_CATEGORIES,
+}: {
+  categories?: DrillCategory[];
+}) {
   const [categorySlug, setCategorySlug] = useState<string>(
-    DRILL_CATEGORIES[0].slug,
+    categories[0].slug,
   );
   const [drillSlug, setDrillSlug] = useState<string>(
-    DRILL_CATEGORIES[0].drills[0].slug,
+    categories[0].drills[0].slug,
   );
 
   const category = useMemo<DrillCategory>(
-    () =>
-      DRILL_CATEGORIES.find((c) => c.slug === categorySlug) ??
-      DRILL_CATEGORIES[0],
-    [categorySlug],
+    () => categories.find((c) => c.slug === categorySlug) ?? categories[0],
+    [categories, categorySlug],
   );
 
   const activeDrill = useMemo<Drill>(
@@ -42,7 +44,7 @@ export function DrillsLibraryPreview() {
 
   function selectCategory(slug: string) {
     setCategorySlug(slug);
-    const cat = DRILL_CATEGORIES.find((c) => c.slug === slug);
+    const cat = categories.find((c) => c.slug === slug);
     if (cat && cat.drills[0]) setDrillSlug(cat.drills[0].slug);
   }
 
@@ -52,26 +54,37 @@ export function DrillsLibraryPreview() {
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Video player mockup */}
         <div className="lg:col-span-8">
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
-            <div className="absolute -top-16 -right-16 size-56 rounded-full bg-white/15 blur-3xl" />
-            <div className="absolute -bottom-16 -left-16 size-56 rounded-full bg-white/10 blur-3xl" />
+          {activeDrill.videoUrl ? (
+            <video
+              key={activeDrill.videoUrl}
+              src={activeDrill.videoUrl}
+              controls
+              playsInline
+              preload="metadata"
+              className="aspect-video w-full rounded-2xl bg-black object-contain"
+            />
+          ) : (
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
+              <div className="absolute -top-16 -right-16 size-56 rounded-full bg-white/15 blur-3xl" />
+              <div className="absolute -bottom-16 -left-16 size-56 rounded-full bg-white/10 blur-3xl" />
 
-            {/* Play badge */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center text-white">
-              <div className="flex size-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                <PlayCircle className="size-12" />
+              {/* Play badge */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center text-white">
+                <div className="flex size-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                  <PlayCircle className="size-12" />
+                </div>
+                <p className="max-w-xs px-6 text-sm font-semibold opacity-90">
+                  Video coming soon.
+                </p>
               </div>
-              <p className="max-w-xs px-6 text-sm font-semibold opacity-90">
-                Preview mode — real videos load here once you subscribe.
-              </p>
-            </div>
 
-            {/* Locked chip */}
-            <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-              <Lock className="size-3.5" />
-              Members only
+              {/* Locked chip */}
+              <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                <Lock className="size-3.5" />
+                Members only
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Title + meta */}
           <div className="mt-5">
@@ -99,11 +112,14 @@ export function DrillsLibraryPreview() {
                 Video {drillIndex + 1} of {category.displayCount ?? category.drills.length}
               </span>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              A short written summary of the drill sits here — what it&apos;s
-              for, how to set it up, and the coaching cues Caitlyn uses on the
-              court. Your real drill descriptions will replace this text.
-            </p>
+            {activeDrill.description && (
+              <p className="mt-4 text-sm leading-relaxed text-foreground/90">
+                {activeDrill.description}
+              </p>
+            )}
+            <DrillList title="Make it easier" items={activeDrill.makeItEasier} />
+            <DrillList title="Make it harder" items={activeDrill.makeItHarder} />
+            <DrillList title="Variations" items={activeDrill.variations} />
           </div>
         </div>
 
@@ -154,7 +170,7 @@ export function DrillsLibraryPreview() {
       {/* CATEGORY TABS */}
       <div className="mt-10">
         <div className="flex flex-wrap gap-2">
-          {DRILL_CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const active = cat.slug === category.slug;
             return (
               <button
@@ -239,6 +255,26 @@ export function DrillsLibraryPreview() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DrillList({ title, items }: { title: string; items?: string[] }) {
+  const clean = (items ?? []).filter((s) => s.trim());
+  if (clean.length === 0) return null;
+  return (
+    <div className="mt-5">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+        {title}
+      </p>
+      <ul className="mt-2 space-y-1.5 text-sm">
+        {clean.map((s, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+            <span className="text-foreground/90">{s}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { ArrowLeft, Crown, Lock } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { DrillsLibraryPreview } from "@/components/drills-library-preview";
 import { createClient } from "@/lib/supabase/server";
+import { loadDrillCategories } from "@/lib/drills-store.server";
 
 export const metadata = {
   title: "Netball Drills Library — Members",
@@ -68,6 +69,8 @@ export default async function LibraryPage() {
     );
   }
 
+  const categories = await loadDrillCategories();
+
   return (
     <>
       <section className="border-b border-border/60 bg-muted/30">
@@ -108,7 +111,7 @@ export default async function LibraryPage() {
 
       <section className="py-10 lg:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <DrillsLibraryPreview />
+          <DrillsLibraryPreview categories={categories} />
         </div>
       </section>
     </>

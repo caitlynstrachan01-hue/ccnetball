@@ -1,5 +1,8 @@
+import { redirect } from "next/navigation";
 import { Reveal } from "@/components/motion";
 import { DrillsLibraryAdmin } from "@/components/drills-library-admin";
+import { loadDrillCategories } from "@/lib/drills-store.server";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Admin — Drills Library",
@@ -8,7 +11,22 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function DrillsLibraryAdminPage() {
+export default async function DrillsLibraryAdminPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/admin/drills-library");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.is_admin !== true) redirect("/account");
+
+  const categories = await loadDrillCategories({ includeUnpublished: true });
+
   return (
     <section className="border-b border-border/60 bg-muted/40">
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-14">
@@ -23,20 +41,12 @@ export default function DrillsLibraryAdminPage() {
           <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
             Pick a drill on the left, upload the video, write the description,
             and add your Make It Easier / Make It Harder / Variations bullet
-            points. Save keeps your changes in this browser tab for the demo.
+            points, then press Save. Members see your changes straight away.
           </p>
         </Reveal>
 
-        <Reveal delay={0.05} className="mt-4">
-          <div className="rounded-2xl border border-amber-300/60 bg-amber-50 px-5 py-3 text-sm text-amber-900">
-            <strong>Preview only.</strong> Changes save in your browser for
-            this session. The permanent database + video hosting hook up in
-            the next step, once you&apos;re happy with the interface.
-          </div>
-        </Reveal>
-
         <Reveal delay={0.1} className="mt-8">
-          <DrillsLibraryAdmin />
+          <DrillsLibraryAdmin categories={categories} />
         </Reveal>
       </div>
     </section>

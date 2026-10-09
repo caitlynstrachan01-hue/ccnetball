@@ -14,6 +14,8 @@ export type Drill = {
   variations?: string[];
   /** Optional uploaded video URL. */
   videoUrl?: string;
+  /** Where the uploaded video lives in the drill-videos storage bucket. */
+  videoPath?: string;
 };
 
 export type DrillCategory = {

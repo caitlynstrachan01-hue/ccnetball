@@ -15,10 +15,11 @@ import {
   Upload,
 } from "lucide-react";
 import {
-  DRILL_CATEGORIES,
   type Drill,
   type DrillCategory,
 } from "@/lib/drills-library-content";
+import { DRILL_VIDEO_BUCKET } from "@/lib/drills-store";
+import { createClient } from "@/lib/supabase/client";
 
 type EditableDrill = Drill & {
   makeItEasier: string[];
@@ -41,9 +42,22 @@ function toEditable(d: Drill): EditableDrill {
 
 type Library = Record<string, Record<string, EditableDrill>>;
 
-function buildInitialLibrary(): Library {
+type SaveState =
+  | { status: "idle" }
+  | { status: "saving"; message: string }
+  | { status: "saved" }
+  | { status: "error"; message: string };
+
+function friendlyError(message: string) {
+  if (/maximum allowed size|too large|payload/i.test(message)) {
+    return "This video is too big to upload on the current plan (50MB limit). Try a shorter clip or record at 1080p.";
+  }
+  return `Couldn't save: ${message}`;
+}
+
+function buildInitialLibrary(categories: DrillCategory[]): Library {
   const lib: Library = {};
-  for (const cat of DRILL_CATEGORIES) {
+  for (const cat of categories) {
     lib[cat.slug] = {};
     for (const d of cat.drills) {
       lib[cat.slug][d.slug] = toEditable(d);
@@ -52,25 +66,33 @@ function buildInitialLibrary(): Library {
   return lib;
 }
 
-export function DrillsLibraryAdmin() {
-  const [library, setLibrary] = useState<Library>(buildInitialLibrary);
+export function DrillsLibraryAdmin({
+  categories,
+}: {
+  categories: DrillCategory[];
+}) {
+  const [library, setLibrary] = useState<Library>(() =>
+    buildInitialLibrary(categories),
+  );
   const [categorySlug, setCategorySlug] = useState<string>(
-    DRILL_CATEGORIES[0].slug,
+    categories[0].slug,
   );
   const [drillSlug, setDrillSlug] = useState<string>(
-    DRILL_CATEGORIES[0].drills[0].slug,
+    categories[0].drills[0].slug,
   );
-  const [savedFlash, setSavedFlash] = useState(false);
+  // Videos picked but not yet uploaded, keyed by "category/drill".
+  const [pendingVideos, setPendingVideos] = useState<Record<string, File>>({});
+  const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const editorRef = useRef<HTMLDivElement>(null);
 
   const category = useMemo<DrillCategory>(
-    () =>
-      DRILL_CATEGORIES.find((c) => c.slug === categorySlug) ??
-      DRILL_CATEGORIES[0],
-    [categorySlug],
+    () => categories.find((c) => c.slug === categorySlug) ?? categories[0],
+    [categories, categorySlug],
   );
 
   const drill = library[categorySlug]?.[drillSlug];
+  const drillKey = `${categorySlug}/${drillSlug}`;
+  const pendingVideo = pendingVideos[drillKey];
 
   function updateDrill(patch: Partial<EditableDrill>) {
     setLibrary((prev) => ({
@@ -116,16 +138,80 @@ export function DrillsLibraryAdmin() {
     if (!file) return;
     const url = URL.createObjectURL(file);
     updateDrill({ videoUrl: url });
+    setPendingVideos((prev) => ({ ...prev, [drillKey]: file }));
+    setSaveState({ status: "idle" });
+    event.target.value = "";
   }
 
-  function handleSave() {
-    setSavedFlash(true);
-    setTimeout(() => setSavedFlash(false), 1800);
+  async function handleSave() {
+    if (!drill || saveState.status === "saving") return;
+    const supabase = createClient();
+    const key = drillKey;
+    const previousPath = drill.videoPath;
+    let videoPath = previousPath;
+
+    if (pendingVideo) {
+      setSaveState({ status: "saving", message: "Uploading video…" });
+      const ext = pendingVideo.name.split(".").pop()?.toLowerCase() || "mp4";
+      videoPath = `${categorySlug}/${drillSlug}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from(DRILL_VIDEO_BUCKET)
+        .upload(videoPath, pendingVideo, {
+          contentType: pendingVideo.type || "video/mp4",
+        });
+      if (error) {
+        setSaveState({ status: "error", message: friendlyError(error.message) });
+        return;
+      }
+    }
+
+    setSaveState({ status: "saving", message: "Saving drill…" });
+    const clean = (list: string[]) => list.map((s) => s.trim()).filter(Boolean);
+    const { error } = await supabase.from("drills").upsert(
+      {
+        category_slug: categorySlug,
+        slug: drillSlug,
+        title: drill.title,
+        description: drill.description.trim() || null,
+        make_it_easier: clean(drill.makeItEasier),
+        make_it_harder: clean(drill.makeItHarder),
+        variations: clean(drill.variations),
+        video_path: videoPath ?? null,
+        duration_minutes: drill.durationMinutes,
+        level: drill.level,
+        focus: drill.focus,
+        sort_order: category.drills.findIndex((d) => d.slug === drillSlug),
+        published: true,
+      },
+      { onConflict: "category_slug,slug" },
+    );
+    if (error) {
+      setSaveState({ status: "error", message: friendlyError(error.message) });
+      return;
+    }
+
+    // Replaced video — tidy up the old file so storage doesn't fill up.
+    if (pendingVideo && previousPath && previousPath !== videoPath) {
+      await supabase.storage.from(DRILL_VIDEO_BUCKET).remove([previousPath]);
+    }
+
+    updateDrill({ videoPath });
+    setPendingVideos((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setSaveState({ status: "saved" });
+    setTimeout(
+      () => setSaveState((s) => (s.status === "saved" ? { status: "idle" } : s)),
+      2500,
+    );
   }
 
   // On phones the drill list sits above the editor, so jump down to it.
   function selectDrill(slug: string) {
     setDrillSlug(slug);
+    setSaveState({ status: "idle" });
     if (window.matchMedia("(max-width: 1023px)").matches) {
       editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -133,7 +219,8 @@ export function DrillsLibraryAdmin() {
 
   function selectCategory(slug: string) {
     setCategorySlug(slug);
-    const cat = DRILL_CATEGORIES.find((c) => c.slug === slug);
+    setSaveState({ status: "idle" });
+    const cat = categories.find((c) => c.slug === slug);
     if (cat?.drills[0]) setDrillSlug(cat.drills[0].slug);
   }
 
@@ -148,7 +235,7 @@ export function DrillsLibraryAdmin() {
             Categories
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {DRILL_CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const active = cat.slug === category.slug;
               return (
                 <button
@@ -174,7 +261,8 @@ export function DrillsLibraryAdmin() {
             {category.drills.map((d, i) => {
               const active = d.slug === drill.slug;
               const editable = library[categorySlug]?.[d.slug];
-              const hasVideo = Boolean(editable?.videoUrl);
+              const hasVideo = Boolean(editable?.videoPath);
+              const hasPending = Boolean(pendingVideos[`${categorySlug}/${d.slug}`]);
               return (
                 <li key={d.slug}>
                   <button
@@ -206,12 +294,18 @@ export function DrillsLibraryAdmin() {
                         <span>·</span>
                         <span
                           className={
-                            hasVideo
-                              ? "font-semibold text-emerald-700"
-                              : "text-amber-700"
+                            hasPending
+                              ? "font-semibold text-rose-700"
+                              : hasVideo
+                                ? "font-semibold text-emerald-700"
+                                : "text-amber-700"
                           }
                         >
-                          {hasVideo ? "Video ready" : "No video yet"}
+                          {hasPending
+                            ? "Not saved yet"
+                            : hasVideo
+                              ? "Video saved"
+                              : "No video yet"}
                         </span>
                       </span>
                     </span>
@@ -246,19 +340,23 @@ export function DrillsLibraryAdmin() {
             <button
               type="button"
               onClick={handleSave}
-              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:scale-[1.02]"
+              disabled={saveState.status === "saving"}
+              className="inline-flex shrink-0 disabled:opacity-70 items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:scale-[1.02]"
             >
-              {savedFlash ? (
-                <>
-                  <Check className="size-4" /> Saved
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" /> Save drill
-                </>
-              )}
+              <SaveLabel state={saveState} />
             </button>
           </div>
+
+          {saveState.status === "error" && (
+            <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {saveState.message}
+            </p>
+          )}
+          {pendingVideo && saveState.status !== "error" && (
+            <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              New video picked — press <strong>Save drill</strong> to upload it.
+            </p>
+          )}
 
           {/* Video area */}
           <div className="mt-6">
@@ -290,7 +388,7 @@ export function DrillsLibraryAdmin() {
                     {drill.videoUrl ? "Replace video" : "Upload video"}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    MP4, MOV or WebM · any resolution
+                    MP4, MOV or WebM · up to 50MB on the current plan
                   </span>
                 </span>
               </span>
@@ -394,23 +492,15 @@ export function DrillsLibraryAdmin() {
           {/* Preview link + final save */}
           <div className="mt-10 flex items-center justify-between gap-4 border-t border-border pt-6">
             <p className="text-xs text-muted-foreground">
-              Preview mode — this drill will show your edits inside the
-              library once we hook the database up.
+              Saving publishes this drill to the members library straight away.
             </p>
             <button
               type="button"
               onClick={handleSave}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
+              disabled={saveState.status === "saving"}
+              className="inline-flex shrink-0 disabled:opacity-70 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
             >
-              {savedFlash ? (
-                <>
-                  <Check className="size-4" /> Saved
-                </>
-              ) : (
-                <>
-                  <Save className="size-4" /> Save drill
-                </>
-              )}
+              <SaveLabel state={saveState} />
             </button>
           </div>
         </div>
@@ -450,6 +540,21 @@ export function DrillsLibraryAdmin() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SaveLabel({ state }: { state: SaveState }) {
+  if (state.status === "saving") return <>{state.message}</>;
+  if (state.status === "saved")
+    return (
+      <>
+        <Check className="size-4" /> Saved
+      </>
+    );
+  return (
+    <>
+      <Save className="size-4" /> Save drill
+    </>
   );
 }
 
