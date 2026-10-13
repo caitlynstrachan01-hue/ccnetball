@@ -54,7 +54,8 @@ export function DrillsLibraryPreview({
     initialSlug || categories[0]?.drills[0]?.slug,
   );
 
-  const category = categories.find((c) => c.slug === categorySlug) ?? categories[0];
+  const category =
+    categories.find((c) => c.slug === categorySlug) ?? categories[0];
   const activeDrill: Drill | undefined =
     category?.drills.find((d) => d.slug === drillSlug) ?? category?.drills[0];
 
@@ -63,24 +64,26 @@ export function DrillsLibraryPreview({
       <span className="mr-1 text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
         Age group
       </span>
-      {[{ id: "all" as const, label: "All", range: "" }, ...AGE_GROUPS].map((a) => {
-        const active = ageFilter === a.id;
-        return (
-          <button
-            key={a.id}
-            type="button"
-            onClick={() => setAgeFilter(a.id)}
-            className={
-              active
-                ? "rounded-full bg-foreground px-3 py-1.5 text-xs font-semibold text-background"
-                : "rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40"
-            }
-          >
-            {a.label}
-            {a.range && <span className="ml-1 opacity-70">{a.range}</span>}
-          </button>
-        );
-      })}
+      {[{ id: "all" as const, label: "All", range: "" }, ...AGE_GROUPS].map(
+        (a) => {
+          const active = ageFilter === a.id;
+          return (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => setAgeFilter(a.id)}
+              className={
+                active
+                  ? "rounded-full bg-foreground px-3 py-1.5 text-xs font-semibold text-background"
+                  : "rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40"
+              }
+            >
+              {a.label}
+              {a.range && <span className="ml-1 opacity-70">{a.range}</span>}
+            </button>
+          );
+        },
+      )}
     </div>
   );
 
@@ -95,7 +98,9 @@ export function DrillsLibraryPreview({
     );
   }
 
-  const drillIndex = category.drills.findIndex((d) => d.slug === activeDrill.slug);
+  const drillIndex = category.drills.findIndex(
+    (d) => d.slug === activeDrill.slug,
+  );
   const upNextInCategory = category.drills.filter(
     (d) => d.slug !== activeDrill.slug,
   );
@@ -180,12 +185,15 @@ export function DrillsLibraryPreview({
               )}
               <span className="inline-flex items-center gap-1.5">
                 <Layers className="size-4" />
-                Video {drillIndex + 1} of {category.displayCount ?? category.drills.length}
+                Video {drillIndex + 1} of{" "}
+                {category.displayCount ?? category.drills.length}
               </span>
             </div>
-            {(activeDrill.ageGroups?.length || activeDrill.tags?.length) ? (
+            {activeDrill.ageGroups?.length || activeDrill.tags?.length ? (
               <div className="mt-4 flex flex-wrap gap-1.5">
-                {AGE_GROUPS.filter((a) => activeDrill.ageGroups?.includes(a.id)).map((a) => (
+                {AGE_GROUPS.filter((a) =>
+                  activeDrill.ageGroups?.includes(a.id),
+                ).map((a) => (
                   <span
                     key={a.id}
                     className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/80"
@@ -208,6 +216,10 @@ export function DrillsLibraryPreview({
                 {activeDrill.description}
               </p>
             )}
+            <DrillList
+              title="Coaching points"
+              items={activeDrill.coachingPoints}
+            />
             {activeDrill.pdfUrl && (
               <a
                 href={activeDrill.pdfUrl}
@@ -223,7 +235,9 @@ export function DrillsLibraryPreview({
                     <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
                       Equipment
                     </dt>
-                    <dd className="mt-1 text-sm text-foreground/90">{activeDrill.equipment}</dd>
+                    <dd className="mt-1 text-sm text-foreground/90">
+                      {activeDrill.equipment}
+                    </dd>
                   </div>
                 )}
                 {activeDrill.groupSize && (
@@ -231,14 +245,25 @@ export function DrillsLibraryPreview({
                     <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
                       Group size
                     </dt>
-                    <dd className="mt-1 text-sm text-foreground/90">{activeDrill.groupSize}</dd>
+                    <dd className="mt-1 text-sm text-foreground/90">
+                      {activeDrill.groupSize}
+                    </dd>
                   </div>
                 )}
               </dl>
             )}
-            <DrillList title="Drill variations" items={activeDrill.variations} />
-            <DrillList title="How to make it harder" items={activeDrill.makeItHarder} />
-            <DrillList title="How to make it easier" items={activeDrill.makeItEasier} />
+            <DrillList
+              title="Drill variations"
+              items={activeDrill.variations}
+            />
+            <DrillList
+              title="How to make it harder"
+              items={activeDrill.makeItHarder}
+            />
+            <DrillList
+              title="How to make it easier"
+              items={activeDrill.makeItEasier}
+            />
             {AGE_GROUPS.filter((a) => activeDrill.ageNotes?.[a.id]).map((a) => (
               <div key={a.id} className="mt-5">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
@@ -280,7 +305,8 @@ export function DrillsLibraryPreview({
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {[
-                          drill.durationMinutes > 0 && `${drill.durationMinutes} min`,
+                          drill.durationMinutes > 0 &&
+                            `${drill.durationMinutes} min`,
                           drill.focus,
                         ]
                           .filter(Boolean)
@@ -344,7 +370,8 @@ export function DrillsLibraryPreview({
               </p>
             </div>
             <p className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
-              {category.displayCount ?? category.drills.length} drills · in order
+              {category.displayCount ?? category.drills.length} drills · in
+              order
             </p>
           </div>
 

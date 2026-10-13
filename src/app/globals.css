@@ -104,3 +104,19 @@
     color: transparent;
   }
 }
+
+/* Printed pages (session plans): A4, tight margins, keep brand colours. */
+@media print {
+  @page {
+    size: A4;
+    margin: 11mm 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

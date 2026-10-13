@@ -2,8 +2,7 @@ import type { DrillCategory } from "@/lib/drills-library-content";
 import { bunnyEmbedUrl } from "@/lib/bunny.server";
 import {
   BUNNY_PREFIX,
-  DRILL_ROW_COLUMNS,
-  DRILL_ROW_COLUMNS_WITH_PDF,
+  DRILL_ROW_COLUMN_SETS,
   DRILL_VIDEO_BUCKET,
   mergeDrills,
   type DrillRow,
@@ -41,9 +40,13 @@ async function loadFromDatabase(
       ? query
       : query.or("published.eq.true,hidden.eq.true");
   };
-  let { data: rows, error } = await select(DRILL_ROW_COLUMNS_WITH_PDF);
-  // Database without the PDF column yet (migration 0004) — load without it.
-  if (error?.code === "42703") ({ data: rows, error } = await select(DRILL_ROW_COLUMNS));
+  // Try the newest columns first; an older database (missing column, 42703)
+  // falls back to the previous set.
+  let { data: rows, error } = await select(DRILL_ROW_COLUMN_SETS[0]);
+  for (const columns of DRILL_ROW_COLUMN_SETS.slice(1)) {
+    if (error?.code !== "42703") break;
+    ({ data: rows, error } = await select(columns));
+  }
   if (error) throw error;
   const drillRows = (rows ?? []) as unknown as DrillRow[];
 

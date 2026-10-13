@@ -53,7 +53,13 @@ import { createClient } from "@/lib/supabase/client";
 const DRAWINGS_BUCKET = "coach-drawings";
 
 /** A coach's saved court drawing, loaded through a short-lived link. */
-function CoachDrawing({ path }: { path: string }) {
+function CoachDrawing({
+  path,
+  className = "mt-2 w-full max-w-md rounded-xl border border-border",
+}: {
+  path: string;
+  className?: string;
+}) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
@@ -74,11 +80,7 @@ function CoachDrawing({ path }: { path: string }) {
   return (
     // Signed Supabase link — not something next/image can optimise.
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={url}
-      alt="Drill drawing"
-      className="mt-2 w-full max-w-md rounded-xl border border-border"
-    />
+    <img src={url} alt="Drill drawing" className={className} />
   );
 }
 
@@ -841,254 +843,312 @@ export function PlanView({
   }
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card p-6 md:p-8 print:border-0 print:p-0">
-      {drawingFor && (
-        <DrawingPad onSave={saveDrawing} onCancel={() => setDrawingFor(null)} />
-      )}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          {badge && (
-            <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
-              <Star className="size-3.5" /> {badge}
+    <>
+      <PrintPlan
+        title={title}
+        purpose={purpose}
+        sessionDate={sessionDate}
+        startTime={startTime}
+        createdAt={plan.created_at}
+        ageGroup={plan.age_group ? ageGroup : null}
+        blocks={blocks}
+        byKey={byKey}
+      />
+      <div className="rounded-3xl border border-border/70 bg-card p-6 md:p-8 print:hidden">
+        {drawingFor && (
+          <DrawingPad
+            onSave={saveDrawing}
+            onCancel={() => setDrawingFor(null)}
+          />
+        )}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            {badge && (
+              <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
+                <Star className="size-3.5" /> {badge}
+              </p>
+            )}
+            <p className="mb-1 hidden text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground print:block">
+              CC Netball · Session plan
             </p>
-          )}
-          <p className="mb-1 hidden text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground print:block">
-            CC Netball · Session plan
-          </p>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            {[
-              sessionDate
-                ? formatLongDate(sessionDate)
-                : formatDate(plan.created_at),
-              startTime &&
-                `${formatTime(startTime)} – ${formatTime(addMinutes(startTime, totalMinutes(blocks)))}`,
-              plan.age_group && ageGroupLabel(ageGroup),
-              `${totalMinutes(blocks)} min`,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          {!editable ? (
-            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight md:text-3xl">
-              {title}
-            </h2>
-          ) : (
-            <input
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                setDirty(true);
-              }}
-              aria-label="Session title"
-              className="mt-2 w-full rounded-lg border border-transparent bg-transparent font-display text-2xl font-extrabold tracking-tight outline-none transition hover:border-border focus:border-primary md:text-3xl"
-            />
-          )}
-        </div>
-        <div className="flex gap-2 print:hidden">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:bg-muted"
-          >
-            <Printer className="size-3.5" /> Print
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close plan"
-            className="flex size-8 items-center justify-center rounded-full border border-border/70 transition hover:bg-muted"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-      </div>
-
-      {editable && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 print:hidden">
-          <label className="block">
-            <span className="text-xs font-semibold text-foreground/80">
-              Training date
-            </span>
-            <input
-              type="date"
-              value={sessionDate}
-              onChange={(e) => {
-                setSessionDate(e.target.value);
-                setDirty(true);
-              }}
-              className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-foreground/80">
-              Start time
-            </span>
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => {
-                setStartTime(e.target.value);
-                setDirty(true);
-              }}
-              className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </label>
-        </div>
-      )}
-
-      {(purpose || editable) && (
-        <div className="mt-5 rounded-2xl border-l-4 border-primary bg-primary/5 px-5 py-4 print:border print:border-l-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-            Session purpose
-          </p>
-          {editable ? (
-            <textarea
-              value={purpose}
-              onChange={(e) => {
-                setPurpose(e.target.value);
-                setDirty(true);
-              }}
-              rows={2}
-              placeholder="The theme or message you want front of mind…"
-              className="mt-1 w-full resize-none rounded-lg border border-transparent bg-transparent text-base font-semibold text-foreground outline-none transition hover:border-border focus:border-primary print:hidden"
-            />
-          ) : null}
-          <p
-            className={
-              editable
-                ? "mt-1 hidden whitespace-pre-line text-base font-semibold text-foreground print:block"
-                : "mt-1 whitespace-pre-line text-base font-semibold text-foreground"
-            }
-          >
-            {purpose}
-          </p>
-        </div>
-      )}
-
-      {plan.plan.summary && (
-        <p className="mt-4 text-sm leading-relaxed text-foreground/90">
-          {plan.plan.summary}
-        </p>
-      )}
-      {isEmpty && editable && (
-        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
-          In each part of the session, add a drill from the library or write
-          your own, then press <strong>Save changes</strong>.
-        </p>
-      )}
-
-      <ol className="mt-8 space-y-4">
-        {blocks.map((b, i) => {
-          const startsAt = startTime
-            ? addMinutes(startTime, totalMinutes(blocks.slice(0, i)))
-            : null;
-          const addOptions = optionsFor(b);
-          return (
-            <li
-              key={i}
-              className="rounded-2xl border border-border/70 bg-background p-5 print:break-inside-avoid"
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              {[
+                sessionDate
+                  ? formatLongDate(sessionDate)
+                  : formatDate(plan.created_at),
+                startTime &&
+                  `${formatTime(startTime)} – ${formatTime(addMinutes(startTime, totalMinutes(blocks)))}`,
+                plan.age_group && ageGroupLabel(ageGroup),
+                `${totalMinutes(blocks)} min`,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+            {!editable ? (
+              <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight md:text-3xl">
+                {title}
+              </h2>
+            ) : (
+              <input
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  setDirty(true);
+                }}
+                aria-label="Session title"
+                className="mt-2 w-full rounded-lg border border-transparent bg-transparent font-display text-2xl font-extrabold tracking-tight outline-none transition hover:border-border focus:border-primary md:text-3xl"
+              />
+            )}
+          </div>
+          <div className="flex gap-2 print:hidden">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold transition hover:border-primary/40 hover:bg-muted"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                  {b.label}
-                </p>
-                <p className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                  <Clock className="size-3.5" />
-                  {startsAt
-                    ? `${formatTime(startsAt)} – ${formatTime(addMinutes(startsAt, b.minutes))} · `
-                    : ""}
-                  {b.minutes} min
-                </p>
-              </div>
+              <Printer className="size-3.5" /> Print
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close plan"
+              className="flex size-8 items-center justify-center rounded-full border border-border/70 transition hover:bg-muted"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
 
-              {b.drills.length === 0 && (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  No drill chosen yet.
-                </p>
-              )}
+        {editable && (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 print:hidden">
+            <label className="block">
+              <span className="text-xs font-semibold text-foreground/80">
+                Training date
+              </span>
+              <input
+                type="date"
+                value={sessionDate}
+                onChange={(e) => {
+                  setSessionDate(e.target.value);
+                  setDirty(true);
+                }}
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-foreground/80">
+                Start time
+              </span>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  setDirty(true);
+                }}
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+            </label>
+          </div>
+        )}
 
-              <ul className="mt-2 divide-y divide-border/60">
-                {b.drills.map((d, k) => {
-                  if (d.custom) {
-                    const setCustom = (
-                      patch: Partial<NonNullable<typeof d.custom>>,
-                    ) =>
-                      changeBlock(i, {
-                        drills: b.drills.map((x, y) =>
-                          y === k
-                            ? { ...x, custom: { ...x.custom!, ...patch } }
-                            : x,
-                        ),
-                      });
-                    return (
-                      <li key={`${d.key}-${k}`} className="py-3 first:pt-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                              {d.part ? `${d.part} · ` : ""}Your own drill
-                            </p>
-                            {editable ? (
-                              <>
-                                <input
-                                  value={d.custom.title}
-                                  onChange={(e) =>
-                                    setCustom({ title: e.target.value })
-                                  }
-                                  placeholder="Drill name"
-                                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                />
-                                <textarea
-                                  value={d.custom.notes}
-                                  onChange={(e) =>
-                                    setCustom({ notes: e.target.value })
-                                  }
-                                  rows={3}
-                                  placeholder="How it runs — set-up, players, coaching points…"
-                                  className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                />
-                                {d.custom.drawingPath && (
-                                  <CoachDrawing path={d.custom.drawingPath} />
-                                )}
-                                <div className="mt-2 flex flex-wrap gap-2 print:hidden">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setDrawingFor({ block: i, drill: k })
+        {(purpose || editable) && (
+          <div className="mt-5 rounded-2xl border-l-4 border-primary bg-primary/5 px-5 py-4 print:border print:border-l-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+              Session purpose
+            </p>
+            {editable ? (
+              <textarea
+                value={purpose}
+                onChange={(e) => {
+                  setPurpose(e.target.value);
+                  setDirty(true);
+                }}
+                rows={2}
+                placeholder="The theme or message you want front of mind…"
+                className="mt-1 w-full resize-none rounded-lg border border-transparent bg-transparent text-base font-semibold text-foreground outline-none transition hover:border-border focus:border-primary print:hidden"
+              />
+            ) : null}
+            <p
+              className={
+                editable
+                  ? "mt-1 hidden whitespace-pre-line text-base font-semibold text-foreground print:block"
+                  : "mt-1 whitespace-pre-line text-base font-semibold text-foreground"
+              }
+            >
+              {purpose}
+            </p>
+          </div>
+        )}
+
+        {plan.plan.summary && (
+          <p className="mt-4 text-sm leading-relaxed text-foreground/90">
+            {plan.plan.summary}
+          </p>
+        )}
+        {isEmpty && editable && (
+          <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
+            In each part of the session, add a drill from the library or write
+            your own, then press <strong>Save changes</strong>.
+          </p>
+        )}
+
+        <ol className="mt-8 space-y-4">
+          {blocks.map((b, i) => {
+            const startsAt = startTime
+              ? addMinutes(startTime, totalMinutes(blocks.slice(0, i)))
+              : null;
+            const addOptions = optionsFor(b);
+            return (
+              <li
+                key={i}
+                className="rounded-2xl border border-border/70 bg-background p-5 print:break-inside-avoid"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                    {b.label}
+                  </p>
+                  <p className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
+                    <Clock className="size-3.5" />
+                    {startsAt
+                      ? `${formatTime(startsAt)} – ${formatTime(addMinutes(startsAt, b.minutes))} · `
+                      : ""}
+                    {b.minutes} min
+                  </p>
+                </div>
+
+                {b.drills.length === 0 && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    No drill chosen yet.
+                  </p>
+                )}
+
+                <ul className="mt-2 divide-y divide-border/60">
+                  {b.drills.map((d, k) => {
+                    if (d.custom) {
+                      const setCustom = (
+                        patch: Partial<NonNullable<typeof d.custom>>,
+                      ) =>
+                        changeBlock(i, {
+                          drills: b.drills.map((x, y) =>
+                            y === k
+                              ? { ...x, custom: { ...x.custom!, ...patch } }
+                              : x,
+                          ),
+                        });
+                      return (
+                        <li key={`${d.key}-${k}`} className="py-3 first:pt-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                {d.part ? `${d.part} · ` : ""}Your own drill
+                              </p>
+                              {editable ? (
+                                <>
+                                  <input
+                                    value={d.custom.title}
+                                    onChange={(e) =>
+                                      setCustom({ title: e.target.value })
                                     }
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
-                                  >
-                                    <Brush className="size-3.5" />
-                                    {d.custom.drawingPath
-                                      ? "Redraw"
-                                      : "Draw it"}
-                                  </button>
+                                    placeholder="Drill name"
+                                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                  />
+                                  <textarea
+                                    value={d.custom.notes}
+                                    onChange={(e) =>
+                                      setCustom({ notes: e.target.value })
+                                    }
+                                    rows={3}
+                                    placeholder="How it runs — set-up, players, coaching points…"
+                                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                  />
                                   {d.custom.drawingPath && (
+                                    <CoachDrawing path={d.custom.drawingPath} />
+                                  )}
+                                  <div className="mt-2 flex flex-wrap gap-2 print:hidden">
                                     <button
                                       type="button"
                                       onClick={() =>
-                                        setCustom({ drawingPath: undefined })
+                                        setDrawingFor({ block: i, drill: k })
                                       }
-                                      className="text-xs font-semibold text-muted-foreground transition hover:text-red-600"
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
                                     >
-                                      Remove drawing
+                                      <Brush className="size-3.5" />
+                                      {d.custom.drawingPath
+                                        ? "Redraw"
+                                        : "Draw it"}
                                     </button>
+                                    {d.custom.drawingPath && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setCustom({ drawingPath: undefined })
+                                        }
+                                        className="text-xs font-semibold text-muted-foreground transition hover:text-red-600"
+                                      >
+                                        Remove drawing
+                                      </button>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <h3 className="font-display text-base font-bold leading-snug">
+                                    {d.custom.title || "Untitled drill"}
+                                  </h3>
+                                  {d.custom.notes && (
+                                    <p className="mt-1 whitespace-pre-line text-sm text-foreground/90">
+                                      {d.custom.notes}
+                                    </p>
                                   )}
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <h3 className="font-display text-base font-bold leading-snug">
-                                  {d.custom.title || "Untitled drill"}
-                                </h3>
-                                {d.custom.notes && (
-                                  <p className="mt-1 whitespace-pre-line text-sm text-foreground/90">
-                                    {d.custom.notes}
-                                  </p>
-                                )}
-                                {d.custom.drawingPath && (
-                                  <CoachDrawing path={d.custom.drawingPath} />
-                                )}
-                              </>
+                                  {d.custom.drawingPath && (
+                                    <CoachDrawing path={d.custom.drawingPath} />
+                                  )}
+                                </>
+                              )}
+                            </div>
+                            {editable && (
+                              <button
+                                type="button"
+                                aria-label="Remove drill"
+                                onClick={() =>
+                                  changeBlock(i, {
+                                    drills: b.drills.filter((_, x) => x !== k),
+                                  })
+                                }
+                                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 print:hidden"
+                              >
+                                <X className="size-4" />
+                              </button>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    }
+                    const pick = byKey.get(d.key);
+                    const swapOptions = optionsFor(b, d.key);
+                    return (
+                      <li key={`${d.key}-${k}`} className="py-3 first:pt-1">
+                        {d.part && (
+                          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {d.part}
+                          </p>
+                        )}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="font-display text-base font-bold leading-snug">
+                              {pick?.drill.title ?? "Removed drill"}
+                            </h3>
+                            {pick && (
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                {[
+                                  pick.categoryName,
+                                  pick.drill.equipment,
+                                  pick.drill.groupSize,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
                             )}
                           </div>
                           {editable && (
@@ -1106,206 +1166,343 @@ export function PlanView({
                             </button>
                           )}
                         </div>
-                      </li>
-                    );
-                  }
-                  const pick = byKey.get(d.key);
-                  const swapOptions = optionsFor(b, d.key);
-                  return (
-                    <li key={`${d.key}-${k}`} className="py-3 first:pt-1">
-                      {d.part && (
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          {d.part}
-                        </p>
-                      )}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="font-display text-base font-bold leading-snug">
-                            {pick?.drill.title ?? "Removed drill"}
-                          </h3>
+                        {pick?.drill.ageNotes?.[ageGroup] && (
+                          <p className="mt-2 text-sm text-foreground/90">
+                            <strong>For this age group:</strong>{" "}
+                            {pick.drill.ageNotes[ageGroup]}
+                          </p>
+                        )}
+                        <div className="mt-2 flex flex-wrap items-center gap-3 print:hidden">
                           {pick && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {[
-                                pick.categoryName,
-                                pick.drill.equipment,
-                                pick.drill.groupSize,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
+                            <Link
+                              href={`/library?drill=${encodeURIComponent(pick.key)}`}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                            >
+                              Watch the drill{" "}
+                              <ExternalLink className="size-3.5" />
+                            </Link>
+                          )}
+                          {pick?.drill.pdfUrl && (
+                            <a
+                              href={pick.drill.pdfUrl}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                            >
+                              Skill sheet (PDF){" "}
+                              <FileDown className="size-3.5" />
+                            </a>
+                          )}
+                          {editable && swapOptions.length > 1 && (
+                            <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                              Swap for
+                              <select
+                                value={d.key}
+                                onChange={(e) =>
+                                  changeBlock(i, {
+                                    drills: b.drills.map((x, y) =>
+                                      y === k
+                                        ? { ...x, key: e.target.value }
+                                        : x,
+                                    ),
+                                  })
+                                }
+                                className="max-w-56 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
+                              >
+                                {swapOptions.map((o) => (
+                                  <option key={o.key} value={o.key}>
+                                    {o.drill.title}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
                           )}
                         </div>
-                        {editable && (
-                          <button
-                            type="button"
-                            aria-label="Remove drill"
-                            onClick={() =>
-                              changeBlock(i, {
-                                drills: b.drills.filter((_, x) => x !== k),
-                              })
-                            }
-                            className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 print:hidden"
-                          >
-                            <X className="size-4" />
-                          </button>
-                        )}
-                      </div>
-                      {pick?.drill.ageNotes?.[ageGroup] && (
-                        <p className="mt-2 text-sm text-foreground/90">
-                          <strong>For this age group:</strong>{" "}
-                          {pick.drill.ageNotes[ageGroup]}
-                        </p>
-                      )}
-                      <div className="mt-2 flex flex-wrap items-center gap-3 print:hidden">
-                        {pick && (
-                          <Link
-                            href={`/library?drill=${encodeURIComponent(pick.key)}`}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                          >
-                            Watch the drill{" "}
-                            <ExternalLink className="size-3.5" />
-                          </Link>
-                        )}
-                        {pick?.drill.pdfUrl && (
-                          <a
-                            href={pick.drill.pdfUrl}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                          >
-                            Skill sheet (PDF) <FileDown className="size-3.5" />
-                          </a>
-                        )}
-                        {editable && swapOptions.length > 1 && (
-                          <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                            Swap for
-                            <select
-                              value={d.key}
-                              onChange={(e) =>
-                                changeBlock(i, {
-                                  drills: b.drills.map((x, y) =>
-                                    y === k ? { ...x, key: e.target.value } : x,
-                                  ),
-                                })
-                              }
-                              className="max-w-56 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
-                            >
-                              {swapOptions.map((o) => (
-                                <option key={o.key} value={o.key}>
-                                  {o.drill.title}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                      </li>
+                    );
+                  })}
+                </ul>
 
-              {editable && (
-                <div className="mt-2 flex flex-wrap items-center gap-2 print:hidden">
-                  {addOptions.length > 0 && (
-                    <select
-                      value=""
-                      onChange={(e) => {
-                        if (!e.target.value) return;
-                        changeBlock(i, {
-                          drills: [...b.drills, { key: e.target.value }],
-                        });
-                      }}
-                      className="rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus:border-primary"
-                    >
-                      <option value="">+ Add a drill from the library…</option>
-                      {addOptions.map((o) => (
-                        <option key={o.key} value={o.key}>
-                          {o.drill.title} — {o.categoryName}
+                {editable && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2 print:hidden">
+                    {addOptions.length > 0 && (
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (!e.target.value) return;
+                          changeBlock(i, {
+                            drills: [...b.drills, { key: e.target.value }],
+                          });
+                        }}
+                        className="rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus:border-primary"
+                      >
+                        <option value="">
+                          + Add a drill from the library…
                         </option>
-                      ))}
-                    </select>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      changeBlock(i, {
-                        drills: [
-                          ...b.drills,
-                          {
-                            key: `custom-${Date.now().toString(36)}`,
-                            custom: { title: "", notes: "" },
-                          },
-                        ],
-                      })
-                    }
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
-                  >
-                    <PencilLine className="size-3.5" /> Write your own drill
-                  </button>
-                </div>
-              )}
+                        {addOptions.map((o) => (
+                          <option key={o.key} value={o.key}>
+                            {o.drill.title} — {o.categoryName}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        changeBlock(i, {
+                          drills: [
+                            ...b.drills,
+                            {
+                              key: `custom-${Date.now().toString(36)}`,
+                              custom: { title: "", notes: "" },
+                            },
+                          ],
+                        })
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+                    >
+                      <PencilLine className="size-3.5" /> Write your own drill
+                    </button>
+                  </div>
+                )}
 
-              {b.coachingFocus && (
-                <p className="mt-3 text-sm text-foreground/90">
-                  <strong>Coaching focus:</strong> {b.coachingFocus}
-                </p>
-              )}
-              {b.why && (
-                <p className="mt-2 text-xs italic text-muted-foreground">
-                  {b.why}
-                </p>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+                {b.coachingFocus && (
+                  <p className="mt-3 text-sm text-foreground/90">
+                    <strong>Coaching focus:</strong> {b.coachingFocus}
+                  </p>
+                )}
+                {b.why && (
+                  <p className="mt-2 text-xs italic text-muted-foreground">
+                    {b.why}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ol>
 
-      {plan.plan.nextTime && (
-        <div className="mt-8 rounded-2xl bg-primary/5 p-5">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-            Next session
-          </p>
-          <p className="mt-2 text-sm text-foreground/90">
-            {plan.plan.nextTime}
-          </p>
-        </div>
-      )}
-
-      {!editable ? (
-        actions && (
-          <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-6 print:hidden">
-            {actions}
+        {plan.plan.nextTime && (
+          <div className="mt-8 rounded-2xl bg-primary/5 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+              Next session
+            </p>
+            <p className="mt-2 text-sm text-foreground/90">
+              {plan.plan.nextTime}
+            </p>
           </div>
-        )
-      ) : (
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 print:hidden">
-          <button
-            type="button"
-            onClick={onDelete}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-red-600"
-          >
-            <Trash2 className="size-3.5" /> Delete session
-          </button>
-          <div className="flex flex-wrap gap-3">
-            {dirty && (
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving}
-                className="inline-flex items-center gap-2 rounded-full border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5 disabled:opacity-60"
-              >
-                <Check className="size-4" />{" "}
-                {saving ? "Saving…" : "Save changes"}
-              </button>
-            )}
+        )}
+
+        {!editable ? (
+          actions && (
+            <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-border pt-6 print:hidden">
+              {actions}
+            </div>
+          )
+        ) : (
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 print:hidden">
             <button
               type="button"
-              onClick={onPlanNext}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02]"
+              onClick={onDelete}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-red-600"
             >
-              Plan the next session <ArrowRight className="size-4" />
+              <Trash2 className="size-3.5" /> Delete session
             </button>
+            <div className="flex flex-wrap gap-3">
+              {dirty && (
+                <button
+                  type="button"
+                  onClick={save}
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5 disabled:opacity-60"
+                >
+                  <Check className="size-4" />{" "}
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onPlanNext}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02]"
+              >
+                Plan the next session <ArrowRight className="size-4" />
+              </button>
+            </div>
           </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/**
+ * The printed session plan — a compact A4 layout (aim: one sheet, front and
+ * back) with each drill's description and coaching points under its heading.
+ */
+function PrintPlan({
+  title,
+  purpose,
+  sessionDate,
+  startTime,
+  createdAt,
+  ageGroup,
+  blocks,
+  byKey,
+}: {
+  title: string;
+  purpose: string;
+  sessionDate: string;
+  startTime: string;
+  createdAt: string;
+  ageGroup: AgeGroupId | null;
+  blocks: PlanBlock[];
+  byKey: Map<string, CatalogDrill>;
+}) {
+  const total = totalMinutes(blocks);
+  const meta = [
+    sessionDate ? formatLongDate(sessionDate) : formatDate(createdAt),
+    startTime &&
+      `${formatTime(startTime)} – ${formatTime(addMinutes(startTime, total))}`,
+    ageGroup && ageGroupLabel(ageGroup),
+    `${total} min`,
+  ].filter(Boolean);
+
+  return (
+    <div className="hidden text-[8.5pt] leading-snug text-black print:block">
+      <div className="flex items-end justify-between gap-4 border-b-2 border-[var(--brand-raspberry)] pb-1.5">
+        <div>
+          <p className="text-[7pt] font-bold uppercase tracking-[0.2em] text-[var(--brand-raspberry)]">
+            CC Netball · Session plan
+          </p>
+          <h1 className="font-display text-[15pt] font-extrabold leading-tight">
+            {title}
+          </h1>
+        </div>
+        <p className="text-right text-[8pt] font-semibold text-neutral-700">
+          {meta.join(" · ")}
+        </p>
+      </div>
+
+      {purpose.trim() && (
+        <div className="mt-2 border-l-4 border-[var(--brand-raspberry)] bg-[#FDF0F5] px-3 py-1.5">
+          <span className="text-[7pt] font-bold uppercase tracking-[0.18em] text-[var(--brand-raspberry)]">
+            Session purpose{" "}
+          </span>
+          <span className="text-[9.5pt] font-semibold">{purpose}</span>
         </div>
       )}
+
+      <div className="mt-3 columns-2 gap-5 [column-rule:1px_solid_#e5e5e5]">
+        {blocks.map((b, i) => {
+          const startsAt = startTime
+            ? addMinutes(startTime, totalMinutes(blocks.slice(0, i)))
+            : null;
+          return (
+            <section key={i} className="mb-3 break-inside-avoid">
+              <div className="flex items-baseline justify-between gap-2 rounded bg-neutral-100 px-2 py-0.5">
+                <p className="text-[8pt] font-bold uppercase tracking-[0.12em] text-[var(--brand-raspberry)]">
+                  {b.label}
+                </p>
+                <p className="whitespace-nowrap text-[7.5pt] font-semibold text-neutral-600">
+                  {startsAt
+                    ? `${formatTime(startsAt)}–${formatTime(addMinutes(startsAt, b.minutes))}`
+                    : `${b.minutes} min`}
+                </p>
+              </div>
+
+              {b.drills.length === 0 && (
+                <p className="mt-1 px-2 italic text-neutral-500">
+                  Drill to be decided.
+                </p>
+              )}
+
+              {b.drills.map((d, k) => {
+                if (d.custom) {
+                  return (
+                    <div key={k} className="mt-1.5 px-2">
+                      <p className="text-[9pt] font-bold">
+                        {d.part && (
+                          <span className="font-semibold text-neutral-500">
+                            {d.part}:{" "}
+                          </span>
+                        )}
+                        {d.custom.title || "Coach's own drill"}
+                      </p>
+                      {d.custom.notes && (
+                        <p className="mt-0.5 whitespace-pre-line text-neutral-800">
+                          {d.custom.notes}
+                        </p>
+                      )}
+                      {d.custom.drawingPath && (
+                        <CoachDrawing
+                          path={d.custom.drawingPath}
+                          className="mt-1 max-h-[45mm] w-auto rounded border border-neutral-300"
+                        />
+                      )}
+                    </div>
+                  );
+                }
+                const pick = byKey.get(d.key);
+                if (!pick) return null;
+                const drill = pick.drill;
+                const extras = [drill.equipment, drill.groupSize].filter(
+                  Boolean,
+                );
+                const points = (drill.coachingPoints ?? []).slice(0, 4);
+                const ageNote = ageGroup
+                  ? drill.ageNotes?.[ageGroup]
+                  : undefined;
+                return (
+                  <div key={k} className="mt-1.5 px-2">
+                    <p className="text-[9pt] font-bold">
+                      {d.part && (
+                        <span className="font-semibold text-neutral-500">
+                          {d.part}:{" "}
+                        </span>
+                      )}
+                      {drill.title}
+                    </p>
+                    {extras.length > 0 && (
+                      <p className="text-[7.5pt] text-neutral-500">
+                        {extras.join(" · ")}
+                      </p>
+                    )}
+                    {drill.description && (
+                      <p className="mt-0.5 line-clamp-4 text-neutral-800">
+                        {drill.description}
+                      </p>
+                    )}
+                    {points.length > 0 && (
+                      <ul className="mt-0.5 list-disc pl-4 text-neutral-800">
+                        {points.map((pt, x) => (
+                          <li key={x}>{pt}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {ageNote && (
+                      <p className="mt-0.5 text-neutral-800">
+                        <span className="font-semibold">
+                          For this age group:
+                        </span>{" "}
+                        {ageNote}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+
+              {b.coachingFocus && (
+                <p className="mt-1 px-2 text-neutral-800">
+                  <span className="font-semibold">Focus:</span>{" "}
+                  {b.coachingFocus}
+                </p>
+              )}
+            </section>
+          );
+        })}
+      </div>
+
+      <p className="mt-2 border-t border-neutral-200 pt-1 text-center text-[7pt] text-neutral-500">
+        ccnetball.com · Drills, videos and skill sheets in the CC Netball Drills
+        Library
+      </p>
     </div>
   );
 }

@@ -38,6 +38,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type EditableDrill = Drill & {
   description: string;
+  coachingPoints: string[];
   equipment: string;
   groupSize: string;
   makeItEasier: string[];
@@ -52,7 +53,8 @@ type EditableDrill = Drill & {
   unsaved?: boolean;
 };
 
-type ListKey = "variations" | "makeItHarder" | "makeItEasier";
+type ListKey =
+  "coachingPoints" | "variations" | "makeItHarder" | "makeItEasier";
 
 function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
   return {
@@ -60,6 +62,7 @@ function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
     description: d.description ?? "",
     equipment: d.equipment ?? "",
     groupSize: d.groupSize ?? "",
+    coachingPoints: d.coachingPoints?.length ? d.coachingPoints : [""],
     makeItEasier: d.makeItEasier?.length ? d.makeItEasier : [""],
     makeItHarder: d.makeItHarder?.length ? d.makeItHarder : [""],
     variations: d.variations?.length ? d.variations : [""],
@@ -168,9 +171,7 @@ export function DrillsLibraryAdmin({
   const [library, setLibrary] = useState<Library>(() =>
     buildInitialLibrary(categories),
   );
-  const [categorySlug, setCategorySlug] = useState<string>(
-    categories[0].slug,
-  );
+  const [categorySlug, setCategorySlug] = useState<string>(categories[0].slug);
   const [drillSlug, setDrillSlug] = useState<string | undefined>(
     categories[0].drills[0]?.slug,
   );
@@ -290,7 +291,10 @@ export function DrillsLibraryAdmin({
   async function handleSave() {
     if (!drill || saveState.status === "saving") return;
     if (!drill.title.trim()) {
-      setSaveState({ status: "error", message: "Give the drill a title first." });
+      setSaveState({
+        status: "error",
+        message: "Give the drill a title first.",
+      });
       return;
     }
 
@@ -304,7 +308,10 @@ export function DrillsLibraryAdmin({
       setSaveState({ status: "saving", message: "Uploading video… 0%" });
       try {
         const videoId = await uploadToBunny(pendingVideo, drill.title, (pct) =>
-          setSaveState({ status: "saving", message: `Uploading video… ${pct}%` }),
+          setSaveState({
+            status: "saving",
+            message: `Uploading video… ${pct}%`,
+          }),
         );
         videoPath = `${BUNNY_PREFIX}${videoId}`;
       } catch (e) {
@@ -324,7 +331,10 @@ export function DrillsLibraryAdmin({
           contentType: pendingVideo.type || "video/mp4",
         });
       if (error) {
-        setSaveState({ status: "error", message: friendlyError(error.message) });
+        setSaveState({
+          status: "error",
+          message: friendlyError(error.message),
+        });
         return;
       }
     }
@@ -335,14 +345,18 @@ export function DrillsLibraryAdmin({
     if (pendingPdf) {
       setSaveState({ status: "saving", message: "Uploading PDF…" });
       const safeName =
-        pendingPdf.name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") ||
-        "skill-sheet.pdf";
+        pendingPdf.name
+          .replace(/[^a-zA-Z0-9._-]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "skill-sheet.pdf";
       pdfPath = `${DRILL_PDF_FOLDER}/${categorySlug}/${drill.slug}/${stamp()}-${safeName}`;
       const { error } = await supabase.storage
         .from(DRILL_VIDEO_BUCKET)
         .upload(pdfPath, pendingPdf, { contentType: "application/pdf" });
       if (error) {
-        setSaveState({ status: "error", message: friendlyError(error.message) });
+        setSaveState({
+          status: "error",
+          message: friendlyError(error.message),
+        });
         return;
       }
     }
@@ -363,6 +377,7 @@ export function DrillsLibraryAdmin({
         equipment: drill.equipment.trim() || null,
         group_size: drill.groupSize.trim() || null,
         make_it_easier: clean(drill.makeItEasier),
+        coaching_points: clean(drill.coachingPoints),
         make_it_harder: clean(drill.makeItHarder),
         variations: clean(drill.variations),
         tags: drill.tags,
@@ -459,7 +474,10 @@ export function DrillsLibraryAdmin({
         { onConflict: "category_slug,slug" },
       );
       if (error) {
-        setSaveState({ status: "error", message: friendlyError(error.message) });
+        setSaveState({
+          status: "error",
+          message: friendlyError(error.message),
+        });
         return;
       }
     }
@@ -535,7 +553,7 @@ export function DrillsLibraryAdmin({
               const hasVideo = Boolean(d.videoPath);
               const hasPending = Boolean(
                 pendingVideos[`${categorySlug}/${d.slug}`] ||
-                  pendingPdfs[`${categorySlug}/${d.slug}`],
+                pendingPdfs[`${categorySlug}/${d.slug}`],
               );
               return (
                 <li key={d.slug}>
@@ -724,7 +742,9 @@ export function DrillsLibraryAdmin({
                 <Field
                   label="Duration (minutes)"
                   type="number"
-                  value={drill.durationMinutes ? String(drill.durationMinutes) : ""}
+                  value={
+                    drill.durationMinutes ? String(drill.durationMinutes) : ""
+                  }
                   placeholder="Optional"
                   onChange={(v) =>
                     updateDrill({ durationMinutes: Number(v) || 0 })
@@ -757,7 +777,11 @@ export function DrillsLibraryAdmin({
                       >
                         {on && <Check className="size-4" />}
                         {a.label}
-                        <span className={on ? "opacity-80" : "text-muted-foreground"}>
+                        <span
+                          className={
+                            on ? "opacity-80" : "text-muted-foreground"
+                          }
+                        >
                           {a.range}
                         </span>
                       </button>
@@ -769,10 +793,19 @@ export function DrillsLibraryAdmin({
               {/* Description */}
               <TextArea
                 label="Description"
-                hint="What the drill is, how to set it up, and the coaching cue members should focus on. Every section is optional — anything left blank is hidden from members."
+                hint="What the drill is and how to set it up. Every section is optional — anything left blank is hidden from members."
                 value={drill.description}
                 onChange={(v) => updateDrill({ description: v })}
                 rows={5}
+              />
+
+              <ListEditor
+                title="Coaching points"
+                hint="Short cues for the coach to call out. The first few print on session plans."
+                values={drill.coachingPoints}
+                onChange={(i, v) => updateListItem("coachingPoints", i, v)}
+                onAdd={() => addListItem("coachingPoints")}
+                onRemove={(i) => removeListItem("coachingPoints", i)}
               />
 
               <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -827,8 +860,8 @@ export function DrillsLibraryAdmin({
                     </span>
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    Same skill, different execution — note what changes for
-                    each age group.
+                    Same skill, different execution — note what changes for each
+                    age group.
                   </p>
                   <div className="mt-3 space-y-3">
                     {AGE_GROUPS.filter((a) =>
@@ -867,8 +900,8 @@ export function DrillsLibraryAdmin({
                   </span>
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Members get a &quot;Download skill sheet&quot; button for
-                  this drill.
+                  Members get a &quot;Download skill sheet&quot; button for this
+                  drill.
                 </p>
                 {(pendingPdf || drill.pdfPath) && (
                   <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 py-3">
@@ -877,8 +910,10 @@ export function DrillsLibraryAdmin({
                       <span className="truncate">
                         {pendingPdf
                           ? pendingPdf.name
-                          : (drill.pdfPath?.split("/").pop()?.replace(/^[a-z0-9]+-/, "") ??
-                            "Skill sheet")}
+                          : (drill.pdfPath
+                              ?.split("/")
+                              .pop()
+                              ?.replace(/^[a-z0-9]+-/, "") ?? "Skill sheet")}
                       </span>
                       {pendingPdf && (
                         <span className="shrink-0 text-xs font-semibold text-rose-700">
@@ -999,7 +1034,9 @@ export function DrillsLibraryAdmin({
                       .filter(
                         (t) =>
                           !drill.tags.includes(t) &&
-                          !(SUGGESTED_TAGS[drill.sessionSlot] ?? []).includes(t),
+                          !(SUGGESTED_TAGS[drill.sessionSlot] ?? []).includes(
+                            t,
+                          ),
                       )
                       .map((t) => (
                         <button
@@ -1089,6 +1126,7 @@ function MemberPreview({ drill }: { drill: EditableDrill }) {
           )}
         </p>
       )}
+      <PreviewList title="Coaching points" items={drill.coachingPoints} />
       <PreviewList title="Drill variations" items={drill.variations} />
       <PreviewList title="How to make it harder" items={drill.makeItHarder} />
       <PreviewList title="How to make it easier" items={drill.makeItEasier} />
