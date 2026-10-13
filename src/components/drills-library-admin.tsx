@@ -800,7 +800,7 @@ export function DrillsLibraryAdmin({
               />
 
               <ListEditor
-                title="Coaching points"
+                title="Key coaching points"
                 hint="Short cues for the coach to call out. The first few print on session plans."
                 values={drill.coachingPoints}
                 onChange={(i, v) => updateListItem("coachingPoints", i, v)}
@@ -1126,7 +1126,7 @@ function MemberPreview({ drill }: { drill: EditableDrill }) {
           )}
         </p>
       )}
-      <PreviewList title="Coaching points" items={drill.coachingPoints} />
+      <PreviewList title="Key coaching points" items={drill.coachingPoints} />
       <PreviewList title="Drill variations" items={drill.variations} />
       <PreviewList title="How to make it harder" items={drill.makeItHarder} />
       <PreviewList title="How to make it easier" items={drill.makeItEasier} />

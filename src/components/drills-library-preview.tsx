@@ -217,7 +217,7 @@ export function DrillsLibraryPreview({
               </p>
             )}
             <DrillList
-              title="Coaching points"
+              title="Key coaching points"
               items={activeDrill.coachingPoints}
             />
             {activeDrill.pdfUrl && (
