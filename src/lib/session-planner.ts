@@ -182,7 +182,7 @@ export type PlannerRequest = {
   ageGroup: AgeGroupId;
   squad?: string;
   blocks: BlockSpec[];
-  /** Can they play a full match, or is it half court? */
+  /** Legacy — match play now always suggests half court first. */
   fullMatch?: boolean;
   /** Training date (YYYY-MM-DD) and start time (HH:MM), for the printout. */
   sessionDate?: string;

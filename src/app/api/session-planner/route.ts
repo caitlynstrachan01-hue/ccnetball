@@ -55,7 +55,6 @@ function parseRequest(body: unknown): PlannerRequest | null {
     ageGroup: b.ageGroup as AgeGroupId,
     squad: String(b.squad ?? "").slice(0, 200),
     blocks,
-    fullMatch: b.fullMatch === true,
     sessionDate:
       typeof b.sessionDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(b.sessionDate)
         ? b.sessionDate
@@ -168,7 +167,7 @@ Caitlyn's session template — follow it:
 - Warm-up (~10 min) made of short parts in this order: ${WARM_UP_PARTS.map((p) => `${p.label}${p.id === "plyometrics" ? " (2 drills, one must be single-leg)" : ""}`).join(", ")}. Warm-up drills are tagged with their part (e.g. "early movement", "plyometrics", "single leg"); skip a part if nothing is tagged for it.
 - Ballwork / footwork / team drill (~10 min): 2–3 drills from ball-footwork or team-drill slots.
 - Skills (10–15 min each): one drill per skill block, from ANY category (attack, defence, ballwork, footwork or team drills). Usually a mix of attack and defence unless the brief says otherwise. A typical one-hour session has 3 skills.
-- Match play (~10 min): most teams can't play a full match, so use a half-court drill unless the coach says they can play a full match.
+- Match play (~10 min): recommend a half-court drill — most teams can't play a full match at training. Coaches can swap in a full-game drill themselves.
 
 Who you're helping: most coaches are new or fairly inexperienced. They want quality, not super-hard drills, and to develop their athletes across the season. Prefer clear, achievable drills pitched at the age group, and use the coaching focus to give simple, practical cues.
 Read the coach's brief carefully. Never reuse a drill within a session.
@@ -222,7 +221,6 @@ async function askClaude(
     ageGroup: ageGroupLabel(req.ageGroup),
     squad: req.squad || undefined,
     totalMinutes: totalMinutes(req.blocks),
-    matchPlay: req.fullMatch ? "They can play a full match" : "Half court (no full match available)",
     blocks: req.blocks.map((b) => ({ label: b.label, slot: b.slot, minutes: b.minutes })),
     buildingOn: previousChosen
       ? {
@@ -365,7 +363,6 @@ export async function POST(request: Request) {
         ...plan,
         progress: req.progress,
         progressNote: req.progressNote,
-        fullMatch: req.fullMatch,
         sessionDate: req.sessionDate,
         startTime: req.startTime,
       },

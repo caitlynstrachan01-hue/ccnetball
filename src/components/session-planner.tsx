@@ -128,9 +128,6 @@ export function SessionPlanner({
   );
   const [squad, setSquad] = useState("");
   const [brief, setBrief] = useState("");
-  const [fullMatch, setFullMatch] = useState<boolean>(
-    last?.plan.fullMatch ?? false,
-  );
   const [lengthChoice, setLengthChoice] = useState<number | "other">(
     DEFAULT_SESSION_MINUTES,
   );
@@ -196,7 +193,6 @@ export function SessionPlanner({
           ageGroup,
           squad,
           blocks,
-          fullMatch,
           sessionDate: sessionDate || undefined,
           startTime: startTime || undefined,
           previousPlanId: previousPlanId || null,
@@ -242,7 +238,6 @@ export function SessionPlanner({
         blocks,
         `Session — ${formatDate(sessionDate || new Date().toISOString())}`,
       ),
-      fullMatch,
       sessionDate: sessionDate || undefined,
       startTime: startTime || undefined,
     };
@@ -558,24 +553,6 @@ export function SessionPlanner({
                   <Clock className="size-4 text-primary" />
                   {totalMinutes(blocks)} min total
                 </p>
-              </div>
-
-              <div className="mt-5">
-                <p className="text-sm font-semibold text-foreground">
-                  Can your team play a full match at training?
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Chip
-                    small
-                    on={!fullMatch}
-                    onClick={() => setFullMatch(false)}
-                  >
-                    No — half court
-                  </Chip>
-                  <Chip small on={fullMatch} onClick={() => setFullMatch(true)}>
-                    Yes — full match
-                  </Chip>
-                </div>
               </div>
             </Step>
 
