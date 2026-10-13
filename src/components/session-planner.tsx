@@ -273,7 +273,9 @@ export function SessionPlanner({
   const lastSkills = previousPlan
     ? previousPlan.plan.blocks
         .filter((b) => b.slot === "skill")
-        .flatMap((b) => b.drills.map((d) => drillTitle(categories, d.key)))
+        .flatMap((b) =>
+          b.drills.map((d) => d.custom?.title || drillTitle(categories, d.key)),
+        )
         .join(" · ")
     : "";
 
@@ -838,7 +840,7 @@ export function PlanView({
       )}
       {isEmpty && editable && (
         <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
-          Use &quot;Add a drill&quot; in each part of the session, then press{" "}
+          In each part of the session, add a drill from the library or write your own, then press{" "}
           <strong>Save changes</strong>.
         </p>
       )}
@@ -868,6 +870,75 @@ export function PlanView({
 
               <ul className="mt-2 divide-y divide-border/60">
                 {b.drills.map((d, k) => {
+                  if (d.custom) {
+                    const setCustom = (
+                      patch: Partial<{ title: string; notes: string }>,
+                    ) =>
+                      changeBlock(i, {
+                        drills: b.drills.map((x, y) =>
+                          y === k
+                            ? { ...x, custom: { ...x.custom!, ...patch } }
+                            : x,
+                        ),
+                      });
+                    return (
+                      <li key={`${d.key}-${k}`} className="py-3 first:pt-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              {d.part ? `${d.part} · ` : ""}Your own drill
+                            </p>
+                            {editable ? (
+                              <>
+                                <input
+                                  value={d.custom.title}
+                                  onChange={(e) =>
+                                    setCustom({ title: e.target.value })
+                                  }
+                                  placeholder="Drill name"
+                                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                />
+                                <textarea
+                                  value={d.custom.notes}
+                                  onChange={(e) =>
+                                    setCustom({ notes: e.target.value })
+                                  }
+                                  rows={3}
+                                  placeholder="How it runs — set-up, players, coaching points…"
+                                  className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <h3 className="font-display text-base font-bold leading-snug">
+                                  {d.custom.title || "Untitled drill"}
+                                </h3>
+                                {d.custom.notes && (
+                                  <p className="mt-1 whitespace-pre-line text-sm text-foreground/90">
+                                    {d.custom.notes}
+                                  </p>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          {editable && (
+                            <button
+                              type="button"
+                              aria-label="Remove drill"
+                              onClick={() =>
+                                changeBlock(i, {
+                                  drills: b.drills.filter((_, x) => x !== k),
+                                })
+                              }
+                              className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 print:hidden"
+                            >
+                              <X className="size-4" />
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  }
                   const pick = byKey.get(d.key);
                   const swapOptions = optionsFor(b, d.key);
                   return (
@@ -961,24 +1032,45 @@ export function PlanView({
                 })}
               </ul>
 
-              {editable && addOptions.length > 0 && (
-                <select
-                  value=""
-                  onChange={(e) => {
-                    if (!e.target.value) return;
-                    changeBlock(i, {
-                      drills: [...b.drills, { key: e.target.value }],
-                    });
-                  }}
-                  className="mt-2 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus:border-primary print:hidden"
-                >
-                  <option value="">+ Add a drill…</option>
-                  {addOptions.map((o) => (
-                    <option key={o.key} value={o.key}>
-                      {o.drill.title} — {o.categoryName}
-                    </option>
-                  ))}
-                </select>
+              {editable && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 print:hidden">
+                  {addOptions.length > 0 && (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        changeBlock(i, {
+                          drills: [...b.drills, { key: e.target.value }],
+                        });
+                      }}
+                      className="rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus:border-primary"
+                    >
+                      <option value="">+ Add a drill from the library…</option>
+                      {addOptions.map((o) => (
+                        <option key={o.key} value={o.key}>
+                          {o.drill.title} — {o.categoryName}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      changeBlock(i, {
+                        drills: [
+                          ...b.drills,
+                          {
+                            key: `custom-${Date.now().toString(36)}`,
+                            custom: { title: "", notes: "" },
+                          },
+                        ],
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+                  >
+                    <PencilLine className="size-3.5" /> Write your own drill
+                  </button>
+                </div>
               )}
 
               {b.coachingFocus && (

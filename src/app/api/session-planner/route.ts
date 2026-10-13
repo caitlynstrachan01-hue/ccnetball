@@ -89,7 +89,8 @@ function describePlan(p: SavedPlan, catalogByKey: Map<string, CatalogDrill>) {
       minutes: b.minutes,
       drills: b.drills.map((d) => ({
         key: d.key,
-        title: catalogByKey.get(d.key)?.drill.title ?? d.key,
+        title: d.custom?.title || catalogByKey.get(d.key)?.drill.title || d.key,
+        coachsOwnDrill: d.custom ? d.custom.notes || true : undefined,
         part: d.part,
       })),
       focus: b.coachingFocus || undefined,

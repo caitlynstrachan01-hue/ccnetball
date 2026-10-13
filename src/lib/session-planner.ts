@@ -101,10 +101,12 @@ export const SUGGESTED_TAGS: Partial<Record<SessionSlotId, string[]>> = {
 };
 
 export type PlanDrill = {
-  /** "category/drill" */
+  /** "category/drill", or "custom-…" for a drill the coach wrote themselves. */
   key: string;
   /** Warm-up part label, e.g. "Plyometrics (single leg)". */
   part?: string;
+  /** A coach's own drill, not from the library. */
+  custom?: { title: string; notes: string };
 };
 
 export type PlanBlock = BlockSpec & {
