@@ -83,6 +83,7 @@ function applyRow(
   }
   return {
     ...base,
+    saved: true,
     title: row.title || base.title,
     description: row.description ?? undefined,
     coachingPoints: nonEmpty(row.coaching_points),

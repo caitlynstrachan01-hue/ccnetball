@@ -55,6 +55,8 @@ export type Drill = {
   sessionSlot?: SessionSlotId;
   /** Added through the admin page rather than this file. */
   custom?: boolean;
+  /** Caitlyn has saved this drill (it has a row in the database). */
+  saved?: boolean;
 };
 
 export type DrillCategory = {

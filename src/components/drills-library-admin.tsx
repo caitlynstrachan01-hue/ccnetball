@@ -417,7 +417,7 @@ export function DrillsLibraryAdmin({
       );
     }
 
-    updateDrill({ videoPath, pdfPath, unsaved: false });
+    updateDrill({ videoPath, pdfPath, unsaved: false, saved: true });
     setPendingVideos((prev) => {
       const next = { ...prev };
       delete next[key];
@@ -540,7 +540,8 @@ export function DrillsLibraryAdmin({
                       : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
                   }
                 >
-                  {cat.name}
+                  {cat.name} (
+                  {(library[cat.slug] ?? []).filter((d) => d.saved).length})
                 </button>
               );
             })}
