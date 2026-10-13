@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,6 +10,7 @@ import {
   ExternalLink,
   FileDown,
   History,
+  Brush,
   PencilLine,
   Star,
   Plus,
@@ -42,7 +43,40 @@ import {
   type Progress,
   type SavedPlan,
 } from "@/lib/session-planner";
+import { DrawingPad } from "@/components/drawing-pad";
 import { createClient } from "@/lib/supabase/client";
+
+const DRAWINGS_BUCKET = "coach-drawings";
+
+/** A coach's saved court drawing, loaded through a short-lived link. */
+function CoachDrawing({ path }: { path: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    createClient()
+      .storage.from(DRAWINGS_BUCKET)
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (live) setUrl(data?.signedUrl ?? null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [path]);
+  if (!url)
+    return (
+      <div className="mt-2 aspect-[4/3] w-full max-w-md animate-pulse rounded-xl bg-muted" />
+    );
+  return (
+    // Signed Supabase link — not something next/image can optimise.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt="Drill drawing"
+      className="mt-2 w-full max-w-md rounded-xl border border-border"
+    />
+  );
+}
 
 const PLAN_COLUMNS =
   "id, title, brief, age_group, duration_minutes, plan, created_at";
@@ -647,6 +681,10 @@ export function PlanView({
   onSaved?: (plan: SavedPlan) => void;
 }) {
   const editable = mode === "own";
+  const [drawingFor, setDrawingFor] = useState<{
+    block: number;
+    drill: number;
+  } | null>(null);
   const [title, setTitle] = useState(plan.title);
   const [blocks, setBlocks] = useState<PlanBlock[]>(plan.plan.blocks);
   const [dirty, setDirty] = useState(false);
@@ -676,6 +714,33 @@ export function PlanView({
     );
   }
 
+  async function saveDrawing(png: Blob) {
+    if (!drawingFor) return;
+    const { block, drill } = drawingFor;
+    const supabase = createClient();
+    const { data: auth } = await supabase.auth.getUser();
+    const target = blocks[block]?.drills[drill];
+    if (!auth.user || !target?.custom) return;
+    const path = `${auth.user.id}/${plan.id}/${target.key}-${Date.now().toString(36)}.png`;
+    const { error } = await supabase.storage
+      .from(DRAWINGS_BUCKET)
+      .upload(path, png, { contentType: "image/png" });
+    if (error) {
+      window.alert(
+        /bucket/i.test(error.message)
+          ? "Drawings aren't switched on yet — please try again later."
+          : `Couldn't save the drawing: ${error.message}`,
+      );
+      return;
+    }
+    changeBlock(block, {
+      drills: blocks[block].drills.map((x, y) =>
+        y === drill ? { ...x, custom: { ...x.custom!, drawingPath: path } } : x,
+      ),
+    });
+    setDrawingFor(null);
+  }
+
   async function save() {
     setSaving(true);
     const updatedPlan = { ...plan.plan, title, blocks };
@@ -694,6 +759,9 @@ export function PlanView({
 
   return (
     <div className="rounded-3xl border border-border/70 bg-card p-6 md:p-8 print:border-0 print:p-0">
+      {drawingFor && (
+        <DrawingPad onSave={saveDrawing} onCancel={() => setDrawingFor(null)} />
+      )}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           {badge && (
@@ -786,7 +854,7 @@ export function PlanView({
                 {b.drills.map((d, k) => {
                   if (d.custom) {
                     const setCustom = (
-                      patch: Partial<{ title: string; notes: string }>,
+                      patch: Partial<NonNullable<typeof d.custom>>,
                     ) =>
                       changeBlock(i, {
                         drills: b.drills.map((x, y) =>
@@ -821,6 +889,34 @@ export function PlanView({
                                   placeholder="How it runs — set-up, players, coaching points…"
                                   className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                                 />
+                                {d.custom.drawingPath && (
+                                  <CoachDrawing path={d.custom.drawingPath} />
+                                )}
+                                <div className="mt-2 flex flex-wrap gap-2 print:hidden">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setDrawingFor({ block: i, drill: k })
+                                    }
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+                                  >
+                                    <Brush className="size-3.5" />
+                                    {d.custom.drawingPath
+                                      ? "Redraw"
+                                      : "Draw it"}
+                                  </button>
+                                  {d.custom.drawingPath && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setCustom({ drawingPath: undefined })
+                                      }
+                                      className="text-xs font-semibold text-muted-foreground transition hover:text-red-600"
+                                    >
+                                      Remove drawing
+                                    </button>
+                                  )}
+                                </div>
                               </>
                             ) : (
                               <>
@@ -831,6 +927,9 @@ export function PlanView({
                                   <p className="mt-1 whitespace-pre-line text-sm text-foreground/90">
                                     {d.custom.notes}
                                   </p>
+                                )}
+                                {d.custom.drawingPath && (
+                                  <CoachDrawing path={d.custom.drawingPath} />
                                 )}
                               </>
                             )}

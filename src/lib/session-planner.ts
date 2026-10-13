@@ -106,7 +106,7 @@ export type PlanDrill = {
   /** Warm-up part label, e.g. "Plyometrics (single leg)". */
   part?: string;
   /** A coach's own drill, not from the library. */
-  custom?: { title: string; notes: string };
+  custom?: { title: string; notes: string; drawingPath?: string };
 };
 
 export type PlanBlock = BlockSpec & {
