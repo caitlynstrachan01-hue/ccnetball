@@ -10,7 +10,6 @@ import {
   ExternalLink,
   FileDown,
   History,
-  Copy,
   PencilLine,
   Star,
   Plus,
@@ -63,12 +62,9 @@ function withNormalisedBlocks(p: SavedPlan): SavedPlan {
 export function SessionPlanner({
   categories,
   initialPlans,
-  recommendedPlans = [],
 }: {
   categories: DrillCategory[];
   initialPlans: SavedPlan[];
-  /** Plans Caitlyn has recommended, already stripped of the coach's details. */
-  recommendedPlans?: SavedPlan[];
 }) {
   const [plans, setPlans] = useState<SavedPlan[]>(() =>
     initialPlans.map(withNormalisedBlocks),
@@ -96,38 +92,6 @@ export function SessionPlanner({
   const [error, setError] = useState<string | null>(null);
 
   const viewing = plans.find((p) => p.id === viewingId) ?? null;
-  const viewingRecommended =
-    recommendedPlans.find((p) => p.id === viewingId) ?? null;
-  const recommendedForAge = recommendedPlans.filter(
-    (p) => !ageGroup || !p.age_group || p.age_group === ageGroup,
-  );
-  const [copying, setCopying] = useState(false);
-
-  async function copyRecommended(rec: SavedPlan) {
-    setCopying(true);
-    const supabase = createClient();
-    const { data: auth } = await supabase.auth.getUser();
-    const { data, error: insertError } = await supabase
-      .from("session_plans")
-      .insert({
-        user_id: auth.user?.id,
-        title: rec.title,
-        brief: null,
-        age_group: rec.age_group,
-        duration_minutes: rec.duration_minutes,
-        plan: { ...rec.plan, source: "coach", copiedFrom: rec.id },
-      })
-      .select(PLAN_COLUMNS)
-      .single();
-    setCopying(false);
-    if (insertError || !data) {
-      window.alert(
-        `Couldn't copy it: ${insertError?.message ?? "unknown error"}`,
-      );
-      return;
-    }
-    openPlan(data as SavedPlan);
-  }
   const previousPlan = plans.find((p) => p.id === previousPlanId) ?? null;
   const skillCount = blocks.filter((b) => b.slot === "skill").length;
 
@@ -282,27 +246,7 @@ export function SessionPlanner({
   return (
     <div className="grid gap-8 lg:grid-cols-12">
       <div className="lg:col-span-8">
-        {viewingRecommended ? (
-          <PlanView
-            key={viewingRecommended.id}
-            plan={viewingRecommended}
-            categories={categories}
-            mode="view"
-            badge="Recommended by Caitlyn"
-            onClose={() => setViewingId(null)}
-            actions={
-              <button
-                type="button"
-                onClick={() => copyRecommended(viewingRecommended)}
-                disabled={copying}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02] disabled:opacity-60"
-              >
-                <Copy className="size-4" />
-                {copying ? "Copying…" : "Use this session"}
-              </button>
-            }
-          />
-        ) : viewing ? (
+        {viewing ? (
           <PlanView
             key={viewing.id}
             plan={viewing}
@@ -553,50 +497,13 @@ export function SessionPlanner({
       </div>
 
       {/* Saved sessions */}
-      <aside className="space-y-6 lg:col-span-4 print:hidden">
-        {recommendedForAge.length > 0 && (
-          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
-            <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              <Star className="size-4" /> Recommended by Caitlyn
-            </p>
-            <ul className="mt-4 space-y-1">
-              {recommendedForAge.slice(0, 8).map((p) => (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() => setViewingId(p.id)}
-                    className={
-                      p.id === viewingId
-                        ? "flex w-full items-start gap-3 rounded-xl bg-primary/10 px-3 py-2.5 text-left"
-                        : "flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-background"
-                    }
-                  >
-                    <Star className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">
-                        {p.title}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {[
-                          p.duration_minutes && `${p.duration_minutes} min`,
-                          AGE_GROUPS.find((a) => a.id === p.age_group)?.label,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+      <aside className="lg:col-span-4 print:hidden">
         <div className="rounded-2xl border border-border/70 bg-card p-5 lg:sticky lg:top-24">
           <div className="flex items-center justify-between">
             <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
               <History className="size-4" /> Your sessions
             </p>
-            {(viewing || viewingRecommended) && (
+            {viewing && (
               <button
                 type="button"
                 onClick={() => setViewingId(null)}
@@ -608,13 +515,20 @@ export function SessionPlanner({
           </div>
           {plans.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
-              Your session plans are saved here, so the next one can build on
-              them.
+              Your session plans are saved here, season after season, so you can
+              look back and the next one can build on them.
             </p>
           ) : (
-            <ul className="mt-4 space-y-1">
-              {plans.map((p) => (
+            <ul className="mt-4 max-h-[70vh] space-y-1 overflow-y-auto">
+              {plans.map((p, idx) => (
                 <li key={p.id}>
+                  {(idx === 0 ||
+                    new Date(plans[idx - 1].created_at).getFullYear() !==
+                      new Date(p.created_at).getFullYear()) && (
+                    <p className="px-3 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground first:pt-0">
+                      {new Date(p.created_at).getFullYear()} season
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setViewingId(p.id)}
@@ -840,8 +754,8 @@ export function PlanView({
       )}
       {isEmpty && editable && (
         <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
-          In each part of the session, add a drill from the library or write your own, then press{" "}
-          <strong>Save changes</strong>.
+          In each part of the session, add a drill from the library or write
+          your own, then press <strong>Save changes</strong>.
         </p>
       )}
 

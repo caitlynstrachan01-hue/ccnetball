@@ -10,7 +10,8 @@ import {
 } from "@/lib/drills-library-content";
 import type { ReviewPlan } from "@/lib/session-plans.server";
 
-type Filter = "all" | "recommended";
+/** session_plans.recommended stores Caitlyn's private star. */
+type Filter = "all" | "starred";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-AU", {
@@ -37,7 +38,6 @@ export function SessionPlansReview({
   const [filter, setFilter] = useState<Filter>("all");
   const [age, setAge] = useState<AgeGroupId | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  const [titleDraft, setTitleDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +50,6 @@ export function SessionPlansReview({
 
   function openPlan(p: ReviewPlan) {
     setOpenId(p.id);
-    setTitleDraft(p.title);
     setError(null);
   }
 
@@ -60,7 +59,7 @@ export function SessionPlansReview({
     const res = await fetch("/api/admin/session-plans", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id: p.id, recommended, title: titleDraft }),
+      body: JSON.stringify({ id: p.id, recommended }),
     });
     setBusy(false);
     if (!res.ok) {
@@ -73,11 +72,7 @@ export function SessionPlansReview({
       return;
     }
     setPlans((prev) =>
-      prev.map((x) =>
-        x.id === p.id
-          ? { ...x, recommended, title: titleDraft.trim() || x.title }
-          : x,
-      ),
+      prev.map((x) => (x.id === p.id ? { ...x, recommended } : x)),
     );
   }
 
@@ -86,7 +81,7 @@ export function SessionPlansReview({
       <aside className="lg:col-span-4">
         <div className="rounded-2xl border border-border/70 bg-card p-4 lg:sticky lg:top-24">
           <div className="flex flex-wrap gap-2">
-            {(["all", "recommended"] as const).map((f) => (
+            {(["all", "starred"] as const).map((f) => (
               <button
                 key={f}
                 type="button"
@@ -97,7 +92,7 @@ export function SessionPlansReview({
                     : "rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40"
                 }
               >
-                {f === "all" ? "All plans" : "Recommended"}
+                {f === "all" ? "All plans" : "Starred"}
               </button>
             ))}
           </div>
@@ -122,8 +117,8 @@ export function SessionPlansReview({
 
           {visible.length === 0 ? (
             <p className="mt-6 px-2 text-sm text-muted-foreground">
-              No session plans here yet. They&apos;ll appear as coaches use
-              the planner.
+              No session plans here yet. They&apos;ll appear as coaches use the
+              planner.
             </p>
           ) : (
             <ul className="mt-4 max-h-[70vh] space-y-1 overflow-y-auto">
@@ -177,56 +172,39 @@ export function SessionPlansReview({
             onClose={() => setOpenId(null)}
             actions={
               <div className="w-full">
-                <label className="block">
-                  <span className="text-xs font-semibold text-foreground/80">
-                    Title other coaches will see
-                  </span>
-                  <input
-                    value={titleDraft}
-                    onChange={(e) => setTitleDraft(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </label>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Recommended plans show to coaches in the same age group,
-                  without this coach&apos;s name, brief or notes.
+                <p className="text-xs text-muted-foreground">
+                  Stars are private to you — coaches never see them. Starred
+                  plans are your bank of good examples to repurpose.
                 </p>
                 {error && (
                   <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
                     {error}
                   </p>
                 )}
-                <div className="mt-4 flex flex-wrap justify-end gap-3">
-                  {open.recommended ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => update(open, false)}
-                        className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground/80 transition hover:bg-muted disabled:opacity-60"
-                      >
-                        Stop recommending
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => update(open, true)}
-                        className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md disabled:opacity-60"
-                      >
-                        Save title
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => update(open, true)}
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02] disabled:opacity-60"
-                    >
-                      <Star className="size-4" />
-                      {busy ? "Saving…" : "Recommend to other coaches"}
-                    </button>
-                  )}
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => update(open, !open.recommended)}
+                    className={
+                      open.recommended
+                        ? "inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground/80 transition hover:bg-muted disabled:opacity-60"
+                        : "inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02] disabled:opacity-60"
+                    }
+                  >
+                    <Star
+                      className={
+                        open.recommended
+                          ? "size-4 fill-primary text-primary"
+                          : "size-4"
+                      }
+                    />
+                    {busy
+                      ? "Saving…"
+                      : open.recommended
+                        ? "Remove star"
+                        : "Star as a good example"}
+                  </button>
                 </div>
               </div>
             }

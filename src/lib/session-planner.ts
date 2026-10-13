@@ -155,8 +155,6 @@ export type SavedPlan = {
     progress?: Progress | null;
     progressNote?: string;
     fullMatch?: boolean;
-    /** Set when a coach copied one of Caitlyn's recommended plans. */
-    copiedFrom?: string;
   };
   created_at: string;
 };

@@ -8,7 +8,6 @@ import {
   loadDrillCategories,
 } from "@/lib/drills-store.server";
 import type { SavedPlan } from "@/lib/session-planner";
-import { loadRecommendedPlans } from "@/lib/session-plans.server";
 
 export const metadata = {
   title: "Session Planner — Drills Library",
@@ -22,15 +21,14 @@ export default async function PlannerPage() {
   if (!user) redirect("/login?next=/library/planner");
   if (!hasAccess) redirect("/library");
 
-  const [categories, recommendedPlans, { data: plans }] = await Promise.all([
+  const [categories, { data: plans }] = await Promise.all([
     loadDrillCategories(),
-    loadRecommendedPlans(),
     supabase
       .from("session_plans")
       .select("id, title, brief, age_group, duration_minutes, plan, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(20),
+      .limit(300),
   ]);
 
   return (
@@ -64,7 +62,6 @@ export default async function PlannerPage() {
           <SessionPlanner
             categories={categories}
             initialPlans={(plans ?? []) as SavedPlan[]}
-            recommendedPlans={recommendedPlans}
           />
         </div>
       </section>

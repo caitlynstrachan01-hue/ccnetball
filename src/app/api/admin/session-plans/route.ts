@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getLibraryAccess } from "@/lib/drills-store.server";
 import { createAdminClient } from "@/lib/supabase/server";
 
-/** Recommend (or stop recommending) a coach's plan, optionally renaming it. */
+/** Star (or un-star) a coach's plan as a private good example. */
 export async function PATCH(request: Request) {
   const { isAdmin } = await getLibraryAccess();
   if (!isAdmin) return NextResponse.json({ error: "Admins only." }, { status: 403 });

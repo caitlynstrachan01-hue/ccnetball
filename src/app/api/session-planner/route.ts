@@ -168,7 +168,7 @@ If building on a previous session: when athletes need more time, repeat or light
 Caitlyn's own example sessions, when given, show the standard to aim for.
 Australian English, warm and expert tone.`;
 
-/** Caitlyn's own and recommended sessions — the planner's worked examples. */
+/** Caitlyn's own sessions and the coaches' plans she starred — the planner's worked examples. */
 async function loadExamplePlans(excludeUserId: string): Promise<SavedPlan[]> {
   try {
     const admin = createAdminClient();
@@ -179,7 +179,7 @@ async function loadExamplePlans(excludeUserId: string): Promise<SavedPlan[]> {
     const ids = (admins ?? [])
       .map((a: { id: string }) => a.id)
       .filter((id: string) => id !== excludeUserId);
-    // Caitlyn's own sessions plus coaches' plans she has recommended.
+    // Caitlyn's own sessions plus coaches' plans she starred as good examples.
     const filters = ["recommended.eq.true"];
     if (ids.length) filters.push(`user_id.in.(${ids.join(",")})`);
     const { data, error } = await admin

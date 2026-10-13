@@ -11,7 +11,7 @@ import { loadPlansForReview } from "@/lib/session-plans.server";
 
 export const metadata = {
   title: "Admin — Session Plans",
-  description: "Review coaches' session plans and recommend the best ones.",
+  description: "Browse coaches' session plans and star good examples.",
   robots: { index: false, follow: false },
 };
 
@@ -43,8 +43,8 @@ export default async function SessionPlansAdminPage() {
           </h1>
           <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
             Every plan coaches create is saved here. Open one and tap
-            &quot;Recommend&quot; to share it with other coaches in the same
-            age group.
+            &quot;Star&quot; to keep it as a good example — stars are private
+            to you.
           </p>
         </Reveal>
 
