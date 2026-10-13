@@ -469,7 +469,9 @@ export function DrillsLibraryAdmin({
           slug: drill.slug,
           title: drill.title.trim() || "Removed drill",
           hidden: true,
-          published: false,
+          // Stays "published" so members' row-level security can still read
+          // the row and hide the built-in drill it replaces.
+          published: true,
         },
         { onConflict: "category_slug,slug" },
       );

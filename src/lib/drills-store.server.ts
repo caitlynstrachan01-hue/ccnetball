@@ -7,6 +7,7 @@ import {
   mergeDrills,
   type DrillRow,
 } from "@/lib/drills-store";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 /** Seconds a member's video link stays valid. */
@@ -20,7 +21,14 @@ export async function loadDrillCategories({
   includeUnpublished = false,
 } = {}): Promise<DrillCategory[]> {
   try {
-    return await loadFromDatabase(includeUnpublished);
+    return await loadFromDatabase(createAdminClient(), includeUnpublished);
+  } catch (error) {
+    // Service-role key missing or wrong on the server — read through the
+    // viewer's own session instead (row-level security still applies).
+    console.error("Drills: service-role load failed, using session", error);
+  }
+  try {
+    return await loadFromDatabase(await createClient(), includeUnpublished);
   } catch (error) {
     // Never take the library down — fall back to the built-in drill list.
     console.error("Failed to load drills from Supabase", error);
@@ -29,10 +37,9 @@ export async function loadDrillCategories({
 }
 
 async function loadFromDatabase(
+  admin: SupabaseClient,
   includeUnpublished: boolean,
 ): Promise<DrillCategory[]> {
-  const admin = createAdminClient();
-
   const select = (columns: string) => {
     const query = admin.from("drills").select(columns);
     // Hidden rows must still load so they can knock out built-in drills.
