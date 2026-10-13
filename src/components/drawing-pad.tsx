@@ -8,11 +8,12 @@ type Court = "half" | "full" | "blank";
 type Point = { x: number; y: number };
 type Stroke = { color: string; width: number; points: Point[] };
 
+// Portrait courts — easier to draw on a phone. Netball court is 15.25m wide
+// × 30.5m long; "half" shows the centre third + goal third, goal at the bottom.
 const COURTS: { id: Court; label: string; width: number; height: number }[] = [
-  // Netball court is 30.5m × 15.25m; "half" shows goal third + centre third.
-  { id: "half", label: "Half court", width: 1000, height: 750 },
-  { id: "full", label: "Full court", width: 1000, height: 500 },
-  { id: "blank", label: "Blank", width: 1000, height: 625 },
+  { id: "half", label: "Half court", width: 750, height: 1000 },
+  { id: "full", label: "Full court", width: 500, height: 1000 },
+  { id: "blank", label: "Blank", width: 750, height: 1000 },
 ];
 
 const PENS = [
@@ -24,7 +25,7 @@ const PENS = [
 const COURT_GREEN = "#EEF6F0";
 const LINE = "#8FA3B8";
 
-/** Draw court markings scaled to the canvas. */
+/** Draw court markings scaled to the canvas (length runs top to bottom). */
 function drawCourt(
   ctx: CanvasRenderingContext2D,
   court: Court,
@@ -37,51 +38,59 @@ function drawCourt(
 
   const lengthM = court === "full" ? 30.5 : 20.33;
   const pad = 24;
-  const sx = (w - pad * 2) / lengthM;
-  const sy = (h - pad * 2) / 15.25;
+  const sx = (w - pad * 2) / 15.25;
+  const sy = (h - pad * 2) / lengthM;
   const X = (m: number) => pad + m * sx;
   const Y = (m: number) => pad + m * sy;
+  const mid = 7.625;
 
   ctx.strokeStyle = LINE;
   ctx.lineWidth = 5;
-  ctx.strokeRect(X(0), Y(0), lengthM * sx, 15.25 * sy);
+  ctx.strokeRect(X(0), Y(0), 15.25 * sx, lengthM * sy);
 
-  // Transverse lines at each third.
-  for (const m of court === "full" ? [10.17, 20.33] : [10.17]) {
+  // Transverse lines between the thirds.
+  for (const m of court === "full" ? [10.17, 20.33] : [lengthM - 10.17]) {
     ctx.beginPath();
-    ctx.moveTo(X(m), Y(0));
-    ctx.lineTo(X(m), Y(15.25));
+    ctx.moveTo(X(0), Y(m));
+    ctx.lineTo(X(15.25), Y(m));
     ctx.stroke();
   }
 
-  // Goal circles — 4.9m radius semicircles centred on each goal line.
-  const goalCircle = (atM: number, dir: 1 | -1) => {
+  // Goal circles — 4.9m radius semicircles on the goal lines.
+  const goalCircle = (atM: number, opensDown: boolean) => {
     ctx.beginPath();
     ctx.ellipse(
-      X(atM),
-      Y(7.625),
+      X(mid),
+      Y(atM),
       4.9 * sx,
       4.9 * sy,
       0,
-      -Math.PI / 2,
-      Math.PI / 2,
-      dir === -1,
+      opensDown ? 0 : Math.PI,
+      opensDown ? Math.PI : Math.PI * 2,
     );
     ctx.stroke();
   };
-  goalCircle(0, 1);
-  if (court === "full") goalCircle(30.5, -1);
+  goalCircle(lengthM, false);
+  if (court === "full") goalCircle(0, true);
 
-  // Centre circle (0.9m) in the middle of the centre third.
+  // Centre circle (0.9m), 15.25m from each goal line.
   ctx.beginPath();
-  ctx.ellipse(X(15.25), Y(7.625), 0.45 * sx, 0.45 * sy, 0, 0, Math.PI * 2);
+  ctx.ellipse(
+    X(mid),
+    Y(lengthM - 15.25),
+    0.45 * sx,
+    0.45 * sy,
+    0,
+    0,
+    Math.PI * 2,
+  );
   ctx.stroke();
 
   // Goal posts.
   ctx.fillStyle = "#94A3B8";
-  for (const m of court === "full" ? [0, 30.5] : [0]) {
+  for (const m of court === "full" ? [0, lengthM] : [lengthM]) {
     ctx.beginPath();
-    ctx.arc(X(m), Y(7.625), 7, 0, Math.PI * 2);
+    ctx.arc(X(mid), Y(m), 7, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -117,6 +126,8 @@ export function DrawingPad({
   onCancel: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [display, setDisplay] = useState<{ w: number; h: number } | null>(null);
   const [court, setCourt] = useState<Court>("half");
   const [pen, setPen] = useState(PENS[0].color);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
@@ -134,6 +145,23 @@ export function DrawingPad({
   }, [court, size.width, size.height, strokes]);
 
   useEffect(redraw, [redraw]);
+
+  // Fit the whole court on screen without stretching it.
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const fit = () => {
+      const scale = Math.min(
+        box.clientWidth / size.width,
+        box.clientHeight / size.height,
+      );
+      setDisplay({ w: size.width * scale, h: size.height * scale });
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [size.width, size.height]);
 
   // Stop the page scrolling behind the pad.
   useEffect(() => {
@@ -219,21 +247,27 @@ export function DrawingPad({
         </button>
       </div>
 
-      <div className="mx-auto mt-3 flex min-h-0 w-full max-w-4xl flex-1 items-center justify-center">
-        <canvas
-          ref={canvasRef}
-          width={size.width}
-          height={size.height}
-          onPointerDown={start}
-          onPointerMove={move}
-          onPointerUp={end}
-          onPointerCancel={end}
-          style={{
-            aspectRatio: `${size.width} / ${size.height}`,
-            touchAction: "none",
-          }}
-          className="max-h-full w-full max-w-full rounded-2xl border border-border shadow-sm"
-        />
+      <div
+        ref={boxRef}
+        className="relative mx-auto mt-3 min-h-0 w-full min-w-0 max-w-4xl flex-1"
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <canvas
+            ref={canvasRef}
+            width={size.width}
+            height={size.height}
+            onPointerDown={start}
+            onPointerMove={move}
+            onPointerUp={end}
+            onPointerCancel={end}
+            style={{
+              width: display?.w ?? 0,
+              height: display?.h ?? 0,
+              touchAction: "none",
+            }}
+            className="rounded-2xl border border-border shadow-sm"
+          />
+        </div>
       </div>
 
       <div className="mx-auto mt-3 flex w-full max-w-4xl flex-wrap items-center justify-between gap-3">

@@ -61,13 +61,22 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ScrollProgressBar />
+        {/* Site chrome stays off printed pages (e.g. session plans). */}
+        <div className="contents print:hidden">
+          <ScrollProgressBar />
+        </div>
         <PostHogProvider>
-          <SiteHeader />
+          <div className="contents print:hidden">
+            <SiteHeader />
+          </div>
           <main className="flex-1">{children}</main>
-          <SiteFooter />
+          <div className="contents print:hidden">
+            <SiteFooter />
+          </div>
         </PostHogProvider>
-        <CookieConsent />
+        <div className="contents print:hidden">
+          <CookieConsent />
+        </div>
         <MetaPixel />
         <GoogleAnalytics />
       </body>

@@ -56,6 +56,14 @@ function parseRequest(body: unknown): PlannerRequest | null {
     squad: String(b.squad ?? "").slice(0, 200),
     blocks,
     fullMatch: b.fullMatch === true,
+    sessionDate:
+      typeof b.sessionDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(b.sessionDate)
+        ? b.sessionDate
+        : undefined,
+    startTime:
+      typeof b.startTime === "string" && /^\d{2}:\d{2}$/.test(b.startTime)
+        ? b.startTime
+        : undefined,
     previousPlanId:
       typeof b.previousPlanId === "string" ? b.previousPlanId : null,
     progress,
@@ -210,7 +218,7 @@ async function askClaude(
   const progressLabel = PROGRESS_OPTIONS.find((p) => p.id === req.progress)?.label;
 
   const prompt = {
-    coachBrief: req.brief || "(no brief given — build a balanced session)",
+    sessionPurpose: req.brief || "(no purpose given — build a balanced session)",
     ageGroup: ageGroupLabel(req.ageGroup),
     squad: req.squad || undefined,
     totalMinutes: totalMinutes(req.blocks),
@@ -358,6 +366,8 @@ export async function POST(request: Request) {
         progress: req.progress,
         progressNote: req.progressNote,
         fullMatch: req.fullMatch,
+        sessionDate: req.sessionDate,
+        startTime: req.startTime,
       },
     })
     .select("id, title, brief, age_group, duration_minutes, plan, created_at")

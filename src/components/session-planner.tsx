@@ -27,10 +27,14 @@ import {
   type DrillCategory,
 } from "@/lib/drills-library-content";
 import {
-  DEFAULT_PRESET_ID,
+  DEFAULT_SESSION_MINUTES,
   MAX_SKILLS,
   PROGRESS_OPTIONS,
-  STRUCTURE_PRESETS,
+  SESSION_LENGTHS,
+  addMinutes,
+  formatTime,
+  recommendedSkills,
+  structureFor,
   blankPlan,
   buildCatalog,
   candidateSlots,
@@ -81,8 +85,20 @@ function CoachDrawing({ path }: { path: string }) {
 const PLAN_COLUMNS =
   "id, title, brief, age_group, duration_minutes, plan, created_at";
 
+/** "2026-10-14" → "Wednesday 14 October 2026". */
+function formatLongDate(date: string) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-AU", {
+  // Bare dates are local calendar days, not UTC midnight.
+  const d = iso.length === 10 ? new Date(`${iso}T00:00:00`) : new Date(iso);
+  return d.toLocaleDateString("en-AU", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -115,10 +131,15 @@ export function SessionPlanner({
   const [fullMatch, setFullMatch] = useState<boolean>(
     last?.plan.fullMatch ?? false,
   );
-  const [presetId, setPresetId] = useState(DEFAULT_PRESET_ID);
-  const [blocks, setBlocks] = useState<BlockSpec[]>(
-    STRUCTURE_PRESETS.find((p) => p.id === DEFAULT_PRESET_ID)!.blocks,
+  const [lengthChoice, setLengthChoice] = useState<number | "other">(
+    DEFAULT_SESSION_MINUTES,
   );
+  const [otherMinutes, setOtherMinutes] = useState("");
+  const [blocks, setBlocks] = useState<BlockSpec[]>(() =>
+    structureFor(DEFAULT_SESSION_MINUTES),
+  );
+  const [sessionDate, setSessionDate] = useState("");
+  const [startTime, setStartTime] = useState("");
   const [previousPlanId, setPreviousPlanId] = useState<string>(last?.id ?? "");
   const [progress, setProgress] = useState<Progress | null>(null);
   const [progressNote, setProgressNote] = useState("");
@@ -129,15 +150,16 @@ export function SessionPlanner({
   const previousPlan = plans.find((p) => p.id === previousPlanId) ?? null;
   const skillCount = blocks.filter((b) => b.slot === "skill").length;
 
-  function choosePreset(id: string) {
-    const preset = STRUCTURE_PRESETS.find((p) => p.id === id);
-    if (!preset) return;
-    setPresetId(id);
-    setBlocks(preset.blocks);
+  const chosenMinutes =
+    lengthChoice === "other" ? Number(otherMinutes) || 0 : lengthChoice;
+
+  function chooseLength(choice: number | "other", other = otherMinutes) {
+    setLengthChoice(choice);
+    const minutes = choice === "other" ? Number(other) || 0 : choice;
+    if (minutes >= 20) setBlocks(structureFor(minutes));
   }
 
   function editBlocks(next: BlockSpec[]) {
-    setPresetId("custom");
     setBlocks(renumberSkills(next));
   }
 
@@ -175,6 +197,8 @@ export function SessionPlanner({
           squad,
           blocks,
           fullMatch,
+          sessionDate: sessionDate || undefined,
+          startTime: startTime || undefined,
           previousPlanId: previousPlanId || null,
           progress: previousPlanId ? progress : null,
           progressNote: previousPlanId ? progressNote : "",
@@ -189,7 +213,7 @@ export function SessionPlanner({
           brief,
           age_group: ageGroup,
           duration_minutes: totalMinutes(blocks),
-          plan: json.plan,
+          plan: { ...json.plan, sessionDate, startTime },
           created_at: new Date().toISOString(),
         },
       );
@@ -216,9 +240,11 @@ export function SessionPlanner({
     const plan = {
       ...blankPlan(
         blocks,
-        `My session — ${formatDate(new Date().toISOString())}`,
+        `Session — ${formatDate(sessionDate || new Date().toISOString())}`,
       ),
       fullMatch,
+      sessionDate: sessionDate || undefined,
+      startTime: startTime || undefined,
     };
     const { data, error: insertError } = await supabase
       .from("session_plans")
@@ -326,18 +352,88 @@ export function SessionPlanner({
               />
             </Step>
 
-            <Step n={2} title="What do you want out of this session?">
+            <Step n={2} title="When is training?">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-xs font-semibold text-foreground/80">
+                    Date
+                  </span>
+                  <input
+                    type="date"
+                    value={sessionDate}
+                    onChange={(e) => setSessionDate(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-semibold text-foreground/80">
+                    Start time
+                  </span>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </label>
+              </div>
+              <p className="mt-4 text-xs font-semibold text-foreground/80">
+                Session length
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                {SESSION_LENGTHS.map((m) => (
+                  <Chip
+                    key={m}
+                    small
+                    on={lengthChoice === m}
+                    onClick={() => chooseLength(m)}
+                  >
+                    {m === 90 ? "1.5 hours" : `${m} min`}
+                  </Chip>
+                ))}
+                <Chip
+                  small
+                  on={lengthChoice === "other"}
+                  onClick={() => chooseLength("other")}
+                >
+                  Other
+                </Chip>
+                {lengthChoice === "other" && (
+                  <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <input
+                      type="number"
+                      min={20}
+                      max={180}
+                      value={otherMinutes}
+                      onChange={(e) => {
+                        setOtherMinutes(e.target.value);
+                        chooseLength("other", e.target.value);
+                      }}
+                      placeholder="75"
+                      className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-right text-sm text-foreground outline-none focus:border-primary"
+                    />
+                    minutes
+                  </label>
+                )}
+              </div>
+            </Step>
+
+            <Step n={3} title="What's the purpose of this session?">
+              <p className="-mt-1 mb-2 text-xs text-muted-foreground">
+                The theme or message you want front of mind — it&apos;s shown at
+                the top of your plan.
+              </p>
               <textarea
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
-                rows={4}
-                placeholder="e.g. Our attackers keep getting stuck at the top of the circle and we lose the ball on the centre pass. I'd like to work on leading into space and holding the ball under pressure."
+                rows={3}
+                placeholder="e.g. Strong, early leads into space — and holding the ball under pressure on the centre pass."
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </Step>
 
             {plans.length > 0 && (
-              <Step n={3} title="Build on a previous session?">
+              <Step n={4} title="Build on a previous session?">
                 <select
                   value={previousPlanId}
                   onChange={(e) => {
@@ -388,28 +484,17 @@ export function SessionPlanner({
               </Step>
             )}
 
-            <Step n={plans.length > 0 ? 4 : 3} title="Session structure">
-              <div className="flex flex-wrap gap-2">
-                {STRUCTURE_PRESETS.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => choosePreset(p.id)}
-                    className={
-                      presetId === p.id
-                        ? "rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background"
-                        : "rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40"
-                    }
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                {presetId === "custom" && (
-                  <span className="rounded-full bg-foreground px-4 py-2 text-xs font-semibold text-background">
-                    Custom
-                  </span>
-                )}
-              </div>
+            <Step n={plans.length > 0 ? 5 : 4} title="Session structure">
+              {chosenMinutes >= 20 && (
+                <p className="rounded-xl bg-primary/5 px-4 py-3 text-sm text-foreground/90">
+                  For a {chosenMinutes}-minute session we recommend{" "}
+                  <strong>
+                    {recommendedSkills(chosenMinutes)} skill
+                    {recommendedSkills(chosenMinutes) === 1 ? "" : "s"}
+                  </strong>
+                  . Add or remove skills and adjust the minutes to suit.
+                </p>
+              )}
 
               <ul className="mt-4 space-y-2">
                 {blocks.map((b, i) => (
@@ -578,7 +663,7 @@ export function SessionPlanner({
                         {p.title}
                       </span>
                       <span className="text-[11px] text-muted-foreground">
-                        {formatDate(p.created_at)}
+                        {formatDate(p.plan.sessionDate || p.created_at)}
                         {p.duration_minutes
                           ? ` · ${p.duration_minutes} min`
                           : ""}
@@ -687,6 +772,9 @@ export function PlanView({
   } | null>(null);
   const [title, setTitle] = useState(plan.title);
   const [blocks, setBlocks] = useState<PlanBlock[]>(plan.plan.blocks);
+  const [purpose, setPurpose] = useState(plan.brief ?? "");
+  const [sessionDate, setSessionDate] = useState(plan.plan.sessionDate ?? "");
+  const [startTime, setStartTime] = useState(plan.plan.startTime ?? "");
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -743,10 +831,22 @@ export function PlanView({
 
   async function save() {
     setSaving(true);
-    const updatedPlan = { ...plan.plan, title, blocks };
+    const updatedPlan = {
+      ...plan.plan,
+      title,
+      blocks,
+      sessionDate: sessionDate || undefined,
+      startTime: startTime || undefined,
+    };
+    const brief = purpose.trim() || null;
     const { error } = await createClient()
       .from("session_plans")
-      .update({ plan: updatedPlan, title })
+      .update({
+        plan: updatedPlan,
+        title,
+        brief,
+        duration_minutes: totalMinutes(blocks),
+      })
       .eq("id", plan.id);
     setSaving(false);
     if (error) {
@@ -754,7 +854,13 @@ export function PlanView({
       return;
     }
     setDirty(false);
-    onSaved?.({ ...plan, title, plan: updatedPlan });
+    onSaved?.({
+      ...plan,
+      title,
+      brief,
+      duration_minutes: totalMinutes(blocks),
+      plan: updatedPlan,
+    });
   }
 
   return (
@@ -769,10 +875,21 @@ export function PlanView({
               <Star className="size-3.5" /> {badge}
             </p>
           )}
+          <p className="mb-1 hidden text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground print:block">
+            CC Netball · Session plan
+          </p>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            {formatDate(plan.created_at)}
-            {plan.age_group && ` · ${ageGroupLabel(ageGroup)}`}
-            {plan.duration_minutes && ` · ${plan.duration_minutes} min`}
+            {[
+              sessionDate
+                ? formatLongDate(sessionDate)
+                : formatDate(plan.created_at),
+              startTime &&
+                `${formatTime(startTime)} – ${formatTime(addMinutes(startTime, totalMinutes(blocks)))}`,
+              plan.age_group && ageGroupLabel(ageGroup),
+              `${totalMinutes(blocks)} min`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
           {!editable ? (
             <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight md:text-3xl">
@@ -809,15 +926,71 @@ export function PlanView({
         </div>
       </div>
 
+      {editable && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 print:hidden">
+          <label className="block">
+            <span className="text-xs font-semibold text-foreground/80">
+              Training date
+            </span>
+            <input
+              type="date"
+              value={sessionDate}
+              onChange={(e) => {
+                setSessionDate(e.target.value);
+                setDirty(true);
+              }}
+              className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold text-foreground/80">
+              Start time
+            </span>
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => {
+                setStartTime(e.target.value);
+                setDirty(true);
+              }}
+              className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+          </label>
+        </div>
+      )}
+
+      {(purpose || editable) && (
+        <div className="mt-5 rounded-2xl border-l-4 border-primary bg-primary/5 px-5 py-4 print:border print:border-l-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+            Session purpose
+          </p>
+          {editable ? (
+            <textarea
+              value={purpose}
+              onChange={(e) => {
+                setPurpose(e.target.value);
+                setDirty(true);
+              }}
+              rows={2}
+              placeholder="The theme or message you want front of mind…"
+              className="mt-1 w-full resize-none rounded-lg border border-transparent bg-transparent text-base font-semibold text-foreground outline-none transition hover:border-border focus:border-primary print:hidden"
+            />
+          ) : null}
+          <p
+            className={
+              editable
+                ? "mt-1 hidden whitespace-pre-line text-base font-semibold text-foreground print:block"
+                : "mt-1 whitespace-pre-line text-base font-semibold text-foreground"
+            }
+          >
+            {purpose}
+          </p>
+        </div>
+      )}
+
       {plan.plan.summary && (
         <p className="mt-4 text-sm leading-relaxed text-foreground/90">
           {plan.plan.summary}
-        </p>
-      )}
-      {plan.brief && (
-        <p className="mt-3 rounded-xl bg-muted/50 px-4 py-3 text-xs text-muted-foreground">
-          <strong className="text-foreground/80">Your brief:</strong>{" "}
-          {plan.brief}
         </p>
       )}
       {isEmpty && editable && (
@@ -829,6 +1002,9 @@ export function PlanView({
 
       <ol className="mt-8 space-y-4">
         {blocks.map((b, i) => {
+          const startsAt = startTime
+            ? addMinutes(startTime, totalMinutes(blocks.slice(0, i)))
+            : null;
           const addOptions = optionsFor(b);
           return (
             <li
@@ -840,7 +1016,11 @@ export function PlanView({
                   {b.label}
                 </p>
                 <p className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                  <Clock className="size-3.5" /> {b.minutes} min
+                  <Clock className="size-3.5" />
+                  {startsAt
+                    ? `${formatTime(startsAt)} – ${formatTime(addMinutes(startsAt, b.minutes))} · `
+                    : ""}
+                  {b.minutes} min
                 </p>
               </div>
 
