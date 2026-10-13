@@ -33,6 +33,7 @@ import {
   DRILL_VIDEO_BUCKET,
   isEmbedUrl,
 } from "@/lib/drills-store";
+import { SUGGESTED_TAGS } from "@/lib/session-planner";
 import { createClient } from "@/lib/supabase/client";
 
 type EditableDrill = Drill & {
@@ -910,8 +911,10 @@ export function DrillsLibraryAdmin({
               <div className="mt-8">
                 <p className="text-sm font-bold text-foreground">Tags</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Type a tag and press Enter. Tags help the session planner
-                  match drills to what a coach asks for.
+                  Type a tag and press Enter. Tags tell the session planner
+                  where a drill fits — e.g. warm-up drills need their part
+                  (early movement, plyometrics…), and match play drills
+                  &quot;half court&quot; or &quot;match play&quot;.
                 </p>
                 {drill.tags.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -962,13 +965,42 @@ export function DrillsLibraryAdmin({
                     Add
                   </button>
                 </div>
-                {allTags.filter((t) => !drill.tags.includes(t)).length > 0 && (
+                {(SUGGESTED_TAGS[drill.sessionSlot] ?? []).some(
+                  (t) => !drill.tags.includes(t),
+                ) && (
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-primary">
+                      Planner tags:
+                    </span>
+                    {(SUGGESTED_TAGS[drill.sessionSlot] ?? [])
+                      .filter((t) => !drill.tags.includes(t))
+                      .map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => addTag(t)}
+                          className="rounded-full border border-primary/40 bg-primary/5 px-2.5 py-0.5 text-[11px] font-semibold text-primary transition hover:bg-primary/10"
+                        >
+                          + {t}
+                        </button>
+                      ))}
+                  </div>
+                )}
+                {allTags.filter(
+                  (t) =>
+                    !drill.tags.includes(t) &&
+                    !(SUGGESTED_TAGS[drill.sessionSlot] ?? []).includes(t),
+                ).length > 0 && (
                   <div className="mt-3 flex flex-wrap items-center gap-1.5">
                     <span className="text-[11px] text-muted-foreground">
                       Used before:
                     </span>
                     {allTags
-                      .filter((t) => !drill.tags.includes(t))
+                      .filter(
+                        (t) =>
+                          !drill.tags.includes(t) &&
+                          !(SUGGESTED_TAGS[drill.sessionSlot] ?? []).includes(t),
+                      )
                       .map((t) => (
                         <button
                           key={t}

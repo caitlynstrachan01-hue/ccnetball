@@ -13,7 +13,7 @@ export const SESSION_SLOTS = [
   { id: "ball-footwork", label: "Ball work / footwork" },
   { id: "team-drill", label: "Team drill" },
   { id: "skill", label: "Skill" },
-  { id: "scrimmage", label: "Scrimmage / half court" },
+  { id: "scrimmage", label: "Match play / half court" },
   { id: "cool-down", label: "Cool-down" },
 ] as const;
 
@@ -226,7 +226,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "scrimmage",
     defaultSlot: "scrimmage",
-    name: "Scrimmage & Half Court",
+    name: "Match Play & Half Court",
     short: "Game-like finishers that put the session's skills under pressure.",
     drills: [
       { slug: "half-court-scrimmage", title: "Half-court scrimmage", durationMinutes: 12, level: "Intermediate", focus: "Match play" },

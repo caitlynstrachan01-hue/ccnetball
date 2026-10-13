@@ -10,6 +10,7 @@ import {
   ExternalLink,
   FileDown,
   History,
+  PencilLine,
   Plus,
   Printer,
   RefreshCw,
@@ -24,18 +25,26 @@ import {
   type DrillCategory,
 } from "@/lib/drills-library-content";
 import {
+  DEFAULT_PRESET_ID,
+  MAX_SKILLS,
   PROGRESS_OPTIONS,
   STRUCTURE_PRESETS,
+  blankPlan,
   buildCatalog,
+  candidateSlots,
+  normaliseBlocks,
   renumberSkills,
   totalMinutes,
   type BlockSpec,
+  type CatalogDrill,
+  type PlanBlock,
   type Progress,
   type SavedPlan,
 } from "@/lib/session-planner";
 import { createClient } from "@/lib/supabase/client";
 
-const MAX_SKILLS = 4;
+const PLAN_COLUMNS =
+  "id, title, brief, age_group, duration_minutes, plan, created_at";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-AU", {
@@ -45,6 +54,10 @@ function formatDate(iso: string) {
   });
 }
 
+function withNormalisedBlocks(p: SavedPlan): SavedPlan {
+  return { ...p, plan: { ...p.plan, blocks: normaliseBlocks(p.plan.blocks) } };
+}
+
 export function SessionPlanner({
   categories,
   initialPlans,
@@ -52,7 +65,9 @@ export function SessionPlanner({
   categories: DrillCategory[];
   initialPlans: SavedPlan[];
 }) {
-  const [plans, setPlans] = useState<SavedPlan[]>(initialPlans);
+  const [plans, setPlans] = useState<SavedPlan[]>(() =>
+    initialPlans.map(withNormalisedBlocks),
+  );
   const [viewingId, setViewingId] = useState<string | null>(null);
 
   // Form state
@@ -62,14 +77,17 @@ export function SessionPlanner({
   );
   const [squad, setSquad] = useState("");
   const [brief, setBrief] = useState("");
-  const [presetId, setPresetId] = useState("60");
+  const [fullMatch, setFullMatch] = useState<boolean>(
+    last?.plan.fullMatch ?? false,
+  );
+  const [presetId, setPresetId] = useState(DEFAULT_PRESET_ID);
   const [blocks, setBlocks] = useState<BlockSpec[]>(
-    STRUCTURE_PRESETS.find((p) => p.id === "60")!.blocks,
+    STRUCTURE_PRESETS.find((p) => p.id === DEFAULT_PRESET_ID)!.blocks,
   );
   const [previousPlanId, setPreviousPlanId] = useState<string>(last?.id ?? "");
   const [progress, setProgress] = useState<Progress | null>(null);
   const [progressNote, setProgressNote] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"ai" | "manual" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const viewing = plans.find((p) => p.id === viewingId) ?? null;
@@ -94,20 +112,15 @@ export function SessionPlanner({
     next.splice(at === -1 ? next.length : at, 0, {
       slot: "skill",
       label: "Skill",
-      minutes: 12,
+      minutes: 10,
     });
     editBlocks(next);
   }
 
-  function addTeamDrill() {
-    const at = blocks.findIndex((b) => b.slot === "skill");
-    const next = [...blocks];
-    next.splice(at === -1 ? next.length : at, 0, {
-      slot: "team-drill",
-      label: "Team drill",
-      minutes: 10,
-    });
-    editBlocks(next);
+  function openPlan(saved: SavedPlan) {
+    setPlans((prev) => [withNormalisedBlocks(saved), ...prev]);
+    setViewingId(saved.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleBuild() {
@@ -116,7 +129,7 @@ export function SessionPlanner({
       setError("Pick the age group you're coaching.");
       return;
     }
-    setBusy(true);
+    setBusy("ai");
     try {
       const res = await fetch("/api/session-planner", {
         method: "POST",
@@ -126,6 +139,7 @@ export function SessionPlanner({
           ageGroup,
           squad,
           blocks,
+          fullMatch,
           previousPlanId: previousPlanId || null,
           progress: previousPlanId ? progress : null,
           progressNote: previousPlanId ? progressNote : "",
@@ -133,27 +147,60 @@ export function SessionPlanner({
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Couldn't build the plan.");
-      const saved: SavedPlan = json.saved ?? {
-        id: `unsaved-${Date.now()}`,
-        title: json.plan.title,
-        brief,
-        age_group: ageGroup,
-        duration_minutes: totalMinutes(blocks),
-        plan: json.plan,
-        created_at: new Date().toISOString(),
-      };
-      setPlans((prev) => [saved, ...prev]);
-      setViewingId(saved.id);
-      setPreviousPlanId(saved.id);
+      openPlan(
+        json.saved ?? {
+          id: `unsaved-${Date.now()}`,
+          title: json.plan.title,
+          brief,
+          age_group: ageGroup,
+          duration_minutes: totalMinutes(blocks),
+          plan: json.plan,
+          created_at: new Date().toISOString(),
+        },
+      );
+      setPreviousPlanId(json.saved?.id ?? "");
       setProgress(null);
       setProgressNote("");
       setBrief("");
-      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
+  }
+
+  async function handleBuildMyself() {
+    setError(null);
+    if (!ageGroup) {
+      setError("Pick the age group you're coaching.");
+      return;
+    }
+    setBusy("manual");
+    const supabase = createClient();
+    const { data: auth } = await supabase.auth.getUser();
+    const plan = {
+      ...blankPlan(blocks, `My session — ${formatDate(new Date().toISOString())}`),
+      fullMatch,
+    };
+    const { data, error: insertError } = await supabase
+      .from("session_plans")
+      .insert({
+        user_id: auth.user?.id,
+        title: plan.title,
+        brief: brief || null,
+        age_group: ageGroup,
+        duration_minutes: totalMinutes(blocks),
+        plan,
+      })
+      .select(PLAN_COLUMNS)
+      .single();
+    setBusy(null);
+    if (insertError || !data) {
+      setError(`Couldn't start your plan: ${insertError?.message ?? "unknown error"}`);
+      return;
+    }
+    openPlan(data as SavedPlan);
+    setBrief("");
   }
 
   function planNextFrom(plan: SavedPlan) {
@@ -181,6 +228,13 @@ export function SessionPlanner({
     if (previousPlanId === plan.id) setPreviousPlanId("");
   }
 
+  const lastSkills = previousPlan
+    ? previousPlan.plan.blocks
+        .filter((b) => b.slot === "skill")
+        .flatMap((b) => b.drills.map((d) => drillTitle(categories, d.key)))
+        .join(" · ")
+    : "";
+
   return (
     <div className="grid gap-8 lg:grid-cols-12">
       <div className="lg:col-span-8">
@@ -200,30 +254,20 @@ export function SessionPlanner({
           />
         ) : (
           <div className="rounded-3xl border border-border/70 bg-card p-6 md:p-8 print:hidden">
-            {/* 1. Age group */}
             <Step n={1} title="Who are you coaching?">
               <div className="flex flex-wrap gap-2">
-                {AGE_GROUPS.map((a) => {
-                  const on = ageGroup === a.id;
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => setAgeGroup(a.id)}
-                      className={
-                        on
-                          ? "inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-                          : "inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
-                      }
-                    >
-                      {on && <Check className="size-4" />}
-                      {a.label}
-                      <span className={on ? "opacity-80" : "text-muted-foreground"}>
-                        {a.range}
-                      </span>
-                    </button>
-                  );
-                })}
+                {AGE_GROUPS.map((a) => (
+                  <Chip
+                    key={a.id}
+                    on={ageGroup === a.id}
+                    onClick={() => setAgeGroup(a.id)}
+                  >
+                    {a.label}
+                    <span className={ageGroup === a.id ? "opacity-80" : "text-muted-foreground"}>
+                      {a.range}
+                    </span>
+                  </Chip>
+                ))}
               </div>
               <input
                 type="text"
@@ -234,7 +278,6 @@ export function SessionPlanner({
               />
             </Step>
 
-            {/* 2. Brief */}
             <Step n={2} title="What do you want out of this session?">
               <textarea
                 value={brief}
@@ -245,7 +288,6 @@ export function SessionPlanner({
               />
             </Step>
 
-            {/* 3. Build on last session */}
             {plans.length > 0 && (
               <Step n={3} title="Build on a previous session?">
                 <select
@@ -269,26 +311,21 @@ export function SessionPlanner({
                     <p className="text-sm font-semibold text-foreground">
                       How did the athletes go with last session&apos;s skills?
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {previousPlan.plan.blocks
-                        .filter((b) => b.slot === "skill" && b.drillKey)
-                        .map((b) => drillTitle(categories, b.drillKey))
-                        .join(" · ") || previousPlan.title}
-                    </p>
+                    {lastSkills && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {lastSkills}
+                      </p>
+                    )}
                     <div className="mt-3 flex flex-wrap gap-2">
                       {PROGRESS_OPTIONS.map((o) => (
-                        <button
+                        <Chip
                           key={o.id}
-                          type="button"
+                          small
+                          on={progress === o.id}
                           onClick={() => setProgress(o.id)}
-                          className={
-                            progress === o.id
-                              ? "rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground"
-                              : "rounded-full border border-border bg-background px-3.5 py-1.5 text-xs font-semibold text-foreground/80 transition hover:border-primary/40"
-                          }
                         >
                           {o.label}
-                        </button>
+                        </Chip>
                       ))}
                     </div>
                     <input
@@ -303,7 +340,6 @@ export function SessionPlanner({
               </Step>
             )}
 
-            {/* 4. Structure */}
             <Step n={plans.length > 0 ? 4 : 3} title="Session structure">
               <div className="flex flex-wrap gap-2">
                 {STRUCTURE_PRESETS.map((p) => (
@@ -358,42 +394,49 @@ export function SessionPlanner({
                       />
                       min
                     </label>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${b.label}`}
-                      disabled={blocks.length <= 1}
-                      onClick={() => editBlocks(blocks.filter((_, j) => j !== i))}
-                      className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
-                    >
-                      <X className="size-4" />
-                    </button>
+                    {b.slot === "skill" ? (
+                      <button
+                        type="button"
+                        aria-label={`Remove ${b.label}`}
+                        disabled={skillCount <= 1}
+                        onClick={() => editBlocks(blocks.filter((_, j) => j !== i))}
+                        className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    ) : (
+                      <span className="size-7 shrink-0" />
+                    )}
                   </li>
                 ))}
               </ul>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={addSkill}
-                    disabled={skillCount >= MAX_SKILLS}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted disabled:opacity-40"
-                  >
-                    <Plus className="size-3.5" /> Add skill
-                  </button>
-                  {!blocks.some((b) => b.slot === "team-drill") && (
-                    <button
-                      type="button"
-                      onClick={addTeamDrill}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
-                    >
-                      <Plus className="size-3.5" /> Add team drill
-                    </button>
-                  )}
-                </div>
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  disabled={skillCount >= MAX_SKILLS}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted disabled:opacity-40"
+                >
+                  <Plus className="size-3.5" /> Add skill
+                </button>
                 <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
                   <Clock className="size-4 text-primary" />
                   {totalMinutes(blocks)} min total
                 </p>
+              </div>
+
+              <div className="mt-5">
+                <p className="text-sm font-semibold text-foreground">
+                  Can your team play a full match at training?
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Chip small on={!fullMatch} onClick={() => setFullMatch(false)}>
+                    No — half court
+                  </Chip>
+                  <Chip small on={fullMatch} onClick={() => setFullMatch(true)}>
+                    Yes — full match
+                  </Chip>
+                </div>
               </div>
             </Step>
 
@@ -406,10 +449,10 @@ export function SessionPlanner({
             <button
               type="button"
               onClick={handleBuild}
-              disabled={busy}
+              disabled={busy !== null}
               className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01] disabled:opacity-70"
             >
-              {busy ? (
+              {busy === "ai" ? (
                 <>
                   <RefreshCw className="size-5 animate-spin" /> Building your
                   session…
@@ -419,6 +462,15 @@ export function SessionPlanner({
                   <Sparkles className="size-5" /> Build my session plan
                 </>
               )}
+            </button>
+            <button
+              type="button"
+              onClick={handleBuildMyself}
+              disabled={busy !== null}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-7 py-3 text-sm font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted disabled:opacity-60"
+            >
+              <PencilLine className="size-4" />
+              {busy === "manual" ? "Starting…" : "I'll pick the drills myself"}
             </button>
           </div>
         )}
@@ -443,8 +495,8 @@ export function SessionPlanner({
           </div>
           {plans.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
-              Your session plans will be saved here, so the next one can build
-              on them.
+              Your session plans are saved here, so the next one can build on
+              them.
             </p>
           ) : (
             <ul className="mt-4 space-y-1">
@@ -483,13 +535,41 @@ export function SessionPlanner({
   );
 }
 
-function drillTitle(categories: DrillCategory[], key: string | null) {
-  if (!key) return "";
+function drillTitle(categories: DrillCategory[], key: string) {
   const [cat, slug] = key.split("/");
   return (
     categories
       .find((c) => c.slug === cat)
       ?.drills.find((d) => d.slug === slug)?.title ?? "Removed drill"
+  );
+}
+
+function Chip({
+  on,
+  small,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  small?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const size = small ? "px-3.5 py-1.5 text-xs" : "px-4 py-2 text-sm";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={
+        on
+          ? `inline-flex items-center gap-2 rounded-full bg-primary font-semibold text-primary-foreground ${size}`
+          : `inline-flex items-center gap-2 rounded-full border border-border bg-background font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted ${size}`
+      }
+    >
+      {on && !small && <Check className="size-4" />}
+      {children}
+    </button>
   );
 }
 
@@ -530,7 +610,8 @@ function PlanView({
   onDelete: () => void;
   onSaved: (plan: SavedPlan) => void;
 }) {
-  const [blocks, setBlocks] = useState(plan.plan.blocks);
+  const [title, setTitle] = useState(plan.title);
+  const [blocks, setBlocks] = useState<PlanBlock[]>(plan.plan.blocks);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -543,13 +624,27 @@ function PlanView({
     () => new Map(catalog.map((c) => [c.key, c])),
     [catalog],
   );
+  const inUse = new Set(blocks.flatMap((b) => b.drills.map((d) => d.key)));
+  const isEmpty = blocks.every((b) => b.drills.length === 0);
+
+  function changeBlock(i: number, patch: Partial<PlanBlock>) {
+    setBlocks(blocks.map((b, j) => (j === i ? { ...b, ...patch } : b)));
+    setDirty(true);
+  }
+
+  function optionsFor(b: PlanBlock, current?: string): CatalogDrill[] {
+    const slots = candidateSlots(b.slot);
+    return catalog.filter(
+      (c) => slots.includes(c.slot) && (c.key === current || !inUse.has(c.key)),
+    );
+  }
 
   async function save() {
     setSaving(true);
-    const updatedPlan = { ...plan.plan, blocks };
+    const updatedPlan = { ...plan.plan, title, blocks };
     const { error } = await createClient()
       .from("session_plans")
-      .update({ plan: updatedPlan })
+      .update({ plan: updatedPlan, title })
       .eq("id", plan.id);
     setSaving(false);
     if (error) {
@@ -557,21 +652,27 @@ function PlanView({
       return;
     }
     setDirty(false);
-    onSaved({ ...plan, plan: updatedPlan });
+    onSaved({ ...plan, title, plan: updatedPlan });
   }
 
   return (
     <div className="rounded-3xl border border-border/70 bg-card p-6 md:p-8 print:border-0 print:p-0">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
             {formatDate(plan.created_at)}
             {plan.age_group && ` · ${ageGroupLabel(ageGroup)}`}
             {plan.duration_minutes && ` · ${plan.duration_minutes} min`}
           </p>
-          <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight md:text-3xl">
-            {plan.title}
-          </h2>
+          <input
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setDirty(true);
+            }}
+            aria-label="Session title"
+            className="mt-2 w-full rounded-lg border border-transparent bg-transparent font-display text-2xl font-extrabold tracking-tight outline-none transition hover:border-border focus:border-primary md:text-3xl"
+          />
         </div>
         <div className="flex gap-2 print:hidden">
           <button
@@ -603,16 +704,16 @@ function PlanView({
           {plan.brief}
         </p>
       )}
+      {isEmpty && (
+        <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 print:hidden">
+          Use &quot;Add a drill&quot; in each part of the session, then press{" "}
+          <strong>Save changes</strong>.
+        </p>
+      )}
 
       <ol className="mt-8 space-y-4">
         {blocks.map((b, i) => {
-          const pick = b.drillKey ? byKey.get(b.drillKey) : undefined;
-          const options = catalog.filter(
-            (c) =>
-              c.slot === b.slot &&
-              (c.key === b.drillKey ||
-                !blocks.some((x) => x.drillKey === c.key)),
-          );
+          const addOptions = optionsFor(b);
           return (
             <li
               key={i}
@@ -626,26 +727,128 @@ function PlanView({
                   <Clock className="size-3.5" /> {b.minutes} min
                 </p>
               </div>
-              <h3 className="mt-1.5 font-display text-lg font-bold leading-snug">
-                {pick?.drill.title ??
-                  (b.drillKey ? "Removed drill" : "No drill in the library yet")}
-              </h3>
-              {pick && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {pick.categoryName}
-                  {pick.drill.equipment && ` · ${pick.drill.equipment}`}
-                  {pick.drill.groupSize && ` · ${pick.drill.groupSize}`}
+
+              {b.drills.length === 0 && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  No drill chosen yet.
                 </p>
               )}
+
+              <ul className="mt-2 divide-y divide-border/60">
+                {b.drills.map((d, k) => {
+                  const pick = byKey.get(d.key);
+                  const swapOptions = optionsFor(b, d.key);
+                  return (
+                    <li key={`${d.key}-${k}`} className="py-3 first:pt-1">
+                      {d.part && (
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          {d.part}
+                        </p>
+                      )}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-display text-base font-bold leading-snug">
+                            {pick?.drill.title ?? "Removed drill"}
+                          </h3>
+                          {pick && (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {[
+                                pick.categoryName,
+                                pick.drill.equipment,
+                                pick.drill.groupSize,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          aria-label="Remove drill"
+                          onClick={() =>
+                            changeBlock(i, {
+                              drills: b.drills.filter((_, x) => x !== k),
+                            })
+                          }
+                          className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 print:hidden"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
+                      {pick?.drill.ageNotes?.[ageGroup] && (
+                        <p className="mt-2 text-sm text-foreground/90">
+                          <strong>For this age group:</strong>{" "}
+                          {pick.drill.ageNotes[ageGroup]}
+                        </p>
+                      )}
+                      <div className="mt-2 flex flex-wrap items-center gap-3 print:hidden">
+                        {pick && (
+                          <Link
+                            href={`/library?drill=${encodeURIComponent(pick.key)}`}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                          >
+                            Watch the drill <ExternalLink className="size-3.5" />
+                          </Link>
+                        )}
+                        {pick?.drill.pdfUrl && (
+                          <a
+                            href={pick.drill.pdfUrl}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                          >
+                            Skill sheet (PDF) <FileDown className="size-3.5" />
+                          </a>
+                        )}
+                        {swapOptions.length > 1 && (
+                          <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                            Swap for
+                            <select
+                              value={d.key}
+                              onChange={(e) =>
+                                changeBlock(i, {
+                                  drills: b.drills.map((x, y) =>
+                                    y === k ? { ...x, key: e.target.value } : x,
+                                  ),
+                                })
+                              }
+                              className="max-w-56 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
+                            >
+                              {swapOptions.map((o) => (
+                                <option key={o.key} value={o.key}>
+                                  {o.drill.title}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {addOptions.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    changeBlock(i, {
+                      drills: [...b.drills, { key: e.target.value }],
+                    });
+                  }}
+                  className="mt-2 rounded-lg border border-dashed border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground/80 outline-none focus:border-primary print:hidden"
+                >
+                  <option value="">+ Add a drill…</option>
+                  {addOptions.map((o) => (
+                    <option key={o.key} value={o.key}>
+                      {o.drill.title} — {o.categoryName}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               {b.coachingFocus && (
                 <p className="mt-3 text-sm text-foreground/90">
                   <strong>Coaching focus:</strong> {b.coachingFocus}
-                </p>
-              )}
-              {pick?.drill.ageNotes?.[ageGroup] && (
-                <p className="mt-2 text-sm text-foreground/90">
-                  <strong>For this age group:</strong>{" "}
-                  {pick.drill.ageNotes[ageGroup]}
                 </p>
               )}
               {b.why && (
@@ -653,54 +856,6 @@ function PlanView({
                   {b.why}
                 </p>
               )}
-
-              <div className="mt-4 flex flex-wrap items-center gap-3 print:hidden">
-                {pick?.drill.pdfUrl && (
-                  <a
-                    href={pick.drill.pdfUrl}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                  >
-                    Skill sheet (PDF) <FileDown className="size-3.5" />
-                  </a>
-                )}
-                {pick && (
-                  <Link
-                    href={`/library?drill=${encodeURIComponent(pick.key)}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                  >
-                    Watch the drill <ExternalLink className="size-3.5" />
-                  </Link>
-                )}
-                {options.length > 1 && (
-                  <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                    Swap for
-                    <select
-                      value={b.drillKey ?? ""}
-                      onChange={(e) => {
-                        setBlocks(
-                          blocks.map((x, j) =>
-                            j === i
-                              ? {
-                                  ...x,
-                                  drillKey: e.target.value,
-                                  why: "Swapped in by you.",
-                                }
-                              : x,
-                          ),
-                        );
-                        setDirty(true);
-                      }}
-                      className="max-w-56 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary"
-                    >
-                      {options.map((o) => (
-                        <option key={o.key} value={o.key}>
-                          {o.drill.title}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-              </div>
             </li>
           );
         })}

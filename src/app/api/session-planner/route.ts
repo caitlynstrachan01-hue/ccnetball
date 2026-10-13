@@ -9,10 +9,14 @@ import {
   getLibraryAccess,
   loadDrillCategories,
 } from "@/lib/drills-store.server";
+import { createAdminClient } from "@/lib/supabase/server";
 import {
   PROGRESS_OPTIONS,
+  WARM_UP_PARTS,
   buildCatalog,
+  candidateSlots,
   matchPlan,
+  normaliseBlocks,
   totalMinutes,
   type CatalogDrill,
   type PlanBlock,
@@ -51,6 +55,7 @@ function parseRequest(body: unknown): PlannerRequest | null {
     ageGroup: b.ageGroup as AgeGroupId,
     squad: String(b.squad ?? "").slice(0, 200),
     blocks,
+    fullMatch: b.fullMatch === true,
     previousPlanId:
       typeof b.previousPlanId === "string" ? b.previousPlanId : null,
     progress,
@@ -78,11 +83,16 @@ function describePlan(p: SavedPlan, catalogByKey: Map<string, CatalogDrill>) {
   return {
     date: p.created_at.slice(0, 10),
     brief: p.brief,
-    blocks: p.plan.blocks.map((b) => ({
+    builtBy: p.plan.source === "coach" ? "the coach themselves" : "the planner",
+    blocks: normaliseBlocks(p.plan.blocks).map((b) => ({
       block: b.label,
-      drill: b.drillKey ? (catalogByKey.get(b.drillKey)?.drill.title ?? b.drillKey) : null,
-      drillKey: b.drillKey,
-      focus: b.coachingFocus,
+      minutes: b.minutes,
+      drills: b.drills.map((d) => ({
+        key: d.key,
+        title: catalogByKey.get(d.key)?.drill.title ?? d.key,
+        part: d.part,
+      })),
+      focus: b.coachingFocus || undefined,
     })),
     nextTime: p.plan.nextTime,
   };
@@ -105,9 +115,21 @@ const PLAN_TOOL = {
         items: {
           type: "object",
           properties: {
-            drillKey: {
-              type: ["string", "null"],
-              description: "Key of a library drill whose slot matches the block, or null if none fit.",
+            drills: {
+              type: "array",
+              description:
+                "Library drills for this block, in running order. Warm-up: one per warm-up part. Ballwork/footwork/team drill: 2–3. Skill and match play: exactly 1. Empty if nothing in the library fits.",
+              items: {
+                type: "object",
+                properties: {
+                  key: { type: "string", description: "Drill key from the library." },
+                  part: {
+                    type: "string",
+                    description: "Warm-up only: which part this drill covers, e.g. 'Plyometrics (single leg)'.",
+                  },
+                },
+                required: ["key"],
+              },
             },
             coachingFocus: {
               type: "string",
@@ -118,7 +140,7 @@ const PLAN_TOOL = {
               description: "One sentence on why this drill, linking to the brief or last session.",
             },
           },
-          required: ["drillKey", "coachingFocus", "why"],
+          required: ["drills", "coachingFocus", "why"],
         },
       },
       nextTime: {
@@ -130,11 +152,51 @@ const PLAN_TOOL = {
   },
 } as const;
 
+const SYSTEM_PROMPT = `You are Caitlyn Strachan's session-planning assistant for CC Netball. Caitlyn is a former Australian Diamond and elite coach.
+Build a training session for a netball coach using ONLY drills from the supplied library (match on each drill's key).
+
+Caitlyn's session template — follow it:
+- Warm-up (~10 min) made of short parts in this order: ${WARM_UP_PARTS.map((p) => `${p.label}${p.id === "plyometrics" ? " (2 drills, one must be single-leg)" : ""}`).join(", ")}. Warm-up drills are tagged with their part (e.g. "early movement", "plyometrics", "single leg"); skip a part if nothing is tagged for it.
+- Ballwork / footwork / team drill (~10 min): 2–3 drills from ball-footwork or team-drill slots.
+- Skills (10–15 min each): one drill per skill block, from ANY category (attack, defence, ballwork, footwork or team drills). Usually a mix of attack and defence unless the brief says otherwise. A typical one-hour session has 3 skills.
+- Match play (~10 min): most teams can't play a full match, so use a half-court drill unless the coach says they can play a full match.
+
+Who you're helping: most coaches are new or fairly inexperienced. They want quality, not super-hard drills, and to develop their athletes across the season. Prefer clear, achievable drills pitched at the age group, and use the coaching focus to give simple, practical cues.
+Read the coach's brief carefully. Never reuse a drill within a session.
+If building on a previous session: when athletes need more time, repeat or lightly vary those skills; when they're mostly there, progress them; when they're ready for something new, layer a related next skill rather than an unrelated one. Coaches' own sessions show what they like to run — learn from them. Avoid repeating recent drills unless consolidation is the point.
+Caitlyn's own example sessions, when given, show the standard to aim for.
+Australian English, warm and expert tone.`;
+
+/** Caitlyn's own saved sessions — the planner's worked examples. */
+async function loadExamplePlans(excludeUserId: string): Promise<SavedPlan[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: admins } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("is_admin", true);
+    const ids = (admins ?? [])
+      .map((a: { id: string }) => a.id)
+      .filter((id: string) => id !== excludeUserId);
+    if (ids.length === 0) return [];
+    const { data } = await admin
+      .from("session_plans")
+      .select("id, title, brief, age_group, duration_minutes, plan, created_at")
+      .in("user_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(3);
+    return (data ?? []) as SavedPlan[];
+  } catch {
+    return [];
+  }
+}
+
 async function askClaude(
   req: PlannerRequest,
   catalog: CatalogDrill[],
   previous: SavedPlan[],
   previousChosen: SavedPlan | null,
+  examples: SavedPlan[],
 ): Promise<SessionPlan | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
@@ -147,6 +209,7 @@ async function askClaude(
     ageGroup: ageGroupLabel(req.ageGroup),
     squad: req.squad || undefined,
     totalMinutes: totalMinutes(req.blocks),
+    matchPlay: req.fullMatch ? "They can play a full match" : "Half court (no full match available)",
     blocks: req.blocks.map((b) => ({ label: b.label, slot: b.slot, minutes: b.minutes })),
     buildingOn: previousChosen
       ? {
@@ -159,6 +222,9 @@ async function askClaude(
       .filter((p) => p.id !== previousChosen?.id)
       .slice(0, 4)
       .map((p) => describePlan(p, catalogByKey)),
+    caitlynsExampleSessions: examples.length
+      ? examples.map((p) => describePlan(p, catalogByKey))
+      : undefined,
     library: catalog.map(describeDrill),
   };
 
@@ -171,14 +237,8 @@ async function askClaude(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 2000,
-      system:
-        "You are Caitlyn Strachan's session-planning assistant for CC Netball. Caitlyn is a former Australian Diamond and elite coach. " +
-        "Build a training session for a netball coach using ONLY drills from the supplied library. " +
-        "Each block must use a drill whose slot matches the block's slot; never reuse a drill within a session. " +
-        "Read the coach's brief carefully and choose skills that serve it, pitched at the age group. " +
-        "If building on a previous session: when athletes need more time, repeat or lightly vary those skills; when they're mostly there, pick drills that progress them; when they're ready for something new, layer a related next skill rather than an unrelated one. " +
-        "Avoid repeating drills from recent sessions unless consolidation is the point. Australian English, warm and expert tone.",
+      max_tokens: 3000,
+      system: SYSTEM_PROMPT,
       tools: [PLAN_TOOL],
       tool_choice: { type: "tool", name: PLAN_TOOL.name },
       messages: [{ role: "user", content: JSON.stringify(prompt) }],
@@ -198,27 +258,33 @@ async function askClaude(
   const used = new Set<string>();
   const blocks: PlanBlock[] = req.blocks.map((spec, i) => {
     const out = input.blocks[i] ?? {};
-    const pick = typeof out.drillKey === "string" ? catalogByKey.get(out.drillKey) : undefined;
-    const valid = pick && pick.slot === spec.slot && !used.has(pick.key);
-    if (valid) used.add(pick.key);
+    const slots = candidateSlots(spec.slot);
+    const max = spec.slot === "warm-up" ? 7 : spec.slot === "ball-footwork" ? 3 : 1;
+    const drills = (Array.isArray(out.drills) ? out.drills : [])
+      .flatMap((d: { key?: unknown; part?: unknown }) => {
+        const pick = typeof d?.key === "string" ? catalogByKey.get(d.key) : undefined;
+        if (!pick || !slots.includes(pick.slot) || used.has(pick.key)) return [];
+        used.add(pick.key);
+        return [{ key: pick.key, part: typeof d.part === "string" ? d.part.slice(0, 60) : undefined }];
+      })
+      .slice(0, max);
     return {
       ...spec,
-      drillKey: valid ? pick.key : null,
+      drills,
       coachingFocus: String(out.coachingFocus ?? ""),
       why: String(out.why ?? ""),
     };
   });
 
-  // Fill any gaps the AI left with the built-in matcher's choice.
+  // Fill any block the AI left empty with the built-in matcher's choice.
   const fallback = matchPlan(
     req,
     catalog.filter((c) => !used.has(c.key)),
     previousChosen,
   );
   blocks.forEach((b, i) => {
-    if (!b.drillKey && fallback.blocks[i]?.drillKey) {
-      b.drillKey = fallback.blocks[i].drillKey;
-      if (!b.why) b.why = fallback.blocks[i].why;
+    if (b.drills.length === 0 && fallback.blocks[i]?.drills.length) {
+      b.drills = fallback.blocks[i].drills;
     }
   });
 
@@ -253,7 +319,10 @@ export async function POST(request: Request) {
       .order("created_at", { ascending: false })
       .limit(6),
   ]);
-  const previous: SavedPlan[] = previousRows ?? [];
+  const previous = ((previousRows ?? []) as SavedPlan[]).map((p) => ({
+    ...p,
+    plan: { ...p.plan, blocks: normaliseBlocks(p.plan.blocks) },
+  }));
   const previousChosen = req.previousPlanId
     ? (previous.find((p) => p.id === req.previousPlanId) ?? null)
     : null;
@@ -262,7 +331,10 @@ export async function POST(request: Request) {
 
   let plan: SessionPlan | null = null;
   try {
-    plan = await askClaude(req, catalog, previous, previousChosen);
+    const examples = process.env.ANTHROPIC_API_KEY
+      ? await loadExamplePlans(user.id)
+      : [];
+    plan = await askClaude(req, catalog, previous, previousChosen, examples);
   } catch (error) {
     console.error("Session planner AI failed", error);
   }
@@ -276,7 +348,12 @@ export async function POST(request: Request) {
       brief: req.brief || null,
       age_group: req.ageGroup,
       duration_minutes: totalMinutes(req.blocks),
-      plan: { ...plan, progress: req.progress, progressNote: req.progressNote },
+      plan: {
+        ...plan,
+        progress: req.progress,
+        progressNote: req.progressNote,
+        fullMatch: req.fullMatch,
+      },
     })
     .select("id, title, brief, age_group, duration_minutes, plan, created_at")
     .single();

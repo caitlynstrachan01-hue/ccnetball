@@ -6,6 +6,16 @@ import {
 } from "@/lib/drills-library-content";
 import { drillSlot } from "@/lib/drills-store";
 
+/*
+ * Caitlyn's session template:
+ *   Warm-up (10 min) — early movement, dynamic stretching, 2 plyometrics
+ *     (one single-leg), late movement, sprints / game
+ *   Ballwork / footwork / team drill (10 min) — 2–3 drills
+ *   Skill #1–#4 (10–15 min each) — 3 for a typical hour, any category,
+ *     usually a mix of attack and defence
+ *   Match play (10 min) — half court for most teams
+ */
+
 /** One block of a session structure, before drills are chosen. */
 export type BlockSpec = {
   slot: SessionSlotId;
@@ -20,34 +30,40 @@ export type StructurePreset = {
 };
 
 const warmUp = (minutes: number): BlockSpec => ({ slot: "warm-up", label: "Warm-up", minutes });
-const ballFootwork = (minutes: number): BlockSpec => ({ slot: "ball-footwork", label: "Ball work / footwork", minutes });
-const teamDrill = (minutes: number): BlockSpec => ({ slot: "team-drill", label: "Team drill", minutes });
+const ballwork = (minutes: number): BlockSpec => ({
+  slot: "ball-footwork",
+  label: "Ballwork / footwork / team drill",
+  minutes,
+});
 const skill = (n: number, minutes: number): BlockSpec => ({ slot: "skill", label: `Skill #${n}`, minutes });
-const scrimmage = (minutes: number): BlockSpec => ({ slot: "scrimmage", label: "Scrimmage / half court", minutes });
+const matchPlay = (minutes: number): BlockSpec => ({ slot: "scrimmage", label: "Match play", minutes });
 
 /** Prefilled structures — the number of skills grows with session length. */
 export const STRUCTURE_PRESETS: StructurePreset[] = [
   {
     id: "45",
     label: "45 min · 1 skill",
-    blocks: [warmUp(8), ballFootwork(10), skill(1, 15), scrimmage(12)],
+    blocks: [warmUp(10), ballwork(10), skill(1, 15), matchPlay(10)],
   },
   {
     id: "60",
-    label: "60 min · 2 skills",
-    blocks: [warmUp(10), ballFootwork(10), teamDrill(10), skill(1, 10), skill(2, 10), scrimmage(10)],
+    label: "60 min · 3 skills",
+    blocks: [warmUp(10), ballwork(10), skill(1, 10), skill(2, 10), skill(3, 10), matchPlay(10)],
   },
   {
     id: "75",
     label: "75 min · 3 skills",
-    blocks: [warmUp(10), ballFootwork(10), teamDrill(10), skill(1, 12), skill(2, 12), skill(3, 12), scrimmage(9)],
+    blocks: [warmUp(10), ballwork(10), skill(1, 15), skill(2, 15), skill(3, 15), matchPlay(10)],
   },
   {
     id: "90",
     label: "90 min · 4 skills",
-    blocks: [warmUp(10), ballFootwork(10), teamDrill(10), skill(1, 12), skill(2, 12), skill(3, 12), skill(4, 12), scrimmage(12)],
+    blocks: [warmUp(10), ballwork(10), skill(1, 15), skill(2, 15), skill(3, 15), skill(4, 15), matchPlay(10)],
   },
 ];
+
+export const DEFAULT_PRESET_ID = "60";
+export const MAX_SKILLS = 4;
 
 /** Re-number skill blocks after one is added or removed. */
 export function renumberSkills(blocks: BlockSpec[]): BlockSpec[] {
@@ -55,9 +71,44 @@ export function renumberSkills(blocks: BlockSpec[]): BlockSpec[] {
   return blocks.map((b) => (b.slot === "skill" ? { ...b, label: `Skill #${++n}` } : b));
 }
 
+/** Which drills can fill a block. Skills are open to every category. */
+export function candidateSlots(slot: SessionSlotId): SessionSlotId[] {
+  switch (slot) {
+    case "ball-footwork":
+    case "team-drill":
+      return ["ball-footwork", "team-drill"];
+    case "skill":
+      return ["skill", "ball-footwork", "team-drill"];
+    default:
+      return [slot];
+  }
+}
+
+/** The warm-up is built from these parts, matched on drill tags. */
+export const WARM_UP_PARTS = [
+  { id: "early-movement", label: "Early movement", tags: ["early movement"], count: 1 },
+  { id: "dynamic-stretching", label: "Dynamic stretching", tags: ["dynamic stretching"], count: 1 },
+  { id: "plyometrics", label: "Plyometrics", tags: ["plyometrics", "single leg"], count: 2 },
+  { id: "late-movement", label: "Late movement", tags: ["late movement"], count: 1 },
+  { id: "sprints-game", label: "Sprints / game", tags: ["sprints", "warm-up game"], count: 1 },
+] as const;
+
+/** Tags the admin page suggests so drills slot into the template. */
+export const SUGGESTED_TAGS: Partial<Record<SessionSlotId, string[]>> = {
+  "warm-up": ["early movement", "dynamic stretching", "plyometrics", "single leg", "late movement", "sprints", "warm-up game"],
+  scrimmage: ["half court", "match play"],
+  skill: ["attack", "defence"],
+};
+
+export type PlanDrill = {
+  /** "category/drill" */
+  key: string;
+  /** Warm-up part label, e.g. "Plyometrics (single leg)". */
+  part?: string;
+};
+
 export type PlanBlock = BlockSpec & {
-  /** "category/drill", or null when the library has nothing suitable yet. */
-  drillKey: string | null;
+  drills: PlanDrill[];
   coachingFocus: string;
   why: string;
 };
@@ -68,8 +119,8 @@ export type SessionPlan = {
   blocks: PlanBlock[];
   /** How the next session could layer on this one. */
   nextTime: string;
-  /** "ai" when Claude built it, "matcher" for the built-in fallback. */
-  source: "ai" | "matcher";
+  /** Claude, the built-in matcher, or built by the coach themselves. */
+  source: "ai" | "matcher" | "coach";
 };
 
 export type Progress = "more-time" | "progress" | "new";
@@ -85,6 +136,8 @@ export type PlannerRequest = {
   ageGroup: AgeGroupId;
   squad?: string;
   blocks: BlockSpec[];
+  /** Can they play a full match, or is it half court? */
+  fullMatch?: boolean;
   previousPlanId?: string | null;
   progress?: Progress | null;
   progressNote?: string;
@@ -96,9 +149,22 @@ export type SavedPlan = {
   brief: string | null;
   age_group: string | null;
   duration_minutes: number | null;
-  plan: SessionPlan & { progress?: Progress | null; progressNote?: string };
+  plan: SessionPlan & {
+    progress?: Progress | null;
+    progressNote?: string;
+    fullMatch?: boolean;
+  };
   created_at: string;
 };
+
+/** Plans saved before blocks held several drills had one drillKey each. */
+export function normaliseBlocks(blocks: PlanBlock[]): PlanBlock[] {
+  return blocks.map((b) => {
+    if (Array.isArray(b.drills)) return b;
+    const legacy = (b as unknown as { drillKey?: string | null }).drillKey;
+    return { ...b, drills: legacy ? [{ key: legacy }] : [] };
+  });
+}
 
 /** A drill flattened with everything the planner needs to choose it. */
 export type CatalogDrill = {
@@ -125,6 +191,10 @@ export function buildCatalog(
   );
 }
 
+export function hasTag(c: CatalogDrill, tag: string) {
+  return (c.drill.tags ?? []).some((t) => t.toLowerCase() === tag);
+}
+
 const STOP_WORDS = new Set(
   "a an and are as at be but by for from get has have i in into is it its me my of on or our so that the their them they this to want we with work working need needs more on".split(" "),
 );
@@ -137,8 +207,8 @@ function words(text: string) {
 }
 
 /**
- * Built-in matcher — used when the AI isn't configured or fails. Scores each
- * drill against the coach's brief, the age group and the previous session.
+ * Built-in matcher — used when the AI isn't configured or fails, and to fill
+ * any gaps the AI leaves. Follows Caitlyn's template block by block.
  */
 export function matchPlan(
   req: PlannerRequest,
@@ -146,8 +216,10 @@ export function matchPlan(
   previous: SavedPlan | null,
 ): SessionPlan {
   const briefWords = new Set(words(`${req.brief} ${req.progressNote ?? ""}`));
-  const prevKeys = new Set(
-    previous?.plan.blocks.filter((b) => b.slot === "skill").map((b) => b.drillKey) ?? [],
+  const prevSkillKeys = new Set(
+    normaliseBlocks(previous?.plan.blocks ?? [])
+      .filter((b) => b.slot === "skill")
+      .flatMap((b) => b.drills.map((d) => d.key)),
   );
   const used = new Set<string>();
 
@@ -157,36 +229,86 @@ export function matchPlan(
       [d.title, d.focus, d.description ?? "", c.categoryName, ...(d.tags ?? [])].join(" "),
     );
     let s = haystack.filter((w) => briefWords.has(w)).length * 2;
-    s += (d.tags ?? []).filter((t) => briefWords.has(t)).length * 2;
     // Drills Caitlyn tagged for this age group beat untagged ones.
     if (d.ageGroups?.includes(req.ageGroup)) s += 1.5;
     if (d.ageNotes?.[req.ageGroup]) s += 0.5;
     if (d.videoUrl) s += 0.5;
-    if (prevKeys.has(c.key)) {
+    if (prevSkillKeys.has(c.key)) {
       if (req.progress === "more-time") s += 4;
       else if (req.progress === "new") s -= 4;
     }
     return s;
   };
 
+  const best = (pool: CatalogDrill[], extra?: (c: CatalogDrill) => number) =>
+    pool
+      .filter((c) => !used.has(c.key))
+      .map((c) => ({ c, s: score(c) + (extra?.(c) ?? 0) }))
+      .sort((a, b) => b.s - a.s)[0]?.c;
+
+  const take = (c: CatalogDrill | undefined, part?: string): PlanDrill[] => {
+    if (!c) return [];
+    used.add(c.key);
+    return [{ key: c.key, part }];
+  };
+
+  const inSlots = (slot: SessionSlotId) => {
+    const slots = candidateSlots(slot);
+    return catalog.filter((c) => slots.includes(c.slot));
+  };
+
+  let lastSkillCategory: string | null = null;
+
   const blocks: PlanBlock[] = req.blocks.map((spec) => {
-    const options = catalog
-      .filter((c) => c.slot === spec.slot && !used.has(c.key))
-      .map((c) => ({ c, s: score(c) }))
-      .sort((a, b) => b.s - a.s);
-    const pick = options[0]?.c;
-    if (pick) used.add(pick.key);
+    const pool = inSlots(spec.slot);
+    let drills: PlanDrill[] = [];
+
+    if (spec.slot === "warm-up") {
+      for (const part of WARM_UP_PARTS) {
+        if (part.id === "plyometrics") {
+          drills.push(...take(best(pool.filter((c) => hasTag(c, "single leg"))), "Plyometrics (single leg)"));
+          drills.push(...take(best(pool.filter((c) => hasTag(c, "plyometrics"))), "Plyometrics"));
+        } else {
+          drills.push(...take(best(pool.filter((c) => part.tags.some((t) => hasTag(c, t)))), part.label));
+        }
+      }
+      // Warm-up drills not tagged yet — still give the coach something.
+      if (drills.length === 0) {
+        for (let i = 0; i < 3; i++) drills.push(...take(best(pool)));
+      }
+    } else if (spec.slot === "ball-footwork" || spec.slot === "team-drill") {
+      const count = spec.minutes >= 15 ? 3 : 2;
+      for (let i = 0; i < count; i++) drills.push(...take(best(pool)));
+    } else if (spec.slot === "scrimmage") {
+      const want = req.fullMatch ? "match play" : "half court";
+      drills = take(
+        best(pool, (c) =>
+          hasTag(c, want) || c.drill.title.toLowerCase().includes(req.fullMatch ? "match" : "half") ? 5 : 0,
+        ),
+      );
+    } else if (spec.slot === "skill") {
+      // Prefer real skill drills, and vary the category between skills.
+      const pick = best(
+        pool,
+        (c) => (c.slot === "skill" ? 1 : 0) - (c.categoryName === lastSkillCategory ? 1.5 : 0),
+      );
+      lastSkillCategory = pick?.categoryName ?? lastSkillCategory;
+      drills = take(pick);
+    } else {
+      drills = take(best(pool));
+    }
+
+    const first = drills[0] ? catalog.find((c) => c.key === drills[0].key) : undefined;
     return {
       ...spec,
-      drillKey: pick?.key ?? null,
-      coachingFocus: pick?.drill.focus
-        ? `Focus on ${pick.drill.focus.toLowerCase()}.`
-        : "",
-      why: pick
-        ? prevKeys.has(pick.key) && req.progress === "more-time"
-          ? "Repeated from last session so the athletes can consolidate it."
-          : "Best match in the library for your brief and age group."
-        : "No drills in the library for this part of the session yet.",
+      drills,
+      coachingFocus: first?.drill.focus ? `Focus on ${first.drill.focus.toLowerCase()}.` : "",
+      why:
+        drills.length === 0
+          ? "No drills in the library for this part of the session yet."
+          : spec.slot === "skill" && first && prevSkillKeys.has(first.key) && req.progress === "more-time"
+            ? "Repeated from last session so the athletes can consolidate it."
+            : "",
     };
   });
 
@@ -199,6 +321,17 @@ export function matchPlan(
     nextTime:
       "Next session, keep the same skill focus and use the 'How to make it harder' progressions if the athletes handled it well.",
     source: "matcher",
+  };
+}
+
+/** An empty plan in the chosen structure, for coaches building their own. */
+export function blankPlan(blocks: BlockSpec[], title: string): SessionPlan {
+  return {
+    title,
+    summary: "",
+    blocks: blocks.map((b) => ({ ...b, drills: [], coachingFocus: "", why: "" })),
+    nextTime: "",
+    source: "coach",
   };
 }
 
