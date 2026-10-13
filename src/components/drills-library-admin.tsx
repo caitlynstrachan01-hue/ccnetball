@@ -6,13 +6,13 @@ import {
   ChevronRight,
   Clock,
   Dumbbell,
+  FileText,
   Film,
   Layers,
   PlayCircle,
   Plus,
   Save,
   Tag,
-  Target as TargetIcon,
   Trash2,
   Upload,
   Users,
@@ -29,6 +29,7 @@ import {
 import * as tus from "tus-js-client";
 import {
   BUNNY_PREFIX,
+  DRILL_PDF_FOLDER,
   DRILL_VIDEO_BUCKET,
   isEmbedUrl,
 } from "@/lib/drills-store";
@@ -174,10 +175,22 @@ export function DrillsLibraryAdmin({
   );
   // Videos picked but not yet uploaded, keyed by "category/drill".
   const [pendingVideos, setPendingVideos] = useState<Record<string, File>>({});
+  // Skill-sheet PDFs picked but not yet uploaded, keyed the same way.
+  const [pendingPdfs, setPendingPdfs] = useState<Record<string, File>>({});
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const [notice, setNotice] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState("");
   const editorRef = useRef<HTMLDivElement>(null);
+  // PDF paths as last saved, so a removed or replaced sheet can be tidied up.
+  const savedPdfPaths = useRef<Record<string, string>>(
+    Object.fromEntries(
+      categories.flatMap((c) =>
+        c.drills
+          .filter((d) => d.pdfPath)
+          .map((d) => [`${c.slug}/${d.slug}`, d.pdfPath as string]),
+      ),
+    ),
+  );
 
   const category = useMemo<DrillCategory>(
     () => categories.find((c) => c.slug === categorySlug) ?? categories[0],
@@ -188,6 +201,7 @@ export function DrillsLibraryAdmin({
   const drill = drills.find((d) => d.slug === drillSlug);
   const drillKey = `${categorySlug}/${drillSlug}`;
   const pendingVideo = pendingVideos[drillKey];
+  const pendingPdf = pendingPdfs[drillKey];
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -255,17 +269,27 @@ export function DrillsLibraryAdmin({
     event.target.value = "";
   }
 
+  function handlePdfPick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setPendingPdfs((prev) => ({ ...prev, [drillKey]: file }));
+    setSaveState({ status: "idle" });
+  }
+
+  function handlePdfRemove() {
+    setPendingPdfs((prev) => {
+      const next = { ...prev };
+      delete next[drillKey];
+      return next;
+    });
+    updateDrill({ pdfPath: undefined });
+  }
+
   async function handleSave() {
     if (!drill || saveState.status === "saving") return;
     if (!drill.title.trim()) {
       setSaveState({ status: "error", message: "Give the drill a title first." });
-      return;
-    }
-    if (drill.ageGroups.length === 0) {
-      setSaveState({
-        status: "error",
-        message: "Pick at least one age group (NetSetGo, Junior or Senior).",
-      });
       return;
     }
 
@@ -304,6 +328,24 @@ export function DrillsLibraryAdmin({
       }
     }
 
+    // The PDF that was saved before this edit, if any — removed or replaced below.
+    const savedPdfPath = savedPdfPaths.current[key];
+    let pdfPath = drill.pdfPath;
+    if (pendingPdf) {
+      setSaveState({ status: "saving", message: "Uploading PDF…" });
+      const safeName =
+        pendingPdf.name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") ||
+        "skill-sheet.pdf";
+      pdfPath = `${DRILL_PDF_FOLDER}/${categorySlug}/${drill.slug}/${stamp()}-${safeName}`;
+      const { error } = await supabase.storage
+        .from(DRILL_VIDEO_BUCKET)
+        .upload(pdfPath, pendingPdf, { contentType: "application/pdf" });
+      if (error) {
+        setSaveState({ status: "error", message: friendlyError(error.message) });
+        return;
+      }
+    }
+
     setSaveState({ status: "saving", message: "Saving drill…" });
     const clean = (list: string[]) => list.map((s) => s.trim()).filter(Boolean);
     const ageNotes: Record<string, string> = {};
@@ -327,8 +369,8 @@ export function DrillsLibraryAdmin({
         age_notes: ageNotes,
         session_slot: drill.sessionSlot,
         video_path: videoPath ?? null,
-        duration_minutes: drill.durationMinutes,
-        level: drill.level,
+        pdf_path: pdfPath ?? null,
+        duration_minutes: drill.durationMinutes || null,
         focus: drill.focus,
         sort_order: drills.findIndex((d) => d.slug === drill.slug),
         published: true,
@@ -345,14 +387,27 @@ export function DrillsLibraryAdmin({
     if (pendingVideo && previousPath && previousPath !== videoPath) {
       await removeOldVideo(previousPath).catch(() => {});
     }
+    if (savedPdfPath && savedPdfPath !== pdfPath) {
+      await supabase.storage
+        .from(DRILL_VIDEO_BUCKET)
+        .remove([savedPdfPath])
+        .catch(() => {});
+    }
+    if (pdfPath) savedPdfPaths.current[key] = pdfPath;
+    else delete savedPdfPaths.current[key];
     if (pendingVideo && videoHost === "bunny") {
       setNotice(
         "Video uploaded. Bunny is preparing it for streaming — members can watch it in a few minutes.",
       );
     }
 
-    updateDrill({ videoPath, unsaved: false });
+    updateDrill({ videoPath, pdfPath, unsaved: false });
     setPendingVideos((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setPendingPdfs((prev) => {
       const next = { ...prev };
       delete next[key];
       return next;
@@ -371,8 +426,7 @@ export function DrillsLibraryAdmin({
       {
         slug,
         title: "New drill",
-        durationMinutes: 10,
-        level: "Intermediate",
+        durationMinutes: 0,
         focus: "",
         custom: true,
       },
@@ -479,7 +533,8 @@ export function DrillsLibraryAdmin({
               const active = d.slug === drillSlug;
               const hasVideo = Boolean(d.videoPath);
               const hasPending = Boolean(
-                pendingVideos[`${categorySlug}/${d.slug}`],
+                pendingVideos[`${categorySlug}/${d.slug}`] ||
+                  pendingPdfs[`${categorySlug}/${d.slug}`],
               );
               return (
                 <li key={d.slug}>
@@ -506,8 +561,12 @@ export function DrillsLibraryAdmin({
                         {d.title}
                       </span>
                       <span className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span>{d.durationMinutes} min</span>
-                        <span>·</span>
+                        {d.durationMinutes > 0 && (
+                          <>
+                            <span>{d.durationMinutes} min</span>
+                            <span>·</span>
+                          </>
+                        )}
                         <span
                           className={
                             hasPending || d.unsaved
@@ -664,20 +723,12 @@ export function DrillsLibraryAdmin({
                 <Field
                   label="Duration (minutes)"
                   type="number"
-                  value={String(drill.durationMinutes)}
+                  value={drill.durationMinutes ? String(drill.durationMinutes) : ""}
+                  placeholder="Optional"
                   onChange={(v) =>
                     updateDrill({ durationMinutes: Number(v) || 0 })
                   }
                   iconLeft={<Clock className="size-4" />}
-                />
-                <SelectField
-                  label="Level"
-                  value={drill.level}
-                  onChange={(v) => updateDrill({ level: v as Drill["level"] })}
-                  options={["Beginner", "Intermediate", "Advanced"].map(
-                    (o) => ({ value: o, label: o }),
-                  )}
-                  iconLeft={<TargetIcon className="size-4" />}
                 />
               </div>
 
@@ -685,8 +736,8 @@ export function DrillsLibraryAdmin({
               <div className="mt-8">
                 <p className="text-sm font-bold text-foreground">Age groups</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Pick 1–3. Members only see this drill suggested for these
-                  age groups.
+                  Optional — pick any that apply. Leave all off if the drill
+                  suits every age.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {AGE_GROUPS.map((a) => {
@@ -717,7 +768,7 @@ export function DrillsLibraryAdmin({
               {/* Description */}
               <TextArea
                 label="Description"
-                hint="What the drill is, how to set it up, and the coaching cue members should focus on."
+                hint="What the drill is, how to set it up, and the coaching cue members should focus on. Every section is optional — anything left blank is hidden from members."
                 value={drill.description}
                 onChange={(v) => updateDrill({ description: v })}
                 rows={5}
@@ -805,6 +856,55 @@ export function DrillsLibraryAdmin({
                   </div>
                 </div>
               )}
+
+              {/* Skill sheet PDF */}
+              <div className="mt-8">
+                <p className="text-sm font-bold text-foreground">
+                  Skill sheet (PDF){" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Members get a &quot;Download skill sheet&quot; button for
+                  this drill.
+                </p>
+                {(pendingPdf || drill.pdfPath) && (
+                  <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 py-3">
+                    <span className="flex min-w-0 items-center gap-2 text-sm">
+                      <FileText className="size-4 shrink-0 text-primary" />
+                      <span className="truncate">
+                        {pendingPdf
+                          ? pendingPdf.name
+                          : (drill.pdfPath?.split("/").pop()?.replace(/^[a-z0-9]+-/, "") ??
+                            "Skill sheet")}
+                      </span>
+                      {pendingPdf && (
+                        <span className="shrink-0 text-xs font-semibold text-rose-700">
+                          Not saved yet
+                        </span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handlePdfRemove}
+                      className="shrink-0 text-xs font-semibold text-muted-foreground transition hover:text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-full border border-border/70 bg-card px-4 py-2 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted">
+                  <Upload className="size-3.5" />
+                  {pendingPdf || drill.pdfPath ? "Replace PDF" : "Upload PDF"}
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    className="sr-only"
+                    onChange={handlePdfPick}
+                  />
+                </label>
+              </div>
 
               {/* Tags */}
               <div className="mt-8">
@@ -924,11 +1024,14 @@ function MemberPreview({ drill }: { drill: EditableDrill }) {
             {drill.title}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            {drill.durationMinutes} min · {drill.level}
-            {drill.ageGroups.length > 0 &&
-              ` · ${AGE_GROUPS.filter((a) => drill.ageGroups.includes(a.id))
+            {[
+              drill.durationMinutes > 0 && `${drill.durationMinutes} min`,
+              AGE_GROUPS.filter((a) => drill.ageGroups.includes(a.id))
                 .map((a) => a.label)
-                .join(", ")}`}
+                .join(", "),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         </div>
       </div>

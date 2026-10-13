@@ -40,10 +40,17 @@ export type DrillRow = {
   age_notes: Record<string, string> | null;
   session_slot: string | null;
   hidden: boolean;
+  pdf_path?: string | null;
 };
 
 export const DRILL_ROW_COLUMNS =
   "category_slug, slug, title, description, make_it_easier, make_it_harder, variations, video_path, duration_minutes, level, focus, sort_order, published, equipment, group_size, tags, age_groups, age_notes, session_slot, hidden";
+
+/** Columns added by migration 0004 — loaded separately so older databases still work. */
+export const DRILL_ROW_COLUMNS_WITH_PDF = `${DRILL_ROW_COLUMNS}, pdf_path`;
+
+/** Storage folder (inside DRILL_VIDEO_BUCKET) for downloadable skill sheets. */
+export const DRILL_PDF_FOLDER = "pdfs";
 
 function rowKey(category: string, slug: string) {
   return `${category}/${slug}`;
@@ -69,24 +76,26 @@ function applyRow(
   return {
     ...base,
     title: row.title || base.title,
-    description: row.description || base.description,
-    makeItEasier: nonEmpty(row.make_it_easier) ?? base.makeItEasier,
-    makeItHarder: nonEmpty(row.make_it_harder) ?? base.makeItHarder,
-    variations: nonEmpty(row.variations) ?? base.variations,
-    durationMinutes: row.duration_minutes ?? base.durationMinutes,
-    level: (row.level as Drill["level"]) ?? base.level,
+    description: row.description ?? undefined,
+    makeItEasier: nonEmpty(row.make_it_easier),
+    makeItHarder: nonEmpty(row.make_it_harder),
+    variations: nonEmpty(row.variations),
+    // A saved row is the source of truth — blank means Caitlyn cleared it.
+    durationMinutes: row.duration_minutes ?? 0,
     focus: row.focus ?? base.focus,
-    equipment: row.equipment ?? base.equipment,
-    groupSize: row.group_size ?? base.groupSize,
-    tags: row.tags?.length ? row.tags : base.tags,
-    ageGroups: row.age_groups?.length
-      ? (row.age_groups.filter((a) => AGE_IDS.has(a)) as AgeGroupId[])
-      : base.ageGroups,
+    equipment: row.equipment ?? undefined,
+    groupSize: row.group_size ?? undefined,
+    tags: row.tags ?? [],
+    ageGroups: (row.age_groups ?? []).filter((a) =>
+      AGE_IDS.has(a),
+    ) as AgeGroupId[],
     ageNotes,
     sessionSlot:
       row.session_slot && SLOT_IDS.has(row.session_slot)
         ? (row.session_slot as SessionSlotId)
         : base.sessionSlot,
+    pdfPath: row.pdf_path ?? undefined,
+    pdfUrl: row.pdf_path ? videoUrls[row.pdf_path] : undefined,
     videoPath: row.video_path ?? undefined,
     videoUrl: row.video_path ? videoUrls[row.video_path] : base.videoUrl,
   };
@@ -117,8 +126,7 @@ export function mergeDrills(
           {
             slug: row.slug,
             title: row.title,
-            durationMinutes: row.duration_minutes ?? 10,
-            level: "Intermediate",
+            durationMinutes: row.duration_minutes ?? 0,
             focus: "",
             custom: true,
           },

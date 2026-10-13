@@ -3,6 +3,7 @@ import { bunnyEmbedUrl } from "@/lib/bunny.server";
 import {
   BUNNY_PREFIX,
   DRILL_ROW_COLUMNS,
+  DRILL_ROW_COLUMNS_WITH_PDF,
   DRILL_VIDEO_BUCKET,
   mergeDrills,
   type DrillRow,
@@ -33,12 +34,18 @@ async function loadFromDatabase(
 ): Promise<DrillCategory[]> {
   const admin = createAdminClient();
 
-  let query = admin.from("drills").select(DRILL_ROW_COLUMNS);
-  // Hidden rows must still load so they can knock out built-in drills.
-  if (!includeUnpublished) query = query.or("published.eq.true,hidden.eq.true");
-  const { data: rows, error } = await query;
+  const select = (columns: string) => {
+    const query = admin.from("drills").select(columns);
+    // Hidden rows must still load so they can knock out built-in drills.
+    return includeUnpublished
+      ? query
+      : query.or("published.eq.true,hidden.eq.true");
+  };
+  let { data: rows, error } = await select(DRILL_ROW_COLUMNS_WITH_PDF);
+  // Database without the PDF column yet (migration 0004) — load without it.
+  if (error?.code === "42703") ({ data: rows, error } = await select(DRILL_ROW_COLUMNS));
   if (error) throw error;
-  const drillRows: DrillRow[] = rows ?? [];
+  const drillRows = (rows ?? []) as unknown as DrillRow[];
 
   const videoUrls: Record<string, string> = {};
   for (const r of drillRows) {
@@ -57,6 +64,19 @@ async function loadFromDatabase(
     const { data: signed } = await admin.storage
       .from(DRILL_VIDEO_BUCKET)
       .createSignedUrls(paths, SIGNED_URL_TTL);
+    for (const s of signed ?? []) {
+      if (s.path && s.signedUrl) videoUrls[s.path] = s.signedUrl;
+    }
+  }
+
+  // Skill-sheet PDFs — signed as downloads so they save rather than open.
+  const pdfPaths = drillRows
+    .map((r) => r.pdf_path)
+    .filter((p): p is string => !!p);
+  if (pdfPaths.length) {
+    const { data: signed } = await admin.storage
+      .from(DRILL_VIDEO_BUCKET)
+      .createSignedUrls(pdfPaths, SIGNED_URL_TTL, { download: true });
     for (const s of signed ?? []) {
       if (s.path && s.signedUrl) videoUrls[s.path] = s.signedUrl;
     }

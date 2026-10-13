@@ -8,6 +8,7 @@ import {
   Check,
   Clock,
   ExternalLink,
+  FileDown,
   History,
   Plus,
   Printer,
@@ -631,7 +632,7 @@ function PlanView({
               </h3>
               {pick && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {pick.categoryName} · {pick.drill.level}
+                  {pick.categoryName}
                   {pick.drill.equipment && ` · ${pick.drill.equipment}`}
                   {pick.drill.groupSize && ` · ${pick.drill.groupSize}`}
                 </p>
@@ -654,6 +655,14 @@ function PlanView({
               )}
 
               <div className="mt-4 flex flex-wrap items-center gap-3 print:hidden">
+                {pick?.drill.pdfUrl && (
+                  <a
+                    href={pick.drill.pdfUrl}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                  >
+                    Skill sheet (PDF) <FileDown className="size-3.5" />
+                  </a>
+                )}
                 {pick && (
                   <Link
                     href={`/library?drill=${encodeURIComponent(pick.key)}`}

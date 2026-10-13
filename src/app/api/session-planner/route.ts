@@ -65,7 +65,7 @@ function describeDrill(c: CatalogDrill) {
     slot: c.slot,
     category: c.categoryName,
     title: d.title,
-    level: d.level,
+    ageGroups: d.ageGroups?.length ? d.ageGroups : "all",
     minutes: d.durationMinutes,
     focus: d.focus || undefined,
     tags: d.tags?.length ? d.tags : undefined,

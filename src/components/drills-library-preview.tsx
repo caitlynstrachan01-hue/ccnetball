@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   ChevronRight,
+  FileDown,
   Clock,
   Layers,
   Lock,
@@ -165,18 +166,18 @@ export function DrillsLibraryPreview({
               {activeDrill.title}
             </h3>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="size-4" />
-                {activeDrill.durationMinutes} min
-              </span>
-              <span className="text-border">·</span>
-              <LevelChip level={activeDrill.level} />
-              <span className="text-border">·</span>
-              <span className="inline-flex items-center gap-1.5">
-                <TargetIcon className="size-4" />
-                {activeDrill.focus}
-              </span>
-              <span className="text-border">·</span>
+              {activeDrill.durationMinutes > 0 && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="size-4" />
+                  {activeDrill.durationMinutes} min
+                </span>
+              )}
+              {activeDrill.focus && (
+                <span className="inline-flex items-center gap-1.5">
+                  <TargetIcon className="size-4" />
+                  {activeDrill.focus}
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5">
                 <Layers className="size-4" />
                 Video {drillIndex + 1} of {category.displayCount ?? category.drills.length}
@@ -206,6 +207,14 @@ export function DrillsLibraryPreview({
               <p className="mt-4 text-sm leading-relaxed text-foreground/90">
                 {activeDrill.description}
               </p>
+            )}
+            {activeDrill.pdfUrl && (
+              <a
+                href={activeDrill.pdfUrl}
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/5"
+              >
+                <FileDown className="size-4" /> Download skill sheet (PDF)
+              </a>
             )}
             {(activeDrill.equipment || activeDrill.groupSize) && (
               <dl className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -270,7 +279,12 @@ export function DrillsLibraryPreview({
                         {drill.title}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {drill.durationMinutes} min · {drill.level}
+                        {[
+                          drill.durationMinutes > 0 && `${drill.durationMinutes} min`,
+                          drill.focus,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     </div>
                     <ChevronRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
@@ -351,9 +365,11 @@ export function DrillsLibraryPreview({
                   {/* Thumbnail */}
                   <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
                     <PlayCircle className="size-10 text-white drop-shadow-md" />
-                    <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">
-                      {drill.durationMinutes}m
-                    </span>
+                    {drill.durationMinutes > 0 && (
+                      <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">
+                        {drill.durationMinutes}m
+                      </span>
+                    )}
                     <span className="absolute left-2 top-2 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
                       #{i + 1}
                     </span>
@@ -362,12 +378,11 @@ export function DrillsLibraryPreview({
                     <p className="text-sm font-bold leading-snug text-foreground">
                       {drill.title}
                     </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                      <LevelChip level={drill.level} />
-                      <span className="text-muted-foreground">
-                        · {drill.focus}
-                      </span>
-                    </div>
+                    {drill.focus && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {drill.focus}
+                      </p>
+                    )}
                   </div>
                 </button>
               );
@@ -396,20 +411,5 @@ function DrillList({ title, items }: { title: string; items?: string[] }) {
         ))}
       </ul>
     </div>
-  );
-}
-
-function LevelChip({ level }: { level: Drill["level"] }) {
-  const styles: Record<Drill["level"], string> = {
-    Beginner: "bg-emerald-100 text-emerald-800",
-    Intermediate: "bg-amber-100 text-amber-800",
-    Advanced: "bg-rose-100 text-rose-800",
-  };
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${styles[level]}`}
-    >
-      {level}
-    </span>
   );
 }

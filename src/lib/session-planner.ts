@@ -136,12 +136,6 @@ function words(text: string) {
     .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 }
 
-const LEVEL_FIT: Record<AgeGroupId, Record<Drill["level"], number>> = {
-  netsetgo: { Beginner: 2, Intermediate: 0, Advanced: -3 },
-  junior: { Beginner: 1, Intermediate: 1.5, Advanced: -0.5 },
-  senior: { Beginner: 0, Intermediate: 1, Advanced: 1.5 },
-};
-
 /**
  * Built-in matcher — used when the AI isn't configured or fails. Scores each
  * drill against the coach's brief, the age group and the previous session.
@@ -164,7 +158,9 @@ export function matchPlan(
     );
     let s = haystack.filter((w) => briefWords.has(w)).length * 2;
     s += (d.tags ?? []).filter((t) => briefWords.has(t)).length * 2;
-    s += LEVEL_FIT[req.ageGroup][d.level] ?? 0;
+    // Drills Caitlyn tagged for this age group beat untagged ones.
+    if (d.ageGroups?.includes(req.ageGroup)) s += 1.5;
+    if (d.ageNotes?.[req.ageGroup]) s += 0.5;
     if (d.videoUrl) s += 0.5;
     if (prevKeys.has(c.key)) {
       if (req.progress === "more-time") s += 4;

@@ -23,7 +23,8 @@ export type Drill = {
   slug: string;
   title: string;
   durationMinutes: number;
-  level: "Beginner" | "Intermediate" | "Advanced";
+  /** Legacy — age groups replaced level; no longer shown or edited. */
+  level?: "Beginner" | "Intermediate" | "Advanced";
   focus: string;
   /** Optional written description shown under the video. */
   description?: string;
@@ -37,6 +38,9 @@ export type Drill = {
   videoUrl?: string;
   /** Where the uploaded video lives in the drill-videos storage bucket. */
   videoPath?: string;
+  /** Downloadable skill sheet — storage path, and a signed link for members. */
+  pdfPath?: string;
+  pdfUrl?: string;
   equipment?: string;
   groupSize?: string;
   /** Free-form tags Caitlyn creates, e.g. "leads", "timing". */
