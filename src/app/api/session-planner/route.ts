@@ -167,7 +167,7 @@ If building on a previous session: when athletes need more time, repeat or light
 Caitlyn's own example sessions, when given, show the standard to aim for.
 Australian English, warm and expert tone.`;
 
-/** Caitlyn's own saved sessions — the planner's worked examples. */
+/** Caitlyn's own and recommended sessions — the planner's worked examples. */
 async function loadExamplePlans(excludeUserId: string): Promise<SavedPlan[]> {
   try {
     const admin = createAdminClient();
@@ -178,14 +178,18 @@ async function loadExamplePlans(excludeUserId: string): Promise<SavedPlan[]> {
     const ids = (admins ?? [])
       .map((a: { id: string }) => a.id)
       .filter((id: string) => id !== excludeUserId);
-    if (ids.length === 0) return [];
-    const { data } = await admin
+    // Caitlyn's own sessions plus coaches' plans she has recommended.
+    const filters = ["recommended.eq.true"];
+    if (ids.length) filters.push(`user_id.in.(${ids.join(",")})`);
+    const { data, error } = await admin
       .from("session_plans")
       .select("id, title, brief, age_group, duration_minutes, plan, created_at")
-      .in("user_id", ids)
+      .or(filters.join(","))
+      .neq("user_id", excludeUserId)
       .order("created_at", { ascending: false })
-      .limit(3);
-    return (data ?? []) as SavedPlan[];
+      .limit(4);
+    if (error) throw error;
+    return ((data ?? []) as SavedPlan[]).map((p) => ({ ...p, brief: null }));
   } catch {
     return [];
   }

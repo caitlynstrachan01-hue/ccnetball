@@ -94,6 +94,13 @@ export default async function AccountPage() {
               Open the drills admin dashboard
               <ArrowRight className="size-4" />
             </Link>
+            <Link
+              href="/admin/session-plans"
+              className="ml-3 mt-3 inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
+            >
+              Review coaches&apos; session plans
+              <ArrowRight className="size-4" />
+            </Link>
           </Reveal>
         )}
 
