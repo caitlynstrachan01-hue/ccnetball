@@ -226,16 +226,6 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     ],
   },
   {
-    slug: "scrimmage",
-    defaultSlot: "scrimmage",
-    name: "Match Play & Half Court",
-    short: "Game-like finishers that put the session's skills under pressure.",
-    drills: [
-      { slug: "half-court-scrimmage", title: "Half-court scrimmage", durationMinutes: 12, level: "Intermediate", focus: "Match play" },
-      { slug: "conditioned-match-play", title: "Conditioned match play", durationMinutes: 15, level: "Intermediate", focus: "Match play" },
-    ],
-  },
-  {
     slug: "recovery",
     defaultSlot: "cool-down",
     name: "Recovery",

@@ -141,7 +141,7 @@ export const SUGGESTED_TAGS: Partial<Record<SessionSlotId, string[]>> = {
     "warm-up game",
   ],
   scrimmage: ["half court", "match play"],
-  skill: ["attack", "defence"],
+  skill: ["attack", "defence", "half court", "match play"],
 };
 
 export type PlanDrill = {

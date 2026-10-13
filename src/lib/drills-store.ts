@@ -159,5 +159,9 @@ export function drillSlot(
   drill: Drill,
   category: DrillCategory,
 ): SessionSlotId {
+  // Game drills live in the attack/defence categories; their tag puts them
+  // in the session's match play block.
+  const tags = (drill.tags ?? []).map((t) => t.toLowerCase());
+  if (tags.includes("half court") || tags.includes("match play")) return "scrimmage";
   return drill.sessionSlot ?? category.defaultSlot;
 }
