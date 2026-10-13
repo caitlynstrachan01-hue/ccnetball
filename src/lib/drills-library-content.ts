@@ -174,6 +174,13 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     ],
   },
   {
+    slug: "circle-defence",
+    defaultSlot: "skill",
+    name: "Circle Defence",
+    short: "Defending the circle — positioning, rebounding and pressure on the shot.",
+    drills: [],
+  },
+  {
     slug: "attack-centre-pass",
     defaultSlot: "skill",
     name: "Centre Pass - Attack",
@@ -212,6 +219,13 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
       { slug: "6-point-drill", title: "6 Point Drill", durationMinutes: 14, level: "Advanced", focus: "Whole team" },
       { slug: "3-person-weave-with-defence", title: "3-Person Weave with Defence", durationMinutes: 12, level: "Advanced", focus: "Whole team" },
     ],
+  },
+  {
+    slug: "team-bonding",
+    defaultSlot: "team-drill",
+    name: "Team Bonding",
+    short: "Games and activities that build connection and trust within the squad.",
+    drills: [],
   },
   {
     slug: "shooting",
