@@ -57,6 +57,8 @@ export type Drill = {
   custom?: boolean;
   /** Caitlyn has saved this drill (it has a row in the database). */
   saved?: boolean;
+  /** Caitlyn's own drill number (1, 2, 3…), used to order the category. */
+  number?: number;
 };
 
 export type DrillCategory = {

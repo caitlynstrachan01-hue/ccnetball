@@ -84,6 +84,8 @@ function applyRow(
   return {
     ...base,
     saved: true,
+    // sort_order is stored 0-based; drill numbers start at 1.
+    number: row.sort_order + 1,
     title: row.title || base.title,
     description: row.description ?? undefined,
     coachingPoints: nonEmpty(row.coaching_points),
@@ -123,9 +125,12 @@ export function mergeDrills(
   const byKey = new Map(rows.map((r) => [rowKey(r.category_slug, r.slug), r]));
   return DRILL_CATEGORIES.map((cat) => {
     const builtIn = new Set(cat.drills.map((d) => d.slug));
-    const drills = cat.drills.map((d) => {
+    const drills = cat.drills.map((d, i) => {
       const row = byKey.get(rowKey(cat.slug, d.slug));
-      return { drill: row ? applyRow(d, row, videoUrls) : d, row };
+      return {
+        drill: row ? applyRow(d, row, videoUrls) : { ...d, number: i + 1 },
+        row,
+      };
     });
     const added = rows
       .filter((r) => r.category_slug === cat.slug && !builtIn.has(r.slug))
@@ -150,7 +155,8 @@ export function mergeDrills(
       displayCount: undefined,
       drills: [...drills, ...added]
         .filter(({ row }) => !row?.hidden)
-        .map(({ drill }) => drill),
+        .map(({ drill }) => drill)
+        .sort((a, b) => (a.number ?? 0) - (b.number ?? 0)),
     };
   });
 }

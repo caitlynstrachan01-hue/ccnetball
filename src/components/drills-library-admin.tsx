@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Clock,
   Dumbbell,
+  Hash,
   FileText,
   Film,
   Layers,
@@ -297,6 +298,23 @@ export function DrillsLibraryAdmin({
       });
       return;
     }
+    if (!drill.number || drill.number < 1) {
+      setSaveState({
+        status: "error",
+        message: "Give the drill a number (1 or more).",
+      });
+      return;
+    }
+    const clash = drills.find(
+      (d) => d.saved && d.slug !== drill.slug && d.number === drill.number,
+    );
+    if (clash) {
+      setSaveState({
+        status: "error",
+        message: `Drill #${drill.number} is already "${clash.title}". Pick another number.`,
+      });
+      return;
+    }
 
     const supabase = createClient();
     const key = drillKey;
@@ -388,7 +406,7 @@ export function DrillsLibraryAdmin({
         pdf_path: pdfPath ?? null,
         duration_minutes: drill.durationMinutes || null,
         focus: drill.focus,
-        sort_order: drills.findIndex((d) => d.slug === drill.slug),
+        sort_order: drill.number - 1,
         published: true,
         hidden: false,
       },
@@ -445,6 +463,7 @@ export function DrillsLibraryAdmin({
         durationMinutes: 0,
         focus: "",
         custom: true,
+        number: Math.max(0, ...drills.map((d) => d.number ?? 0)) + 1,
       },
       category,
     );
@@ -551,72 +570,74 @@ export function DrillsLibraryAdmin({
             Drills in {category.name}
           </p>
           <ul className="mt-3 space-y-1">
-            {drills.map((d, i) => {
-              const active = d.slug === drillSlug;
-              const hasVideo = Boolean(d.videoPath);
-              const hasPending = Boolean(
-                pendingVideos[`${categorySlug}/${d.slug}`] ||
-                pendingPdfs[`${categorySlug}/${d.slug}`],
-              );
-              return (
-                <li key={d.slug}>
-                  <button
-                    type="button"
-                    onClick={() => selectDrill(d.slug)}
-                    className={
-                      active
-                        ? "flex w-full items-center gap-3 rounded-xl bg-primary/10 px-3 py-2.5 text-left transition"
-                        : "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-muted"
-                    }
-                  >
-                    <span
+            {[...drills]
+              .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
+              .map((d) => {
+                const active = d.slug === drillSlug;
+                const hasVideo = Boolean(d.videoPath);
+                const hasPending = Boolean(
+                  pendingVideos[`${categorySlug}/${d.slug}`] ||
+                  pendingPdfs[`${categorySlug}/${d.slug}`],
+                );
+                return (
+                  <li key={d.slug}>
+                    <button
+                      type="button"
+                      onClick={() => selectDrill(d.slug)}
                       className={
                         active
-                          ? "flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground"
-                          : "flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground"
+                          ? "flex w-full items-center gap-3 rounded-xl bg-primary/10 px-3 py-2.5 text-left transition"
+                          : "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-muted"
                       }
                     >
-                      {i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-foreground">
-                        {d.title}
+                      <span
+                        className={
+                          active
+                            ? "flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground"
+                            : "flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground"
+                        }
+                      >
+                        {d.number ?? "–"}
                       </span>
-                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        {d.durationMinutes > 0 && (
-                          <>
-                            <span>{d.durationMinutes} min</span>
-                            <span>·</span>
-                          </>
-                        )}
-                        <span
-                          className={
-                            hasPending || d.unsaved
-                              ? "font-semibold text-rose-700"
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-foreground">
+                          {d.title}
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                          {d.durationMinutes > 0 && (
+                            <>
+                              <span>{d.durationMinutes} min</span>
+                              <span>·</span>
+                            </>
+                          )}
+                          <span
+                            className={
+                              hasPending || d.unsaved
+                                ? "font-semibold text-rose-700"
+                                : hasVideo
+                                  ? "font-semibold text-emerald-700"
+                                  : "text-amber-700"
+                            }
+                          >
+                            {hasPending || d.unsaved
+                              ? "Not saved yet"
                               : hasVideo
-                                ? "font-semibold text-emerald-700"
-                                : "text-amber-700"
-                          }
-                        >
-                          {hasPending || d.unsaved
-                            ? "Not saved yet"
-                            : hasVideo
-                              ? "Video saved"
-                              : "No video yet"}
+                                ? "Video saved"
+                                : "No video yet"}
+                          </span>
                         </span>
                       </span>
-                    </span>
-                    <ChevronRight
-                      className={
-                        active
-                          ? "size-4 text-primary"
-                          : "size-4 text-muted-foreground"
-                      }
-                    />
-                  </button>
-                </li>
-              );
-            })}
+                      <ChevronRight
+                        className={
+                          active
+                            ? "size-4 text-primary"
+                            : "size-4 text-muted-foreground"
+                        }
+                      />
+                    </button>
+                  </li>
+                );
+              })}
           </ul>
           <button
             type="button"
@@ -729,6 +750,16 @@ export function DrillsLibraryAdmin({
                   label="Drill title"
                   value={drill.title}
                   onChange={(v) => updateDrill({ title: v })}
+                />
+                <Field
+                  label="Drill number"
+                  type="number"
+                  value={drill.number ? String(drill.number) : ""}
+                  placeholder="e.g. 50"
+                  onChange={(v) =>
+                    updateDrill({ number: Math.floor(Number(v)) || undefined })
+                  }
+                  iconLeft={<Hash className="size-4" />}
                 />
                 <SelectField
                   label="Session slot"
