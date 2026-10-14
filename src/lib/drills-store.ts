@@ -42,6 +42,7 @@ export type DrillRow = {
   hidden: boolean;
   pdf_path?: string | null;
   coaching_points?: string[];
+  drill_number?: number | null;
 };
 
 export const DRILL_ROW_COLUMNS =
@@ -52,6 +53,7 @@ export const DRILL_ROW_COLUMNS_WITH_PDF = `${DRILL_ROW_COLUMNS}, pdf_path`;
 
 /** Newest columns first — the loader falls back if a migration hasn't run. */
 export const DRILL_ROW_COLUMN_SETS = [
+  `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points, drill_number`, // 0008
   `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points`, // 0007
   DRILL_ROW_COLUMNS_WITH_PDF, // 0004
   DRILL_ROW_COLUMNS,
@@ -84,8 +86,10 @@ function applyRow(
   return {
     ...base,
     saved: true,
-    // sort_order is stored 0-based; drill numbers start at 1.
-    number: row.sort_order + 1,
+    // Before migration 0008 the list position doubled as the drill number.
+    number: row.drill_number ?? row.sort_order + 1,
+    numberStored: row.drill_number != null,
+    order: row.sort_order,
     title: row.title || base.title,
     description: row.description ?? undefined,
     coachingPoints: nonEmpty(row.coaching_points),
@@ -128,7 +132,9 @@ export function mergeDrills(
     const drills = cat.drills.map((d, i) => {
       const row = byKey.get(rowKey(cat.slug, d.slug));
       return {
-        drill: row ? applyRow(d, row, videoUrls) : { ...d, number: i + 1 },
+        drill: row
+          ? applyRow(d, row, videoUrls)
+          : { ...d, number: i + 1, order: i },
         row,
       };
     });
@@ -156,7 +162,7 @@ export function mergeDrills(
       drills: [...drills, ...added]
         .filter(({ row }) => !row?.hidden)
         .map(({ drill }) => drill)
-        .sort((a, b) => (a.number ?? 0) - (b.number ?? 0)),
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
     };
   });
 }

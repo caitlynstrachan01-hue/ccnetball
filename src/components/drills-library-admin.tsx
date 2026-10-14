@@ -3,7 +3,10 @@
 import { useMemo, useRef, useState } from "react";
 import {
   Check,
+  ArrowUpDown,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Clock,
   Dumbbell,
   Hash,
@@ -183,6 +186,12 @@ export function DrillsLibraryAdmin({
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const [notice, setNotice] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState("");
+  // Reorder mode: arrows move drills; only list positions change, never numbers.
+  const [reordering, setReordering] = useState(false);
+  const [orderSnapshot, setOrderSnapshot] = useState<EditableDrill[] | null>(
+    null,
+  );
+  const [orderSaving, setOrderSaving] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   // PDF paths as last saved, so a removed or replaced sheet can be tidied up.
   const savedPdfPaths = useRef<Record<string, string>>(
@@ -406,7 +415,9 @@ export function DrillsLibraryAdmin({
         pdf_path: pdfPath ?? null,
         duration_minutes: drill.durationMinutes || null,
         focus: drill.focus,
-        sort_order: drill.number - 1,
+        sort_order:
+          drill.order ?? drills.findIndex((d) => d.slug === drill.slug),
+        drill_number: drill.number,
         published: true,
         hidden: false,
       },
@@ -435,7 +446,13 @@ export function DrillsLibraryAdmin({
       );
     }
 
-    updateDrill({ videoPath, pdfPath, unsaved: false, saved: true });
+    updateDrill({
+      videoPath,
+      pdfPath,
+      unsaved: false,
+      saved: true,
+      numberStored: true,
+    });
     setPendingVideos((prev) => {
       const next = { ...prev };
       delete next[key];
@@ -464,6 +481,7 @@ export function DrillsLibraryAdmin({
         focus: "",
         custom: true,
         number: Math.max(0, ...drills.map((d) => d.number ?? 0)) + 1,
+        order: Math.max(-1, ...drills.map((d) => d.order ?? 0)) + 1,
       },
       category,
     );
@@ -473,6 +491,70 @@ export function DrillsLibraryAdmin({
       [categorySlug]: [...(prev[categorySlug] ?? []), fresh],
     }));
     selectDrill(slug);
+  }
+
+  const ordered = [...drills].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  function startReorder() {
+    setOrderSnapshot(drills);
+    setReordering(true);
+  }
+
+  function cancelReorder() {
+    if (orderSnapshot) {
+      setLibrary((prev) => ({ ...prev, [categorySlug]: orderSnapshot }));
+    }
+    setOrderSnapshot(null);
+    setReordering(false);
+  }
+
+  function moveDrill(slug: string, direction: -1 | 1) {
+    const list = [...ordered];
+    const from = list.findIndex((d) => d.slug === slug);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= list.length) return;
+    [list[from], list[to]] = [list[to], list[from]];
+    setLibrary((prev) => ({
+      ...prev,
+      [categorySlug]: list.map((d, i) => ({ ...d, order: i })),
+    }));
+  }
+
+  async function saveOrder() {
+    // Before migration 0008 the list position *is* the drill number —
+    // reordering then would renumber drills.
+    if (drills.some((d) => d.saved && !d.numberStored)) {
+      setSaveState({
+        status: "error",
+        message:
+          "The database needs its latest update before you can reorder. Run the newest setup step in Supabase, then try again.",
+      });
+      return;
+    }
+    setOrderSaving(true);
+    const supabase = createClient();
+    const results = await Promise.all(
+      ordered
+        .filter((d) => d.saved && !d.unsaved)
+        .map((d) =>
+          supabase
+            .from("drills")
+            .update({ sort_order: d.order })
+            .eq("category_slug", categorySlug)
+            .eq("slug", d.slug),
+        ),
+    );
+    setOrderSaving(false);
+    const failed = results.find((r) => r.error);
+    if (failed?.error) {
+      setSaveState({
+        status: "error",
+        message: friendlyError(failed.error.message),
+      });
+      return;
+    }
+    setOrderSnapshot(null);
+    setReordering(false);
   }
 
   async function handleRemoveDrill() {
@@ -566,13 +648,81 @@ export function DrillsLibraryAdmin({
             })}
           </div>
 
-          <p className="mt-6 px-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Drills in {category.name}
-          </p>
-          <ul className="mt-3 space-y-1">
-            {[...drills]
-              .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
-              .map((d) => {
+          <div className="mt-6 flex items-center justify-between gap-2 px-2">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              Drills in {category.name}
+            </p>
+            {drills.length > 1 &&
+              (reordering ? (
+                <span className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelReorder}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveOrder}
+                    disabled={orderSaving}
+                    className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground disabled:opacity-60"
+                  >
+                    {orderSaving ? "Saving…" : "Save order"}
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startReorder}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary"
+                >
+                  <ArrowUpDown className="size-3.5" /> Change order
+                </button>
+              ))}
+          </div>
+          {reordering && (
+            <p className="mt-2 px-2 text-[11px] text-muted-foreground">
+              Use the arrows to move drills. Drill numbers stay the same.
+            </p>
+          )}
+          {reordering ? (
+            <ul className="mt-3 space-y-1">
+              {ordered.map((d, i) => (
+                <li
+                  key={d.slug}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground">
+                    {d.number ?? "–"}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                    {d.title}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={`Move ${d.title} up`}
+                    disabled={i === 0}
+                    onClick={() => moveDrill(d.slug, -1)}
+                    className="flex size-8 items-center justify-center rounded-lg border border-border bg-background transition hover:bg-muted disabled:opacity-30"
+                  >
+                    <ChevronUp className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Move ${d.title} down`}
+                    disabled={i === ordered.length - 1}
+                    onClick={() => moveDrill(d.slug, 1)}
+                    className="flex size-8 items-center justify-center rounded-lg border border-border bg-background transition hover:bg-muted disabled:opacity-30"
+                  >
+                    <ChevronDown className="size-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul className="mt-3 space-y-1">
+              {ordered.map((d) => {
                 const active = d.slug === drillSlug;
                 const hasVideo = Boolean(d.videoPath);
                 const hasPending = Boolean(
@@ -638,7 +788,8 @@ export function DrillsLibraryAdmin({
                   </li>
                 );
               })}
-          </ul>
+            </ul>
+          )}
           <button
             type="button"
             onClick={handleAddDrill}

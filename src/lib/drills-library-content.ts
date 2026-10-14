@@ -57,8 +57,12 @@ export type Drill = {
   custom?: boolean;
   /** Caitlyn has saved this drill (it has a row in the database). */
   saved?: boolean;
-  /** Caitlyn's own drill number (1, 2, 3…), used to order the category. */
+  /** Caitlyn's own fixed drill number — never changes when she reorders. */
   number?: number;
+  /** Position in the category list (0-based); lower comes first. */
+  order?: number;
+  /** The drill number has its own column (migration 0008 has run). */
+  numberStored?: boolean;
 };
 
 export type DrillCategory = {
