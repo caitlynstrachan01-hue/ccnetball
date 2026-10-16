@@ -74,6 +74,8 @@ export type DrillCategory = {
   displayCount?: string;
   /** Where drills in this category usually sit in a session. */
   defaultSlot: SessionSlotId;
+  /** Age groups ticked automatically on new drills added to this category. */
+  defaultAgeGroups?: AgeGroupId[];
 };
 
 // Demo data — replace with your full library, ordered as you prefer.
@@ -246,6 +248,14 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
       { slug: "high-post-feed", title: "High-post feed patterns", durationMinutes: 10, level: "Intermediate", focus: "Feeding" },
       { slug: "rebound-plays", title: "Rebound plays", durationMinutes: 9, level: "Intermediate", focus: "Rebounding" },
     ],
+  },
+  {
+    slug: "netsetgo",
+    defaultSlot: "skill",
+    defaultAgeGroups: ["netsetgo"],
+    name: "NetSetGo",
+    short: "Fun, simple drills for our youngest players (U6–U10).",
+    drills: [],
   },
   {
     slug: "recovery",

@@ -71,7 +71,8 @@ function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
     makeItHarder: d.makeItHarder?.length ? d.makeItHarder : [""],
     variations: d.variations?.length ? d.variations : [""],
     tags: d.tags ?? [],
-    ageGroups: d.ageGroups ?? [],
+    ageGroups:
+      d.ageGroups ?? (d.saved ? [] : (cat.defaultAgeGroups ?? [])),
     ageNotes: d.ageNotes ?? {},
     sessionSlot: d.sessionSlot ?? cat.defaultSlot,
     videoUrl: d.videoUrl ?? "",
