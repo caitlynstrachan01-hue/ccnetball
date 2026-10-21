@@ -58,7 +58,7 @@ export default async function LibraryPage({
 
   return (
     <>
-      <section className="border-b border-border/60 bg-muted/30">
+      <section className="border-b border-border/60 bg-muted/30 print:hidden">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-10 lg:py-14">
           <Reveal>
             <Link
@@ -100,7 +100,7 @@ export default async function LibraryPage({
         </div>
       </section>
 
-      <section className="py-10 lg:py-14">
+      <section className="py-10 lg:py-14 print:py-0">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           <DrillsLibraryPreview categories={categories} initialDrill={drill} />
         </div>

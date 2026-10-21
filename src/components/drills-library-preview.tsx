@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   ChevronRight,
   FileDown,
+  Printer,
   Clock,
   Layers,
   Lock,
@@ -112,311 +113,435 @@ export function DrillsLibraryPreview({
   }
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card p-4 md:p-6">
-      {ageFilterBar}
-      {/* PLAYER + UP-NEXT */}
-      <div className="grid gap-6 lg:grid-cols-12">
-        {/* Video player mockup */}
-        <div className="lg:col-span-8">
-          {isEmbedUrl(activeDrill.videoUrl) ? (
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
-              <iframe
+    <>
+      <DrillSheet drill={activeDrill} category={category} />
+      <div className="rounded-3xl border border-border/70 bg-card p-4 md:p-6 print:hidden">
+        {ageFilterBar}
+        {/* PLAYER + UP-NEXT */}
+        <div className="grid gap-6 lg:grid-cols-12">
+          {/* Video player mockup */}
+          <div className="lg:col-span-8">
+            {isEmbedUrl(activeDrill.videoUrl) ? (
+              <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
+                <iframe
+                  key={activeDrill.videoUrl}
+                  src={activeDrill.videoUrl}
+                  title={activeDrill.title}
+                  loading="lazy"
+                  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full border-0"
+                />
+              </div>
+            ) : activeDrill.videoUrl ? (
+              <video
                 key={activeDrill.videoUrl}
                 src={activeDrill.videoUrl}
-                title={activeDrill.title}
-                loading="lazy"
-                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 h-full w-full border-0"
+                controls
+                playsInline
+                preload="metadata"
+                className="aspect-video w-full rounded-2xl bg-black object-contain"
               />
-            </div>
-          ) : activeDrill.videoUrl ? (
-            <video
-              key={activeDrill.videoUrl}
-              src={activeDrill.videoUrl}
-              controls
-              playsInline
-              preload="metadata"
-              className="aspect-video w-full rounded-2xl bg-black object-contain"
-            />
-          ) : (
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
-              <div className="absolute -top-16 -right-16 size-56 rounded-full bg-white/15 blur-3xl" />
-              <div className="absolute -bottom-16 -left-16 size-56 rounded-full bg-white/10 blur-3xl" />
+            ) : (
+              <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
+                <div className="absolute -top-16 -right-16 size-56 rounded-full bg-white/15 blur-3xl" />
+                <div className="absolute -bottom-16 -left-16 size-56 rounded-full bg-white/10 blur-3xl" />
 
-              {/* Play badge */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center text-white">
-                <div className="flex size-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                  <PlayCircle className="size-12" />
+                {/* Play badge */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center text-white">
+                  <div className="flex size-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                    <PlayCircle className="size-12" />
+                  </div>
+                  <p className="max-w-xs px-6 text-sm font-semibold opacity-90">
+                    Video coming soon.
+                  </p>
                 </div>
-                <p className="max-w-xs px-6 text-sm font-semibold opacity-90">
-                  Video coming soon.
-                </p>
-              </div>
 
-              {/* Locked chip */}
-              <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-                <Lock className="size-3.5" />
-                Members only
+                {/* Locked chip */}
+                <div className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                  <Lock className="size-3.5" />
+                  Members only
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Title + meta */}
-          <div className="mt-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              {category.name}
-            </p>
-            <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
-              {activeDrill.title}
-            </h3>
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              {activeDrill.durationMinutes > 0 && (
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="size-4" />
-                  {activeDrill.durationMinutes} min
-                </span>
-              )}
-              {activeDrill.focus && (
-                <span className="inline-flex items-center gap-1.5">
-                  <TargetIcon className="size-4" />
-                  {activeDrill.focus}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1.5">
-                <Layers className="size-4" />
-                Video {drillIndex + 1} of{" "}
-                {category.displayCount ?? category.drills.length}
-              </span>
-            </div>
-            {activeDrill.ageGroups?.length || activeDrill.tags?.length ? (
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {AGE_GROUPS.filter((a) =>
-                  activeDrill.ageGroups?.includes(a.id),
-                ).map((a) => (
-                  <span
-                    key={a.id}
-                    className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/80"
-                  >
-                    {a.label} {a.range}
-                  </span>
-                ))}
-                {activeDrill.tags?.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary"
-                  >
-                    #{t}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            {activeDrill.description && (
-              <p className="mt-4 text-sm leading-relaxed text-foreground/90">
-                {activeDrill.description}
-              </p>
+            {activeDrill.imageUrl && (
+              <figure className="mt-4">
+                {/* Signed Supabase link — not something next/image can optimise. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activeDrill.imageUrl}
+                  alt={`${activeDrill.title} — drill picture`}
+                  className="max-h-[28rem] w-auto max-w-full rounded-2xl border border-border"
+                />
+              </figure>
             )}
-            <DrillList
-              title="Key coaching points"
-              items={activeDrill.coachingPoints}
-            />
-            {activeDrill.pdfUrl && (
-              <a
-                href={activeDrill.pdfUrl}
-                className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/5"
-              >
-                <FileDown className="size-4" /> Download skill sheet (PDF)
-              </a>
-            )}
-            {(activeDrill.equipment || activeDrill.groupSize) && (
-              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-                {activeDrill.equipment && (
-                  <div className="rounded-xl bg-muted/50 px-4 py-3">
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                      Equipment
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground/90">
-                      {activeDrill.equipment}
-                    </dd>
-                  </div>
-                )}
-                {activeDrill.groupSize && (
-                  <div className="rounded-xl bg-muted/50 px-4 py-3">
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                      Group size
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground/90">
-                      {activeDrill.groupSize}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            )}
-            <DrillList
-              title="Drill variations"
-              items={activeDrill.variations}
-            />
-            <DrillList
-              title="How to make it harder"
-              items={activeDrill.makeItHarder}
-            />
-            <DrillList
-              title="How to make it easier"
-              items={activeDrill.makeItEasier}
-            />
-            {AGE_GROUPS.filter((a) => activeDrill.ageNotes?.[a.id]).map((a) => (
-              <div key={a.id} className="mt-5">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                  {a.label} ({a.range}) execution
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/90">
-                  {activeDrill.ageNotes?.[a.id]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Up next in this category */}
-        <aside className="lg:col-span-4">
-          <div className="rounded-2xl bg-muted/40 p-5">
-            <div className="flex items-center justify-between">
+            {/* Title + meta */}
+            <div className="mt-5">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                Up next
-              </p>
-              <p className="text-xs font-semibold text-muted-foreground">
                 {category.name}
               </p>
-            </div>
-            <ul className="mt-4 space-y-2">
-              {upNextInCategory.slice(0, 6).map((drill, i) => (
-                <li key={drill.slug}>
-                  <button
-                    type="button"
-                    onClick={() => setDrillSlug(drill.slug)}
-                    className="group flex w-full items-center gap-3 rounded-xl bg-background p-3 text-left transition hover:bg-primary/5"
-                  >
-                    <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary/15">
-                      <PlayCircle className="size-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-foreground/90">
-                        {drill.title}
-                      </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {[
-                          drill.durationMinutes > 0 &&
-                            `${drill.durationMinutes} min`,
-                          drill.focus,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                    <ChevronRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-                  </button>
-                </li>
-              ))}
-              {upNextInCategory.length === 0 && (
-                <li className="rounded-xl bg-background p-3 text-sm text-muted-foreground">
-                  You&apos;ve reached the end of this category.
-                </li>
-              )}
-            </ul>
-          </div>
-        </aside>
-      </div>
-
-      {/* CATEGORY TABS */}
-      <div className="mt-10">
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => {
-            const active = cat.slug === category.slug;
-            return (
-              <button
-                key={cat.slug}
-                type="button"
-                onClick={() => selectCategory(cat.slug)}
-                className={
-                  active
-                    ? "inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm"
-                    : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
-                }
-              >
-                {cat.name}
-                <span
-                  className={
-                    active
-                      ? "rounded-full bg-white/20 px-1.5 text-[10px] font-bold"
-                      : "rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground"
-                  }
-                >
-                  {cat.displayCount ?? cat.drills.length}
+              <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
+                {activeDrill.title}
+              </h3>
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                {activeDrill.durationMinutes > 0 && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="size-4" />
+                    {activeDrill.durationMinutes} min
+                  </span>
+                )}
+                {activeDrill.focus && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <TargetIcon className="size-4" />
+                    {activeDrill.focus}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <Layers className="size-4" />
+                  Video {drillIndex + 1} of{" "}
+                  {category.displayCount ?? category.drills.length}
                 </span>
-              </button>
-            );
-          })}
+              </div>
+              {activeDrill.ageGroups?.length || activeDrill.tags?.length ? (
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {AGE_GROUPS.filter((a) =>
+                    activeDrill.ageGroups?.includes(a.id),
+                  ).map((a) => (
+                    <span
+                      key={a.id}
+                      className="rounded-full bg-foreground/5 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/80"
+                    >
+                      {a.label} {a.range}
+                    </span>
+                  ))}
+                  {activeDrill.tags?.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary"
+                    >
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {activeDrill.description && (
+                <p className="mt-4 text-sm leading-relaxed text-foreground/90">
+                  {activeDrill.description}
+                </p>
+              )}
+              <DrillList
+                title="Key coaching points"
+                items={activeDrill.coachingPoints}
+              />
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/5"
+                >
+                  <Printer className="size-4" /> Print / save skill sheet
+                </button>
+                {activeDrill.pdfUrl && (
+                  <a
+                    href={activeDrill.pdfUrl}
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
+                  >
+                    <FileDown className="size-4" /> Download Caitlyn&apos;s PDF
+                  </a>
+                )}
+              </div>
+              {(activeDrill.equipment || activeDrill.groupSize) && (
+                <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {activeDrill.equipment && (
+                    <div className="rounded-xl bg-muted/50 px-4 py-3">
+                      <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                        Equipment
+                      </dt>
+                      <dd className="mt-1 text-sm text-foreground/90">
+                        {activeDrill.equipment}
+                      </dd>
+                    </div>
+                  )}
+                  {activeDrill.groupSize && (
+                    <div className="rounded-xl bg-muted/50 px-4 py-3">
+                      <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                        Group size
+                      </dt>
+                      <dd className="mt-1 text-sm text-foreground/90">
+                        {activeDrill.groupSize}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              )}
+              <DrillList
+                title="Drill variations"
+                items={activeDrill.variations}
+              />
+              <DrillList
+                title="How to make it harder"
+                items={activeDrill.makeItHarder}
+              />
+              <DrillList
+                title="How to make it easier"
+                items={activeDrill.makeItEasier}
+              />
+              {AGE_GROUPS.filter((a) => activeDrill.ageNotes?.[a.id]).map(
+                (a) => (
+                  <div key={a.id} className="mt-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                      {a.label} ({a.range}) execution
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/90">
+                      {activeDrill.ageNotes?.[a.id]}
+                    </p>
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+
+          {/* Up next in this category */}
+          <aside className="lg:col-span-4">
+            <div className="rounded-2xl bg-muted/40 p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                  Up next
+                </p>
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {category.name}
+                </p>
+              </div>
+              <ul className="mt-4 space-y-2">
+                {upNextInCategory.slice(0, 6).map((drill, i) => (
+                  <li key={drill.slug}>
+                    <button
+                      type="button"
+                      onClick={() => setDrillSlug(drill.slug)}
+                      className="group flex w-full items-center gap-3 rounded-xl bg-background p-3 text-left transition hover:bg-primary/5"
+                    >
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary/15">
+                        <PlayCircle className="size-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-foreground/90">
+                          {drill.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {[
+                            drill.durationMinutes > 0 &&
+                              `${drill.durationMinutes} min`,
+                            drill.focus,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      </div>
+                      <ChevronRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                    </button>
+                  </li>
+                ))}
+                {upNextInCategory.length === 0 && (
+                  <li className="rounded-xl bg-background p-3 text-sm text-muted-foreground">
+                    You&apos;ve reached the end of this category.
+                  </li>
+                )}
+              </ul>
+            </div>
+          </aside>
         </div>
 
-        {/* CATEGORY GRID */}
-        <div className="mt-6">
-          <div className="flex items-baseline justify-between gap-4">
-            <div>
-              <h4 className="font-display text-xl font-bold tracking-tight md:text-2xl">
-                {category.name}
-              </h4>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {category.short}
-              </p>
-            </div>
-            <p className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
-              {category.displayCount ?? category.drills.length} drills · in
-              order
-            </p>
-          </div>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {category.drills.map((drill, i) => {
-              const active = drill.slug === activeDrill.slug;
+        {/* CATEGORY TABS */}
+        <div className="mt-10">
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => {
+              const active = cat.slug === category.slug;
               return (
                 <button
-                  key={drill.slug}
+                  key={cat.slug}
                   type="button"
-                  onClick={() => setDrillSlug(drill.slug)}
+                  onClick={() => selectCategory(cat.slug)}
                   className={
                     active
-                      ? "flex flex-col rounded-2xl border border-primary bg-primary/5 p-4 text-left ring-2 ring-primary/20 transition"
-                      : "flex flex-col rounded-2xl border border-border/70 bg-background p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                      ? "inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm"
+                      : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
                   }
                 >
-                  {/* Thumbnail */}
-                  <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
-                    <PlayCircle className="size-10 text-white drop-shadow-md" />
-                    {drill.durationMinutes > 0 && (
-                      <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">
-                        {drill.durationMinutes}m
-                      </span>
-                    )}
-                    <span className="absolute left-2 top-2 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
-                      #{i + 1}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex-1">
-                    <p className="text-sm font-bold leading-snug text-foreground">
-                      {drill.title}
-                    </p>
-                    {drill.focus && (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {drill.focus}
-                      </p>
-                    )}
-                  </div>
+                  {cat.name}
+                  <span
+                    className={
+                      active
+                        ? "rounded-full bg-white/20 px-1.5 text-[10px] font-bold"
+                        : "rounded-full bg-muted px-1.5 text-[10px] font-bold text-muted-foreground"
+                    }
+                  >
+                    {cat.displayCount ?? cat.drills.length}
+                  </span>
                 </button>
               );
             })}
           </div>
+
+          {/* CATEGORY GRID */}
+          <div className="mt-6">
+            <div className="flex items-baseline justify-between gap-4">
+              <div>
+                <h4 className="font-display text-xl font-bold tracking-tight md:text-2xl">
+                  {category.name}
+                </h4>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {category.short}
+                </p>
+              </div>
+              <p className="whitespace-nowrap text-xs font-semibold text-muted-foreground">
+                {category.displayCount ?? category.drills.length} drills · in
+                order
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {category.drills.map((drill, i) => {
+                const active = drill.slug === activeDrill.slug;
+                return (
+                  <button
+                    key={drill.slug}
+                    type="button"
+                    onClick={() => setDrillSlug(drill.slug)}
+                    className={
+                      active
+                        ? "flex flex-col rounded-2xl border border-primary bg-primary/5 p-4 text-left ring-2 ring-primary/20 transition"
+                        : "flex flex-col rounded-2xl border border-border/70 bg-background p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                    }
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--brand-raspberry)] via-primary to-[var(--brand-coral)]">
+                      <PlayCircle className="size-10 text-white drop-shadow-md" />
+                      {drill.durationMinutes > 0 && (
+                        <span className="absolute right-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">
+                          {drill.durationMinutes}m
+                        </span>
+                      )}
+                      <span className="absolute left-2 top-2 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                        #{i + 1}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex-1">
+                      <p className="text-sm font-bold leading-snug text-foreground">
+                        {drill.title}
+                      </p>
+                      {drill.focus && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {drill.focus}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
+    </>
+  );
+}
+
+/**
+ * One-page printable skill sheet for the open drill — members print it or
+ * "Save as PDF" from the print dialog.
+ */
+function DrillSheet({
+  drill,
+  category,
+}: {
+  drill: Drill;
+  category: DrillCategory;
+}) {
+  const facts = [
+    ["Equipment", drill.equipment],
+    ["Group size", drill.groupSize],
+    ["Time", drill.durationMinutes > 0 ? `${drill.durationMinutes} min` : ""],
+    [
+      "Age groups",
+      AGE_GROUPS.filter((a) => drill.ageGroups?.includes(a.id))
+        .map((a) => `${a.label} (${a.range})`)
+        .join(", "),
+    ],
+  ].filter(([, v]) => v) as [string, string][];
+
+  const section = (title: string, items?: string[]) => {
+    const clean = (items ?? []).filter((x) => x.trim());
+    if (!clean.length) return null;
+    return (
+      <div className="mt-3 break-inside-avoid">
+        <p className="text-[8pt] font-bold uppercase tracking-[0.16em] text-[var(--brand-raspberry)]">
+          {title}
+        </p>
+        <ul className="mt-0.5 list-disc pl-4">
+          {clean.map((x, i) => (
+            <li key={i}>{x}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
+  return (
+    <div className="hidden text-[9.5pt] leading-snug text-black print:block">
+      <div className="border-b-2 border-[var(--brand-raspberry)] pb-1.5">
+        <p className="text-[7.5pt] font-bold uppercase tracking-[0.2em] text-[var(--brand-raspberry)]">
+          CC Netball · Skill sheet · {category.name}
+        </p>
+        <h1 className="font-display text-[18pt] font-extrabold leading-tight">
+          {drill.title}
+        </h1>
+      </div>
+
+      {facts.length > 0 && (
+        <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-0.5 text-[8.5pt]">
+          {facts.map(([k, v]) => (
+            <div key={k} className="flex gap-1.5">
+              <dt className="font-semibold">{k}:</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {drill.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={drill.imageUrl}
+          alt=""
+          className="mx-auto mt-3 max-h-[95mm] w-auto max-w-full rounded border border-neutral-300"
+        />
+      )}
+
+      {drill.description && (
+        <p className="mt-3 whitespace-pre-line">{drill.description}</p>
+      )}
+
+      <div className="columns-2 gap-6">
+        {section("Key coaching points", drill.coachingPoints)}
+        {section("Drill variations", drill.variations)}
+        {section("How to make it harder", drill.makeItHarder)}
+        {section("How to make it easier", drill.makeItEasier)}
+      </div>
+
+      {AGE_GROUPS.filter((a) => drill.ageNotes?.[a.id]).map((a) => (
+        <p key={a.id} className="mt-2">
+          <span className="font-semibold">
+            {a.label} ({a.range}):
+          </span>{" "}
+          {drill.ageNotes?.[a.id]}
+        </p>
+      ))}
+
+      <p className="mt-4 border-t border-neutral-200 pt-1 text-center text-[7pt] text-neutral-500">
+        ccnetball.com · CC Netball Drills Library
+      </p>
     </div>
   );
 }

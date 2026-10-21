@@ -65,9 +65,9 @@ async function loadFromDatabase(
     }
   }
 
-  // Older uploads that went to Supabase Storage.
+  // Older uploads that went to Supabase Storage, plus drill pictures.
   const paths = drillRows
-    .map((r) => r.video_path)
+    .flatMap((r) => [r.video_path, r.image_path])
     .filter((p): p is string => !!p && !p.startsWith(BUNNY_PREFIX));
 
   if (paths.length) {

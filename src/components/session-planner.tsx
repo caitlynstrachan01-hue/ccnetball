@@ -1450,7 +1450,15 @@ function PrintPlan({
                   ? drill.ageNotes?.[ageGroup]
                   : undefined;
                 return (
-                  <div key={k} className="mt-1.5 px-2">
+                  <div key={k} className="mt-1.5 flow-root px-2">
+                    {drill.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={drill.imageUrl}
+                        alt=""
+                        className="float-right mb-1 ml-2 w-[30mm] rounded border border-neutral-300"
+                      />
+                    )}
                     <p className="text-[9pt] font-bold">
                       {d.part && (
                         <span className="font-semibold text-neutral-500">

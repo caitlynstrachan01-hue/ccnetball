@@ -43,6 +43,7 @@ export type DrillRow = {
   pdf_path?: string | null;
   coaching_points?: string[];
   drill_number?: number | null;
+  image_path?: string | null;
 };
 
 export const DRILL_ROW_COLUMNS =
@@ -53,6 +54,7 @@ export const DRILL_ROW_COLUMNS_WITH_PDF = `${DRILL_ROW_COLUMNS}, pdf_path`;
 
 /** Newest columns first — the loader falls back if a migration hasn't run. */
 export const DRILL_ROW_COLUMN_SETS = [
+  `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points, drill_number, image_path`, // 0009
   `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points, drill_number`, // 0008
   `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points`, // 0007
   DRILL_ROW_COLUMNS_WITH_PDF, // 0004
@@ -61,6 +63,8 @@ export const DRILL_ROW_COLUMN_SETS = [
 
 /** Storage folder (inside DRILL_VIDEO_BUCKET) for downloadable skill sheets. */
 export const DRILL_PDF_FOLDER = "pdfs";
+/** Storage folder (inside DRILL_VIDEO_BUCKET) for drill pictures. */
+export const DRILL_IMAGE_FOLDER = "images";
 
 function rowKey(category: string, slug: string) {
   return `${category}/${slug}`;
@@ -110,6 +114,8 @@ function applyRow(
       row.session_slot && SLOT_IDS.has(row.session_slot)
         ? (row.session_slot as SessionSlotId)
         : base.sessionSlot,
+    imagePath: row.image_path ?? undefined,
+    imageUrl: row.image_path ? videoUrls[row.image_path] : undefined,
     pdfPath: row.pdf_path ?? undefined,
     pdfUrl: row.pdf_path ? videoUrls[row.pdf_path] : undefined,
     videoPath: row.video_path ?? undefined,

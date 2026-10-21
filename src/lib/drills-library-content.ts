@@ -43,6 +43,9 @@ export type Drill = {
   /** Downloadable skill sheet — storage path, and a signed link for members. */
   pdfPath?: string;
   pdfUrl?: string;
+  /** Drill picture (diagram/photo) — storage path, and a signed link. */
+  imagePath?: string;
+  imageUrl?: string;
   equipment?: string;
   groupSize?: string;
   /** Free-form tags Caitlyn creates, e.g. "leads", "timing". */

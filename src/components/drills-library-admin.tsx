@@ -10,6 +10,7 @@ import {
   Clock,
   Dumbbell,
   Hash,
+  Image as ImageIcon,
   FileText,
   Film,
   Layers,
@@ -33,6 +34,7 @@ import {
 import * as tus from "tus-js-client";
 import {
   BUNNY_PREFIX,
+  DRILL_IMAGE_FOLDER,
   DRILL_PDF_FOLDER,
   DRILL_VIDEO_BUCKET,
   isEmbedUrl,
@@ -71,8 +73,7 @@ function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
     makeItHarder: d.makeItHarder?.length ? d.makeItHarder : [""],
     variations: d.variations?.length ? d.variations : [""],
     tags: d.tags ?? [],
-    ageGroups:
-      d.ageGroups ?? (d.saved ? [] : (cat.defaultAgeGroups ?? [])),
+    ageGroups: d.ageGroups ?? (d.saved ? [] : (cat.defaultAgeGroups ?? [])),
     ageNotes: d.ageNotes ?? {},
     sessionSlot: d.sessionSlot ?? cat.defaultSlot,
     videoUrl: d.videoUrl ?? "",
@@ -184,6 +185,10 @@ export function DrillsLibraryAdmin({
   const [pendingVideos, setPendingVideos] = useState<Record<string, File>>({});
   // Skill-sheet PDFs picked but not yet uploaded, keyed the same way.
   const [pendingPdfs, setPendingPdfs] = useState<Record<string, File>>({});
+  // Drill pictures picked but not yet uploaded, with a local preview link.
+  const [pendingImages, setPendingImages] = useState<
+    Record<string, { file: File; preview: string }>
+  >({});
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   const [notice, setNotice] = useState<string | null>(null);
   const [tagDraft, setTagDraft] = useState("");
@@ -194,6 +199,16 @@ export function DrillsLibraryAdmin({
   );
   const [orderSaving, setOrderSaving] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  // Picture paths as last saved, so a removed or replaced picture can be tidied up.
+  const savedImagePaths = useRef<Record<string, string>>(
+    Object.fromEntries(
+      categories.flatMap((c) =>
+        c.drills
+          .filter((d) => d.imagePath)
+          .map((d) => [`${c.slug}/${d.slug}`, d.imagePath as string]),
+      ),
+    ),
+  );
   // PDF paths as last saved, so a removed or replaced sheet can be tidied up.
   const savedPdfPaths = useRef<Record<string, string>>(
     Object.fromEntries(
@@ -215,6 +230,7 @@ export function DrillsLibraryAdmin({
   const drillKey = `${categorySlug}/${drillSlug}`;
   const pendingVideo = pendingVideos[drillKey];
   const pendingPdf = pendingPdfs[drillKey];
+  const pendingImage = pendingImages[drillKey];
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -288,6 +304,26 @@ export function DrillsLibraryAdmin({
     if (!file) return;
     setPendingPdfs((prev) => ({ ...prev, [drillKey]: file }));
     setSaveState({ status: "idle" });
+  }
+
+  function handleImagePick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setPendingImages((prev) => ({
+      ...prev,
+      [drillKey]: { file, preview: URL.createObjectURL(file) },
+    }));
+    setSaveState({ status: "idle" });
+  }
+
+  function handleImageRemove() {
+    setPendingImages((prev) => {
+      const next = { ...prev };
+      delete next[drillKey];
+      return next;
+    });
+    updateDrill({ imagePath: undefined, imageUrl: undefined });
   }
 
   function handlePdfRemove() {
@@ -389,6 +425,28 @@ export function DrillsLibraryAdmin({
       }
     }
 
+    // Same for the drill picture.
+    const savedImagePath = savedImagePaths.current[key];
+    let imagePath = drill.imagePath;
+    if (pendingImage) {
+      setSaveState({ status: "saving", message: "Uploading picture…" });
+      const ext =
+        pendingImage.file.name.split(".").pop()?.toLowerCase() || "jpg";
+      imagePath = `${DRILL_IMAGE_FOLDER}/${categorySlug}/${drill.slug}/${stamp()}.${ext}`;
+      const { error } = await supabase.storage
+        .from(DRILL_VIDEO_BUCKET)
+        .upload(imagePath, pendingImage.file, {
+          contentType: pendingImage.file.type || "image/jpeg",
+        });
+      if (error) {
+        setSaveState({
+          status: "error",
+          message: friendlyError(error.message),
+        });
+        return;
+      }
+    }
+
     setSaveState({ status: "saving", message: "Saving drill…" });
     const clean = (list: string[]) => list.map((s) => s.trim()).filter(Boolean);
     const ageNotes: Record<string, string> = {};
@@ -414,6 +472,7 @@ export function DrillsLibraryAdmin({
         session_slot: drill.sessionSlot,
         video_path: videoPath ?? null,
         pdf_path: pdfPath ?? null,
+        image_path: imagePath ?? null,
         duration_minutes: drill.durationMinutes || null,
         focus: drill.focus,
         sort_order:
@@ -441,6 +500,14 @@ export function DrillsLibraryAdmin({
     }
     if (pdfPath) savedPdfPaths.current[key] = pdfPath;
     else delete savedPdfPaths.current[key];
+    if (savedImagePath && savedImagePath !== imagePath) {
+      await supabase.storage
+        .from(DRILL_VIDEO_BUCKET)
+        .remove([savedImagePath])
+        .catch(() => {});
+    }
+    if (imagePath) savedImagePaths.current[key] = imagePath;
+    else delete savedImagePaths.current[key];
     if (pendingVideo && videoHost === "bunny") {
       setNotice(
         "Video uploaded. Bunny is preparing it for streaming — members can watch it in a few minutes.",
@@ -450,6 +517,8 @@ export function DrillsLibraryAdmin({
     updateDrill({
       videoPath,
       pdfPath,
+      imagePath,
+      imageUrl: pendingImage?.preview ?? drill.imageUrl,
       unsaved: false,
       saved: true,
       numberStored: true,
@@ -460,6 +529,11 @@ export function DrillsLibraryAdmin({
       return next;
     });
     setPendingPdfs((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    setPendingImages((prev) => {
       const next = { ...prev };
       delete next[key];
       return next;
@@ -728,7 +802,8 @@ export function DrillsLibraryAdmin({
                 const hasVideo = Boolean(d.videoPath);
                 const hasPending = Boolean(
                   pendingVideos[`${categorySlug}/${d.slug}`] ||
-                  pendingPdfs[`${categorySlug}/${d.slug}`],
+                  pendingPdfs[`${categorySlug}/${d.slug}`] ||
+                  pendingImages[`${categorySlug}/${d.slug}`],
                 );
                 return (
                   <li key={d.slug}>
@@ -892,6 +967,62 @@ export function DrillsLibraryAdmin({
                     accept="video/*"
                     className="sr-only"
                     onChange={handleVideoPick}
+                  />
+                </label>
+              </div>
+
+              {/* Drill picture */}
+              <div className="mt-6">
+                <p className="text-sm font-bold text-foreground">
+                  Drill picture{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (optional)
+                  </span>
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  A diagram, photo or court drawing. Shown under the video and
+                  printed on the skill sheet and session plans.
+                </p>
+                {(pendingImage?.preview || drill.imageUrl) && (
+                  <div className="mt-3 flex items-start gap-3">
+                    {/* Local preview or signed link — not for next/image. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={pendingImage?.preview ?? drill.imageUrl}
+                      alt="Drill picture"
+                      className="max-h-56 w-auto max-w-full rounded-xl border border-border"
+                    />
+                    <div className="flex flex-col gap-1">
+                      {pendingImage && (
+                        <span className="text-xs font-semibold text-rose-700">
+                          Not saved yet
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleImageRemove}
+                        className="text-left text-xs font-semibold text-muted-foreground transition hover:text-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!pendingImage && drill.imagePath && !drill.imageUrl && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Picture saved.
+                  </p>
+                )}
+                <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-full border border-border/70 bg-card px-4 py-2 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted">
+                  <ImageIcon className="size-3.5" />
+                  {pendingImage || drill.imagePath
+                    ? "Replace picture"
+                    : "Upload picture"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={handleImagePick}
                   />
                 </label>
               </div>
