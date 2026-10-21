@@ -19,9 +19,10 @@ export default async function LibraryPage({
 }: {
   searchParams: Promise<{ drill?: string }>;
 }) {
-  const { user, isAdmin, hasSubscription, hasAccess } =
+  const { user, isAdmin, hasSubscription, hasAccess, deviceRevoked } =
     await getLibraryAccess();
   if (!user) redirect("/login?next=/library");
+  if (deviceRevoked) redirect("/signed-out");
   const { drill } = await searchParams;
 
   if (!hasAccess) {

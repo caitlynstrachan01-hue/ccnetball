@@ -1,5 +1,6 @@
 import type { DrillCategory } from "@/lib/drills-library-content";
 import { bunnyEmbedUrl } from "@/lib/bunny.server";
+import { checkDevice } from "@/lib/device-limit.server";
 import {
   BUNNY_PREFIX,
   DRILL_ROW_COLUMN_SETS,
@@ -101,7 +102,15 @@ export async function getLibraryAccess() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { supabase, user: null, isAdmin: false, hasAccess: false };
+  if (!user)
+    return {
+      supabase,
+      user: null,
+      isAdmin: false,
+      hasSubscription: false,
+      deviceRevoked: false,
+      hasAccess: false,
+    };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -121,11 +130,19 @@ export async function getLibraryAccess() {
     Boolean(entitlement) &&
     (!entitlement?.expires_at || new Date(entitlement.expires_at) > new Date());
 
+  // Members are limited to DEVICE_LIMIT devices; a device signed out because
+  // they signed in elsewhere loses access here (admins are exempt).
+  const deviceRevoked =
+    !isAdmin && hasSubscription
+      ? (await checkDevice(supabase, user.id)) === "revoked"
+      : false;
+
   return {
     supabase,
     user,
     isAdmin,
     hasSubscription,
-    hasAccess: isAdmin || hasSubscription,
+    deviceRevoked,
+    hasAccess: isAdmin || (hasSubscription && !deviceRevoked),
   };
 }

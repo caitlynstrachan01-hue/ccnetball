@@ -17,8 +17,10 @@ export const metadata = {
 };
 
 export default async function PlannerPage() {
-  const { supabase, user, hasAccess } = await getLibraryAccess();
+  const { supabase, user, hasAccess, deviceRevoked } =
+    await getLibraryAccess();
   if (!user) redirect("/login?next=/library/planner");
+  if (deviceRevoked) redirect("/signed-out");
   if (!hasAccess) redirect("/library");
 
   const [categories, { data: plans }] = await Promise.all([
