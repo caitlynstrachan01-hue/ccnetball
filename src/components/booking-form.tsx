@@ -228,28 +228,47 @@ export function BookingForm() {
 
       <SectionHeading title="Photography &amp; media" className="mt-10" />
       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-        Please notify us of your preference on this form. If you change your
-        mind at a later time, notification must be provided to CC Netball in
-        writing.
+        We&apos;d love to share the work your athlete puts in, but only with
+        your permission. Tick the box below if you&apos;re happy for us to
+        take photos and video. You can change your mind any time by emailing{" "}
+        <a
+          href="mailto:info.ccnetball@gmail.com"
+          className="font-semibold text-primary underline underline-offset-4 hover:opacity-80"
+        >
+          info.ccnetball@gmail.com
+        </a>
+        .
       </p>
       <div className="mt-5">
         <CheckboxField name="photoConsent">
-          I consent to CC Netball taking photos / videos of my child for
-          teaching materials, promotions and marketing materials, and other
-          publications on the CC Netball website and social media.
+          I&apos;m happy for CC Netball to take photos and video of my athlete
+          and use them in coaching materials, on the CC Netball website and on
+          social media. I understand my athlete&apos;s full name, school and
+          other identifying details won&apos;t be published without my
+          permission.
         </CheckboxField>
       </div>
 
       <SectionHeading title="Terms &amp; conditions" className="mt-10" />
       <div className="mt-5">
         <CheckboxField name="termsAccepted" required>
-          I have read and agree to CC Netball&apos;s{" "}
+          I&apos;m the athlete&apos;s parent or guardian (or authorised by
+          their school, club or association), and I&apos;ve read and agree to
+          CC Netball&apos;s{" "}
           <Link
             href="/terms"
             target="_blank"
             className="font-semibold text-primary underline underline-offset-4 hover:opacity-80"
           >
             Terms and Conditions
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            target="_blank"
+            className="font-semibold text-primary underline underline-offset-4 hover:opacity-80"
+          >
+            Privacy Policy
           </Link>
           .
         </CheckboxField>
