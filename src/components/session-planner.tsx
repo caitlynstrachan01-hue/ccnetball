@@ -1166,12 +1166,6 @@ export function PlanView({
                             </button>
                           )}
                         </div>
-                        {pick?.drill.ageNotes?.[ageGroup] && (
-                          <p className="mt-2 text-sm text-foreground/90">
-                            <strong>For this age group:</strong>{" "}
-                            {pick.drill.ageNotes[ageGroup]}
-                          </p>
-                        )}
                         <div className="mt-2 flex flex-wrap items-center gap-3 print:hidden">
                           {pick && (
                             <Link
@@ -1446,9 +1440,6 @@ function PrintPlan({
                   Boolean,
                 );
                 const points = (drill.coachingPoints ?? []).slice(0, 4);
-                const ageNote = ageGroup
-                  ? drill.ageNotes?.[ageGroup]
-                  : undefined;
                 return (
                   <div key={k} className="mt-1.5 flow-root px-2">
                     {drill.imageUrl && (
@@ -1483,14 +1474,6 @@ function PrintPlan({
                           <li key={x}>{pt}</li>
                         ))}
                       </ul>
-                    )}
-                    {ageNote && (
-                      <p className="mt-0.5 text-neutral-800">
-                        <span className="font-semibold">
-                          For this age group:
-                        </span>{" "}
-                        {ageNote}
-                      </p>
                     )}
                   </div>
                 );

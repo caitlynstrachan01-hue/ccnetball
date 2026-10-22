@@ -28,7 +28,9 @@ export type Drill = {
   focus: string;
   /** Optional written description shown under the video. */
   description?: string;
-  /** Short cues for the coach — shown in the library and on printed plans. */
+  /** Step-by-step instructions for running the drill. */
+  instructions?: string[];
+  /** Error detection & correction cues — shown in the library and on printed plans. */
   coachingPoints?: string[];
   /** Bullet list — how to make the drill easier. */
   makeItEasier?: string[];

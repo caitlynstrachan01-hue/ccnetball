@@ -231,10 +231,6 @@ export function DrillsLibraryPreview({
                   {activeDrill.description}
                 </p>
               )}
-              <DrillList
-                title="Key coaching points"
-                items={activeDrill.coachingPoints}
-              />
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -277,8 +273,17 @@ export function DrillsLibraryPreview({
                 </dl>
               )}
               <DrillList
+                ordered
+                title="Drill instructions"
+                items={activeDrill.instructions}
+              />
+              <DrillList
                 title="Drill variations"
                 items={activeDrill.variations}
+              />
+              <DrillList
+                title="Key coaching points"
+                items={activeDrill.coachingPoints}
               />
               <DrillList
                 title="How to make it harder"
@@ -288,18 +293,6 @@ export function DrillsLibraryPreview({
                 title="How to make it easier"
                 items={activeDrill.makeItEasier}
               />
-              {AGE_GROUPS.filter((a) => activeDrill.ageNotes?.[a.id]).map(
-                (a) => (
-                  <div key={a.id} className="mt-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                      {a.label} ({a.range}) execution
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/90">
-                      {activeDrill.ageNotes?.[a.id]}
-                    </p>
-                  </div>
-                ),
-              )}
             </div>
           </div>
 
@@ -471,7 +464,7 @@ function DrillSheet({
     ],
   ].filter(([, v]) => v) as [string, string][];
 
-  const section = (title: string, items?: string[]) => {
+  const section = (title: string, items?: string[], numbered = false) => {
     const clean = (items ?? []).filter((x) => x.trim());
     if (!clean.length) return null;
     return (
@@ -479,11 +472,19 @@ function DrillSheet({
         <p className="text-[8pt] font-bold uppercase tracking-[0.16em] text-[var(--brand-raspberry)]">
           {title}
         </p>
-        <ul className="mt-0.5 list-disc pl-4">
-          {clean.map((x, i) => (
-            <li key={i}>{x}</li>
-          ))}
-        </ul>
+        {numbered ? (
+          <ol className="mt-0.5 list-decimal pl-4">
+            {clean.map((x, i) => (
+              <li key={i}>{x}</li>
+            ))}
+          </ol>
+        ) : (
+          <ul className="mt-0.5 list-disc pl-4">
+            {clean.map((x, i) => (
+              <li key={i}>{x}</li>
+            ))}
+          </ul>
+        )}
       </div>
     );
   };
@@ -523,21 +524,14 @@ function DrillSheet({
         <p className="mt-3 whitespace-pre-line">{drill.description}</p>
       )}
 
+      {section("Drill instructions", drill.instructions, true)}
+      {section("Drill variations", drill.variations)}
+
       <div className="columns-2 gap-6">
         {section("Key coaching points", drill.coachingPoints)}
-        {section("Drill variations", drill.variations)}
         {section("How to make it harder", drill.makeItHarder)}
         {section("How to make it easier", drill.makeItEasier)}
       </div>
-
-      {AGE_GROUPS.filter((a) => drill.ageNotes?.[a.id]).map((a) => (
-        <p key={a.id} className="mt-2">
-          <span className="font-semibold">
-            {a.label} ({a.range}):
-          </span>{" "}
-          {drill.ageNotes?.[a.id]}
-        </p>
-      ))}
 
       <p className="mt-4 border-t border-neutral-200 pt-1 text-center text-[7pt] text-neutral-500">
         ccnetball.com · CC Netball Drills Library
@@ -546,7 +540,16 @@ function DrillSheet({
   );
 }
 
-function DrillList({ title, items }: { title: string; items?: string[] }) {
+function DrillList({
+  title,
+  items,
+  ordered = false,
+}: {
+  title: string;
+  items?: string[];
+  /** Numbered steps instead of bullets. */
+  ordered?: boolean;
+}) {
   const clean = (items ?? []).filter((s) => s.trim());
   if (clean.length === 0) return null;
   return (
@@ -557,7 +560,13 @@ function DrillList({ title, items }: { title: string; items?: string[] }) {
       <ul className="mt-2 space-y-1.5 text-sm">
         {clean.map((s, i) => (
           <li key={i} className="flex items-start gap-2">
-            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+            {ordered ? (
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+                {i + 1}
+              </span>
+            ) : (
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+            )}
             <span className="text-foreground/90">{s}</span>
           </li>
         ))}

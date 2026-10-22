@@ -44,6 +44,7 @@ export type DrillRow = {
   coaching_points?: string[];
   drill_number?: number | null;
   image_path?: string | null;
+  instructions?: string[];
 };
 
 export const DRILL_ROW_COLUMNS =
@@ -54,6 +55,7 @@ export const DRILL_ROW_COLUMNS_WITH_PDF = `${DRILL_ROW_COLUMNS}, pdf_path`;
 
 /** Newest columns first — the loader falls back if a migration hasn't run. */
 export const DRILL_ROW_COLUMN_SETS = [
+  `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points, drill_number, image_path, instructions`, // 0011
   `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points, drill_number, image_path`, // 0009
   `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points, drill_number`, // 0008
   `${DRILL_ROW_COLUMNS_WITH_PDF}, coaching_points`, // 0007
@@ -97,6 +99,7 @@ function applyRow(
     title: row.title || base.title,
     description: row.description ?? undefined,
     coachingPoints: nonEmpty(row.coaching_points),
+    instructions: nonEmpty(row.instructions),
     makeItEasier: nonEmpty(row.make_it_easier),
     makeItHarder: nonEmpty(row.make_it_harder),
     variations: nonEmpty(row.variations),

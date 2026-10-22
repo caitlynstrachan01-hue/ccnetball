@@ -45,6 +45,7 @@ import { createClient } from "@/lib/supabase/client";
 type EditableDrill = Drill & {
   description: string;
   coachingPoints: string[];
+  instructions: string[];
   equipment: string;
   groupSize: string;
   makeItEasier: string[];
@@ -60,7 +61,11 @@ type EditableDrill = Drill & {
 };
 
 type ListKey =
-  "coachingPoints" | "variations" | "makeItHarder" | "makeItEasier";
+  | "instructions"
+  | "coachingPoints"
+  | "variations"
+  | "makeItHarder"
+  | "makeItEasier";
 
 function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
   return {
@@ -69,6 +74,7 @@ function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
     equipment: d.equipment ?? "",
     groupSize: d.groupSize ?? "",
     coachingPoints: d.coachingPoints?.length ? d.coachingPoints : [""],
+    instructions: d.instructions?.length ? d.instructions : [""],
     makeItEasier: d.makeItEasier?.length ? d.makeItEasier : [""],
     makeItHarder: d.makeItHarder?.length ? d.makeItHarder : [""],
     variations: d.variations?.length ? d.variations : [""],
@@ -464,6 +470,7 @@ export function DrillsLibraryAdmin({
         group_size: drill.groupSize.trim() || null,
         make_it_easier: clean(drill.makeItEasier),
         coaching_points: clean(drill.coachingPoints),
+        instructions: clean(drill.instructions),
         make_it_harder: clean(drill.makeItHarder),
         variations: clean(drill.variations),
         tags: drill.tags,
@@ -1110,19 +1117,10 @@ export function DrillsLibraryAdmin({
               {/* Description */}
               <TextArea
                 label="Description"
-                hint="What the drill is and how to set it up. Every section is optional — anything left blank is hidden from members."
+                hint="A couple of sentences on what the drill is and what it's for. Every section is optional — anything left blank is hidden from members."
                 value={drill.description}
                 onChange={(v) => updateDrill({ description: v })}
-                rows={5}
-              />
-
-              <ListEditor
-                title="Key coaching points"
-                hint="Short cues for the coach to call out. The first few print on session plans."
-                values={drill.coachingPoints}
-                onChange={(i, v) => updateListItem("coachingPoints", i, v)}
-                onAdd={() => addListItem("coachingPoints")}
-                onRemove={(i) => removeListItem("coachingPoints", i)}
+                rows={3}
               />
 
               <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -1143,70 +1141,53 @@ export function DrillsLibraryAdmin({
               </div>
 
               <ListEditor
+                title="Drill instructions"
+                hint="Step by step — how to set up and run the drill."
+                addLabel="Add instruction"
+                placeholder="Type the next step…"
+                values={drill.instructions}
+                onChange={(i, v) => updateListItem("instructions", i, v)}
+                onAdd={() => addListItem("instructions")}
+                onRemove={(i) => removeListItem("instructions", i)}
+              />
+              <ListEditor
+                sub
                 title="Drill variations"
-                hint="Each bullet is a fresh way to run the drill so it doesn't get stale."
+                hint="Fresh ways to run the drill so it doesn't get stale."
+                addLabel="Add variation"
                 values={drill.variations}
                 onChange={(i, v) => updateListItem("variations", i, v)}
                 onAdd={() => addListItem("variations")}
                 onRemove={(i) => removeListItem("variations", i)}
               />
+
               <ListEditor
+                title="Key coaching points"
+                hint="Error detection and correction — what to look for and how to fix it. The first few print on session plans."
+                addLabel="Add coaching point"
+                values={drill.coachingPoints}
+                onChange={(i, v) => updateListItem("coachingPoints", i, v)}
+                onAdd={() => addListItem("coachingPoints")}
+                onRemove={(i) => removeListItem("coachingPoints", i)}
+              />
+              <ListEditor
+                sub
                 title="How to make it harder"
-                hint="Each bullet is one way to progress the drill for more advanced players."
+                hint="Ways to progress the drill for more advanced players."
                 values={drill.makeItHarder}
                 onChange={(i, v) => updateListItem("makeItHarder", i, v)}
                 onAdd={() => addListItem("makeItHarder")}
                 onRemove={(i) => removeListItem("makeItHarder", i)}
               />
               <ListEditor
+                sub
                 title="How to make it easier"
-                hint="Each bullet is one way to scale the drill down for less experienced players."
+                hint="Ways to scale the drill down for less experienced players."
                 values={drill.makeItEasier}
                 onChange={(i, v) => updateListItem("makeItEasier", i, v)}
                 onAdd={() => addListItem("makeItEasier")}
                 onRemove={(i) => removeListItem("makeItEasier", i)}
               />
-
-              {/* Execution by age */}
-              {drill.ageGroups.length > 0 && (
-                <div className="mt-8">
-                  <p className="text-sm font-bold text-foreground">
-                    Execution by age group{" "}
-                    <span className="font-normal text-muted-foreground">
-                      (optional)
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Same skill, different execution — note what changes for each
-                    age group.
-                  </p>
-                  <div className="mt-3 space-y-3">
-                    {AGE_GROUPS.filter((a) =>
-                      drill.ageGroups.includes(a.id),
-                    ).map((a) => (
-                      <label key={a.id} className="block">
-                        <span className="text-xs font-semibold text-foreground/80">
-                          {a.label} ({a.range})
-                        </span>
-                        <textarea
-                          value={drill.ageNotes[a.id] ?? ""}
-                          onChange={(e) =>
-                            updateDrill({
-                              ageNotes: {
-                                ...drill.ageNotes,
-                                [a.id]: e.target.value,
-                              },
-                            })
-                          }
-                          rows={2}
-                          placeholder={`How this runs with ${a.label} athletes…`}
-                          className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Skill sheet PDF */}
               <div className="mt-8">
@@ -1443,8 +1424,9 @@ function MemberPreview({ drill }: { drill: EditableDrill }) {
           )}
         </p>
       )}
-      <PreviewList title="Key coaching points" items={drill.coachingPoints} />
+      <PreviewList title="Drill instructions" items={drill.instructions} />
       <PreviewList title="Drill variations" items={drill.variations} />
+      <PreviewList title="Key coaching points" items={drill.coachingPoints} />
       <PreviewList title="How to make it harder" items={drill.makeItHarder} />
       <PreviewList title="How to make it easier" items={drill.makeItEasier} />
     </div>
@@ -1473,6 +1455,9 @@ function ListEditor({
   onChange,
   onAdd,
   onRemove,
+  sub = false,
+  addLabel = "Add bullet",
+  placeholder = "Type a bullet point…",
 }: {
   title: string;
   hint: string;
@@ -1480,12 +1465,26 @@ function ListEditor({
   onChange: (index: number, value: string) => void;
   onAdd: () => void;
   onRemove: (index: number) => void;
+  /** A smaller subsection tucked under the section above it. */
+  sub?: boolean;
+  addLabel?: string;
+  placeholder?: string;
 }) {
   return (
-    <div className="mt-8">
+    <div
+      className={sub ? "ml-3 mt-5 border-l-2 border-primary/20 pl-4" : "mt-8"}
+    >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-foreground">{title}</p>
+          <p
+            className={
+              sub
+                ? "text-xs font-bold uppercase tracking-[0.14em] text-foreground/80"
+                : "text-sm font-bold text-foreground"
+            }
+          >
+            {title}
+          </p>
           <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
         </div>
         <button
@@ -1493,7 +1492,7 @@ function ListEditor({
           onClick={onAdd}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
         >
-          <Plus className="size-3.5" /> Add bullet
+          <Plus className="size-3.5" /> {addLabel}
         </button>
       </div>
       <ul className="mt-3 space-y-2">
@@ -1506,7 +1505,7 @@ function ListEditor({
               type="text"
               value={value}
               onChange={(e) => onChange(i, e.target.value)}
-              placeholder="Type a bullet point…"
+              placeholder={placeholder}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             <button
