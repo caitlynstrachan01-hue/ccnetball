@@ -8,8 +8,8 @@ export type ClinicId =
   | "ballina-u13-u15"
   | "coffs-u10-u12"
   | "coffs-u13-u15"
-  | "innisfail-u10-u12"
-  | "innisfail-u13-u16";
+  | "innisfail-u9-u11"
+  | "innisfail-u12-u14";
 
 export type Clinic = {
   label: string;
@@ -34,13 +34,13 @@ export const CLINICS: Record<ClinicId, Clinic> = {
     label: "Coffs Harbour School Holiday Clinic — U13-U15",
     calSlug: "coffs-harbour-school-holiday-clinic-u13-u15",
   },
-  "innisfail-u10-u12": {
-    label: "Innisfail Netball Clinic — U10-U12",
-    calSlug: "innisfail-netball-clinic-u10-u12",
+  "innisfail-u9-u11": {
+    label: "Innisfail Netball Clinic — U9-U11 (Thu 5 Nov · 3:45-5pm)",
+    calSlug: "innisfail-netball-clinic-u9-u11",
   },
-  "innisfail-u13-u16": {
-    label: "Innisfail Netball Clinic — U13-U16",
-    calSlug: "innisfail-netball-clinic-u13-u16",
+  "innisfail-u12-u14": {
+    label: "Innisfail Netball Clinic — U12-U14 (Thu 5 Nov · 5-6:15pm)",
+    calSlug: "innisfail-netball-clinic-u12-u14",
   },
 };
 
@@ -49,8 +49,8 @@ export const CLINIC_ORDER: ClinicId[] = [
   "ballina-u13-u15",
   "coffs-u10-u12",
   "coffs-u13-u15",
-  "innisfail-u10-u12",
-  "innisfail-u13-u16",
+  "innisfail-u9-u11",
+  "innisfail-u12-u14",
 ];
 
 export function isClinicId(value: string): value is ClinicId {
