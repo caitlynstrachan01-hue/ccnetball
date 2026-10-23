@@ -18,6 +18,10 @@ const PROGRAM_LABELS: Record<string, string> = {
   "coffs-u13-u15": "CLINIC — Coffs Harbour School Holiday Clinic U13-U15 (paid via Cal.com at booking)",
   "innisfail-u9-u11": "CLINIC — Innisfail Netball Clinic U9-U11 (Thu 5 Nov · 3:45-5pm) (paid via Cal.com at booking)",
   "innisfail-u12-u14": "CLINIC — Innisfail Netball Clinic U12-U14 (Thu 5 Nov · 5-6:15pm) (paid via Cal.com at booking)",
+  "tableland-u9-u11": "CLINIC — Tableland Netball Clinic U9-U11 (Fri 6 Nov) (paid via Cal.com at booking)",
+  "tableland-u12-u14": "CLINIC — Tableland Netball Clinic U12-U14 (Fri 6 Nov) (paid via Cal.com at booking)",
+  "cairns-u9-u11": "CLINIC — Cairns Netball Clinic U9-U11 (Mon 9 Nov) (paid via Cal.com at booking)",
+  "cairns-u12-u14": "CLINIC — Cairns Netball Clinic U12-U14 (Mon 9 Nov) (paid via Cal.com at booking)",
 };
 
 function escape(value: string): string {
