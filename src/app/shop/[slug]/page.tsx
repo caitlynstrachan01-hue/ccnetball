@@ -13,11 +13,12 @@ import {
   Zap,
 } from "lucide-react";
 import { Reveal } from "@/components/motion";
+import { PhysicalProductDetail } from "@/components/physical-product-detail";
 import {
-  SHOP_PRODUCTS,
   getProductBySlug,
   type ShopProduct,
 } from "@/lib/shop-content";
+import { getPhysicalProductBySlug } from "@/lib/shop-physical.server";
 
 const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
   "clipboard-list": ClipboardList,
@@ -28,9 +29,7 @@ const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
   "play-circle": PlayCircle,
 };
 
-export function generateStaticParams() {
-  return SHOP_PRODUCTS.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -38,12 +37,21 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
-  if (!product) return { title: "Product not found" };
-  return {
-    title: `${product.name} — The Netball Shop`,
-    description: product.short,
-  };
+  const digital = getProductBySlug(slug);
+  if (digital) {
+    return {
+      title: `${digital.name} — The Netball Shop`,
+      description: digital.short,
+    };
+  }
+  const physical = await getPhysicalProductBySlug(slug);
+  if (physical) {
+    return {
+      title: `${physical.name} — The Netball Shop`,
+      description: physical.short,
+    };
+  }
+  return { title: "Product not found" };
 }
 
 export default async function ShopProductPage({
@@ -52,9 +60,14 @@ export default async function ShopProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
-  if (!product) notFound();
+  const digital = getProductBySlug(slug);
+  if (!digital) {
+    const physical = await getPhysicalProductBySlug(slug);
+    if (!physical) notFound();
+    return <PhysicalProductDetail product={physical} />;
+  }
 
+  const product = digital;
   const Icon = ICONS[product.icon];
 
   return (
@@ -77,7 +90,6 @@ export default async function ShopProductPage({
           </Reveal>
 
           <Reveal delay={0.05}>
-            {/* Small hero visual — swap for an app screenshot when ready. */}
             <div className="mt-8 flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Icon className="size-8" />
             </div>
@@ -107,7 +119,6 @@ export default async function ShopProductPage({
       {/* DETAIL */}
       <section className="py-16">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:px-10">
-          {/* Description + features */}
           <Reveal className="lg:col-span-7">
             <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
               About this app
@@ -131,7 +142,6 @@ export default async function ShopProductPage({
             </ul>
           </Reveal>
 
-          {/* Sticky purchase card */}
           <Reveal delay={0.1} className="lg:col-span-5">
             <div className="rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5 md:sticky md:top-24">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">

@@ -8,6 +8,8 @@ import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { ScrollProgressBar } from "@/components/motion";
 import { StructuredData } from "@/components/structured-data";
 import { CookieConsent } from "@/components/cookie-consent";
+import { CartProvider } from "@/components/cart/cart-context";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 import "./globals.css";
 
 const inter = Inter({
@@ -66,13 +68,16 @@ export default function RootLayout({
           <ScrollProgressBar />
         </div>
         <PostHogProvider>
-          <div className="contents print:hidden">
-            <SiteHeader />
-          </div>
-          <main className="flex-1">{children}</main>
-          <div className="contents print:hidden">
-            <SiteFooter />
-          </div>
+          <CartProvider>
+            <div className="contents print:hidden">
+              <SiteHeader />
+            </div>
+            <main className="flex-1">{children}</main>
+            <div className="contents print:hidden">
+              <SiteFooter />
+            </div>
+            <CartDrawer />
+          </CartProvider>
         </PostHogProvider>
         <div className="contents print:hidden">
           <CookieConsent />

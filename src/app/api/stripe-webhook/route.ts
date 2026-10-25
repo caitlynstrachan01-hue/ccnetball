@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/server";
+import { sendShopOrderNotification } from "@/lib/shop-order-email";
 
 export const runtime = "nodejs";
 
@@ -36,6 +37,65 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        // Physical shop orders (one-off payment).
+        if (
+          session.mode === "payment" &&
+          session.metadata?.shop_order === "true"
+        ) {
+          const orderId = session.metadata.order_id;
+          if (!orderId) break;
+
+          const paymentIntentId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent?.id || null;
+
+          const { data: order } = await supabase
+            .from("shop_orders")
+            .select("*")
+            .eq("id", orderId)
+            .maybeSingle();
+
+          if (!order) {
+            console.error("Shop order not found:", orderId);
+            break;
+          }
+          if (order.status === "paid") break; // idempotent
+
+          // Decrement stock atomically; if it fails, flag the order instead
+          // of leaving stock in an inconsistent state.
+          const { error: decError } = await supabase.rpc(
+            "shop_decrement_stock",
+            {
+              items: order.items.map((i: { product_id: string; quantity: number }) => ({
+                product_id: i.product_id,
+                quantity: i.quantity,
+              })),
+            },
+          );
+          if (decError) {
+            console.error("shop_decrement_stock failed:", decError);
+          }
+
+          await supabase
+            .from("shop_orders")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              stripe_payment_intent: paymentIntentId,
+            })
+            .eq("id", orderId);
+
+          try {
+            await sendShopOrderNotification(order);
+          } catch (err) {
+            console.error("Shop order email failed:", err);
+          }
+          break;
+        }
+
+        // Digital subscription flow (unchanged).
         if (session.mode !== "subscription") break;
 
         const userId = session.client_reference_id;
