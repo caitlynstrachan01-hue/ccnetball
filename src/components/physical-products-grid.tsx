@@ -2,6 +2,10 @@ import Link from "next/link";
 import { ShoppingBag, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import {
+  GreetingCardMockup,
+  isGreetingCardProduct,
+} from "@/components/greeting-card-mockup";
+import {
   type PhysicalProduct,
   formatPriceCents,
   stockMessage,
@@ -29,20 +33,33 @@ export function PhysicalProductsGrid({
         const stockInfo = stockMessage(product.stock);
         const soldOut = product.stock <= 0;
         const photo = product.photos[0] ?? null;
+        const isCard = isGreetingCardProduct(product.slug);
         return (
           <Reveal key={product.id} delay={0.05 + i * 0.04}>
             <Link
               href={`/shop/${product.slug}`}
               className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
             >
-              <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted">
+              <div
+                className={`relative flex items-center justify-center overflow-hidden bg-muted ${
+                  isCard ? "aspect-[4/3] p-5" : "aspect-square"
+                }`}
+              >
                 {photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={photo}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
-                  />
+                  isCard ? (
+                    <GreetingCardMockup
+                      src={photo}
+                      alt={product.name}
+                      size="sm"
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photo}
+                      alt={product.name}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
+                    />
+                  )
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <ShoppingBag className="size-10" />

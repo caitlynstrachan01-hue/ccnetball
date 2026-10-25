@@ -5,6 +5,10 @@ import { ArrowLeft, Minus, Plus, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "./cart/cart-context";
 import {
+  GreetingCardMockup,
+  isGreetingCardProduct,
+} from "./greeting-card-mockup";
+import {
   type PhysicalProduct,
   formatPriceCents,
   stockMessage,
@@ -19,6 +23,7 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
   const soldOut = product.stock <= 0;
 
   const photo = product.photos[activePhoto] ?? null;
+  const isCard = isGreetingCardProduct(product.slug);
 
   function handleAddToCart() {
     addItem({
@@ -45,14 +50,22 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
 
         <div className="mt-6 grid gap-10 lg:grid-cols-2">
           <div>
-            <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-border/70 bg-muted">
+            <div
+              className={`relative flex items-center justify-center overflow-hidden rounded-3xl border border-border/70 bg-muted ${
+                isCard ? "aspect-[4/3] p-6 lg:p-10" : "aspect-square"
+              }`}
+            >
               {photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={photo}
-                  alt={product.name}
-                  className="h-full w-full object-cover"
-                />
+                isCard ? (
+                  <GreetingCardMockup src={photo} alt={product.name} />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={photo}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
+                )
               ) : (
                 <div className="flex flex-col items-center gap-3 text-muted-foreground">
                   <ShoppingBag className="size-14" />
@@ -122,6 +135,12 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                 {product.description}
               </p>
+              {isCard && (
+                <p className="text-xs italic text-muted-foreground">
+                  Pack of 10 cards — 2 of each design. Blank inside. CC Netball
+                  logo on the back of every card.
+                </p>
+              )}
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
