@@ -5,6 +5,7 @@ import {
   GreetingCardMockup,
   isGreetingCardProduct,
 } from "@/components/greeting-card-mockup";
+import { isWallChartProduct } from "@/components/wall-chart-mockup";
 import {
   type PhysicalProduct,
   formatPriceCents,
@@ -34,6 +35,7 @@ export function PhysicalProductsGrid({
         const soldOut = product.stock <= 0;
         const photo = product.photos[0] ?? null;
         const isCard = isGreetingCardProduct(product.slug);
+        const isWallChart = isWallChartProduct(product.slug);
         return (
           <Reveal key={product.id} delay={0.05 + i * 0.04}>
             <Link
@@ -42,7 +44,11 @@ export function PhysicalProductsGrid({
             >
               <div
                 className={`relative flex items-center justify-center overflow-hidden bg-muted ${
-                  isCard ? "aspect-[4/3] p-5" : "aspect-square"
+                  isCard
+                    ? "aspect-[4/3] p-5"
+                    : isWallChart
+                      ? "aspect-[3/4] p-4"
+                      : "aspect-square"
                 }`}
               >
                 {photo ? (
@@ -51,6 +57,13 @@ export function PhysicalProductsGrid({
                       src={photo}
                       alt={product.name}
                       size="sm"
+                    />
+                  ) : isWallChart ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={photo}
+                      alt={product.name}
+                      className="max-h-full w-auto object-contain shadow-md transition-transform group-hover:scale-[1.03]"
                     />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element

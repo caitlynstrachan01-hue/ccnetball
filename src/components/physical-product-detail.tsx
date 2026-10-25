@@ -8,6 +8,7 @@ import {
   GreetingCardMockup,
   isGreetingCardProduct,
 } from "./greeting-card-mockup";
+import { WallChartMockup, isWallChartProduct } from "./wall-chart-mockup";
 import {
   type PhysicalProduct,
   formatPriceCents,
@@ -24,6 +25,7 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
 
   const photo = product.photos[activePhoto] ?? null;
   const isCard = isGreetingCardProduct(product.slug);
+  const isWallChart = isWallChartProduct(product.slug);
 
   function handleAddToCart() {
     addItem({
@@ -52,12 +54,18 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
           <div>
             <div
               className={`relative flex items-center justify-center overflow-hidden rounded-3xl border border-border/70 bg-muted ${
-                isCard ? "aspect-[4/3] p-6 lg:p-10" : "aspect-square"
+                isCard
+                  ? "aspect-[4/3] p-6 lg:p-10"
+                  : isWallChart
+                    ? "aspect-[3/4] p-6 lg:p-8"
+                    : "aspect-square"
               }`}
             >
               {photo ? (
                 isCard ? (
                   <GreetingCardMockup src={photo} alt={product.name} />
+                ) : isWallChart ? (
+                  <WallChartMockup src={photo} alt={product.name} />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
