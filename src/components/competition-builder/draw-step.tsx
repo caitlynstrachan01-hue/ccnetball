@@ -181,8 +181,8 @@ export function DrawStep({
               <AlertTriangle className="size-5 text-amber-600" />
             )}
             {report.unplaced === 0
-              ? `Done — ${report.totalGames} games placed across every round.`
-              : `${report.totalGames} games placed, ${report.unplaced} couldn't be placed.`}
+              ? `Done — all ${report.totalGames} games placed across every round.`
+              : `${report.totalGames - report.unplaced} of ${report.totalGames} games placed. ${report.unplaced} couldn't fit under your current courts, timeslots and rules.`}
           </p>
           {report.issues.length > 0 && (
             <ul className="mt-2 list-disc pl-6 text-xs text-amber-900">
