@@ -642,6 +642,58 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
       }
 
       if (!placed) {
+        // Work out WHICH rule blocked every available slot, so we can
+        // tell the organiser something useful.
+        const reasons = new Set<string>();
+        for (const slot of timeslots) {
+          const slotLabel = slot.label;
+          if (allowedForDivision && !allowedForDivision.has(slot.id)) {
+            reasons.add(
+              `${nameOf(divisions, pairing.divisionId)} is restricted to timeslots that don't include ${slotLabel} (rule: "Division only plays at certain timeslots").`,
+            );
+            continue;
+          }
+          const reqA = pairing.teamAId
+            ? required.get(pairing.teamAId)
+            : undefined;
+          const reqB = pairing.teamBId
+            ? required.get(pairing.teamBId)
+            : undefined;
+          if (reqA && !reqA.has(slot.id)) {
+            reasons.add(
+              `${teamName(teams, pairing.teamAId)} has a required-timeslot rule that excludes ${slotLabel}.`,
+            );
+            continue;
+          }
+          if (reqB && !reqB.has(slot.id)) {
+            reasons.add(
+              `${teamName(teams, pairing.teamBId)} has a required-timeslot rule that excludes ${slotLabel}.`,
+            );
+            continue;
+          }
+          if (
+            (pairing.teamAId &&
+              forbidden.get(pairing.teamAId)?.has(slot.id)) ||
+            (pairing.teamBId &&
+              forbidden.get(pairing.teamBId)?.has(slot.id))
+          ) {
+            reasons.add(
+              `A forbidden-timeslot rule blocks ${slotLabel} for one of the teams in this game.`,
+            );
+            continue;
+          }
+          // All cells on this slot taken (common case) — note it only
+          // if nothing more specific explained the failure.
+          const slotFull = candidateCourts.every((c) =>
+            cellTaken.has(`${c.id}:${slot.id}`),
+          );
+          if (slotFull) {
+            reasons.add(
+              `${slotLabel} is already full (every court at that slot is used by another game this round).`,
+            );
+          }
+        }
+
         games.push({
           round: r,
           divisionId: pairing.divisionId,
@@ -652,10 +704,15 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
           timeslotId: null,
           unplaced: true,
           reason:
-            "No court × timeslot combination satisfied every rule for this game.",
+            reasons.size > 0
+              ? Array.from(reasons).join(" ")
+              : "No court × timeslot combination satisfied every rule for this game.",
         });
+        const headline = `Round ${r} — ${teamName(teams, pairing.teamAId)} v ${teamName(teams, pairing.teamBId)} (${nameOf(divisions, pairing.divisionId)}) couldn't be placed`;
         issues.push(
-          `Round ${r} — a game in ${nameOf(divisions, pairing.divisionId)} could not be placed under the rules you've set.`,
+          reasons.size > 0
+            ? `${headline}: ${Array.from(reasons).join(" ")}`
+            : `${headline} under the current rules.`,
         );
       }
     }
@@ -675,4 +732,12 @@ function nameOf(
   id: string,
 ): string {
   return list.find((x) => x.id === id)?.name ?? "(unknown)";
+}
+
+function teamName(
+  teams: CompetitionTeam[],
+  id: string | null,
+): string {
+  if (!id) return "(bye)";
+  return teams.find((t) => t.id === id)?.name ?? "(removed team)";
 }
