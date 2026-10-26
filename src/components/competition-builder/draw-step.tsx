@@ -202,7 +202,8 @@ export function DrawStep({
       ) : (
         <div className="space-y-6">
           {roundNumbers.map((round) => {
-            const slots = byRoundThenSlot.get(round) ?? new Map();
+            const slots =
+              byRoundThenSlot.get(round) ?? new Map<string, FixtureGame[]>();
             return (
               <section
                 key={round}
