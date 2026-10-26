@@ -8,7 +8,7 @@ import { CareerPathway } from "@/components/career-pathway";
 export const metadata = {
   title: "About Caitlyn Strachan",
   description:
-    "Former Australian Diamond and triple premiership winner. Caitlyn Strachan now coaches the next generation of netball talent across Australia.",
+    "Former Australian Diamond, triple ANZ Championship premiership winner, Queensland State Netball Team Selector, Elite Netball Accreditation, and Queensland Firebirds Reserves Head Coach in 2027.",
 };
 
 export default function AboutPage() {
@@ -26,8 +26,8 @@ export default function AboutPage() {
               </h1>
               <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
                 Former Australian Diamond. Triple ANZ Championship premiership
-                winner. Queensland selector. Elite accredited coach. Head
-                coach, Queensland Firebirds reserves (2027).
+                winner. Queensland State Netball Team Selector. Elite Netball
+                Accreditation. Queensland Firebirds Reserves Head Coach (2027).
               </p>
             </Reveal>
 
@@ -78,10 +78,14 @@ export default function AboutPage() {
                 wishes she&apos;d had on her own way up.
               </p>
               <p>
-                Caitlyn is an elite accredited coach, a Queensland selector,
-                and in 2027 steps in as head coach of the Queensland Firebirds
-                reserve team, with a clear long-term goal: to coach in the
-                Suncorp Super Netball competition.
+                Caitlyn holds her Elite Netball Accreditation, is a Queensland
+                State Netball Team Selector, and in 2027 steps in as Queensland
+                Firebirds Reserves Head Coach. Alongside her in-person coaching
+                across Australia, she&apos;s built CC Netball into a complete
+                platform — video game analysis for athletes anywhere, the
+                Netball Drills Library, the Competition Builder for
+                associations, and the Netball Shop. The long-term goal:
+                coaching in the Suncorp Super Netball competition.
               </p>
 
               <blockquote className="!my-10 rounded-2xl border-l-4 border-primary bg-muted/60 p-6 not-italic text-foreground">
