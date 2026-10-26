@@ -87,20 +87,33 @@ export default async function AccountPage() {
 
         {isAdmin && (
           <Reveal delay={0.03} className="mt-8">
-            <Link
-              href="/admin/drills-library"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02]"
-            >
-              Open the drills admin dashboard
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/admin/session-plans"
-              className="ml-3 mt-3 inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
-            >
-              Coaches&apos; session plans
-              <ArrowRight className="size-4" />
-            </Link>
+            <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+              Admin
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <Link
+                href="/admin/orders"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02]"
+              >
+                <Package className="size-4" />
+                Shop orders
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/admin/drills-library"
+                className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
+              >
+                Drills library
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/admin/session-plans"
+                className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
+              >
+                Session plans
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
           </Reveal>
         )}
 
