@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Trophy, Award, Sparkles, MapPin } from "lucide-react";
+import { ArrowRight, Trophy, Award, Compass, Sparkles, MapPin } from "lucide-react";
 import { CREDENTIALS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
 import { CareerPathway } from "@/components/career-pathway";
@@ -140,10 +140,13 @@ export default function AboutPage() {
                       {i === 1 && <Trophy className="size-4" />}
                       {i === 2 && <Sparkles className="size-4" />}
                       {i === 3 && <MapPin className="size-4" />}
+                      {i === 4 && <Compass className="size-4" />}
                     </div>
                     <div>
                       <p className="font-semibold text-white">{c.label}</p>
-                      <p className="text-xs text-white/70">{c.detail}</p>
+                      {c.detail && (
+                        <p className="text-xs text-white/70">{c.detail}</p>
+                      )}
                     </div>
                   </li>
                 ))}

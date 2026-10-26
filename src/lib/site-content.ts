@@ -13,9 +13,10 @@ export const SITE = {
 
 export const CREDENTIALS = [
   { label: "Australian Diamond", detail: "Debut vs Silver Ferns, Jan 2017" },
-  { label: "3× Premiership Winner", detail: "Melbourne Vixens, Queensland Firebirds" },
-  { label: "Elite Coaching Accreditation", detail: "Currently completing" },
-  { label: "Coaches throughout Australia", detail: "Based in Brisbane · Junior Age to Open" },
+  { label: "3× ANZ Championship Premiership Winner", detail: "Melbourne Vixens, Queensland Firebirds" },
+  { label: "Elite Netball Accreditation", detail: "" },
+  { label: "Queensland State Netball Team Selector", detail: "" },
+  { label: "Queensland Firebirds Reserves Head Coach", detail: "2027" },
 ];
 
 export const CAREER = {

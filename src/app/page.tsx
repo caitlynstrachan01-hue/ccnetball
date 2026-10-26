@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Award,
   Trophy,
+  Compass,
   Target,
   Sparkles,
   Quote,
@@ -152,12 +153,15 @@ export default function HomePage() {
                         {i === 1 && <Trophy className="size-4" />}
                         {i === 2 && <Sparkles className="size-4" />}
                         {i === 3 && <Target className="size-4" />}
+                        {i === 4 && <Compass className="size-4" />}
                       </div>
                       <div>
                         <p className="font-display text-sm font-bold text-foreground">
                           {c.label}
                         </p>
-                        <p className="text-xs text-muted-foreground">{c.detail}</p>
+                        {c.detail && (
+                          <p className="text-xs text-muted-foreground">{c.detail}</p>
+                        )}
                       </div>
                     </div>
                   ))}
