@@ -25,8 +25,8 @@ export default function LoginPage() {
             Welcome <span className="gradient-text">back</span>.
           </h1>
           <p className="mt-4 text-base text-muted-foreground">
-            Type your email and we&apos;ll send you a link to sign in — no
-            password required.
+            Sign in with your email and password. New here or forgot your
+            password? Use the link below the form to set one up.
           </p>
         </Reveal>
 
