@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Bell, Crown, Package, ShoppingBag } from "lucide-react";
+import { ArrowRight, Bell, Crown, Package, ShoppingBag, Trophy } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -119,6 +119,14 @@ export default async function AccountPage() {
                 className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
               >
                 Session plans
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/tools/competition-builder"
+                className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
+              >
+                <Trophy className="size-4" />
+                Competition Builder (beta)
                 <ArrowRight className="size-4" />
               </Link>
             </div>
