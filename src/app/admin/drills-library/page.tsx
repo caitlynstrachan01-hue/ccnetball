@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { Reveal } from "@/components/motion";
 import { DrillsLibraryAdmin } from "@/components/drills-library-admin";
 import { bunnyConfig } from "@/lib/bunny.server";
-import { loadDrillCategories } from "@/lib/drills-store.server";
+import { LibraryResourcesAdmin } from "@/components/library-resources-admin";
+import {
+  loadDrillCategories,
+  loadLibraryResources,
+} from "@/lib/drills-store.server";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -26,7 +30,10 @@ export default async function DrillsLibraryAdminPage() {
     .maybeSingle();
   if (profile?.is_admin !== true) redirect("/account");
 
-  const categories = await loadDrillCategories({ includeUnpublished: true });
+  const [categories, resources] = await Promise.all([
+    loadDrillCategories({ includeUnpublished: true }),
+    loadLibraryResources(),
+  ]);
 
   return (
     <section className="border-b border-border/60 bg-muted/40">
@@ -44,6 +51,10 @@ export default async function DrillsLibraryAdminPage() {
             and add your Make It Easier / Make It Harder / Variations bullet
             points, then press Save. Members see your changes straight away.
           </p>
+        </Reveal>
+
+        <Reveal delay={0.05} className="mt-8">
+          <LibraryResourcesAdmin initialResources={resources} />
         </Reveal>
 
         <Reveal delay={0.1} className="mt-8">

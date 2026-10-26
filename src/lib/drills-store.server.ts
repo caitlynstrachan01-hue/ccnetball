@@ -4,6 +4,7 @@ import { checkDevice } from "@/lib/device-limit.server";
 import {
   BUNNY_PREFIX,
   DRILL_ROW_COLUMN_SETS,
+  type LibraryResource,
   DRILL_VIDEO_BUCKET,
   mergeDrills,
   type DrillRow,
@@ -145,4 +146,56 @@ export async function getLibraryAccess() {
     deviceRevoked,
     hasAccess: isAdmin || (hasSubscription && !deviceRevoked),
   };
+}
+
+/**
+ * General resources for the library's first screen, with signed download
+ * links. Tries the service-role client, then the viewer's session (row-level
+ * security limits it to members and admins). Empty if anything fails.
+ */
+export async function loadLibraryResources(): Promise<LibraryResource[]> {
+  const attempt = async (db: SupabaseClient) => {
+    const { data, error } = await db
+      .from("library_resources")
+      .select("id, title, file_path, file_name, sort_order, created_at")
+      .order("sort_order")
+      .order("created_at");
+    if (error) throw error;
+    const rows = (data ?? []) as {
+      id: string;
+      title: string;
+      file_path: string;
+      file_name: string | null;
+    }[];
+    const urls: Record<string, string> = {};
+    if (rows.length) {
+      const { data: signed } = await db.storage
+        .from(DRILL_VIDEO_BUCKET)
+        .createSignedUrls(
+          rows.map((r) => r.file_path),
+          SIGNED_URL_TTL,
+          { download: true },
+        );
+      for (const s of signed ?? []) {
+        if (s.path && s.signedUrl) urls[s.path] = s.signedUrl;
+      }
+    }
+    return rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      filePath: r.file_path,
+      fileName: r.file_name,
+      url: urls[r.file_path],
+    }));
+  };
+  try {
+    return await attempt(createAdminClient());
+  } catch {
+    // Service-role key missing/wrong — fall back to the viewer's session.
+  }
+  try {
+    return await attempt(await createClient());
+  } catch {
+    return [];
+  }
 }

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   ChevronRight,
   FileDown,
+  Paperclip,
   Printer,
   Clock,
   Layers,
@@ -18,12 +19,15 @@ import {
   type Drill,
   type DrillCategory,
 } from "@/lib/drills-library-content";
-import { isEmbedUrl } from "@/lib/drills-store";
+import { isEmbedUrl, type LibraryResource } from "@/lib/drills-store";
 
 export function DrillsLibraryPreview({
   categories: allCategories = DRILL_CATEGORIES,
   initialDrill,
+  resources = [],
 }: {
+  /** General downloads shown until the member clicks into a drill. */
+  resources?: LibraryResource[];
   categories?: DrillCategory[];
   /** "category/drill" to open first, e.g. from a session plan link. */
   initialDrill?: string;
@@ -48,6 +52,12 @@ export function DrillsLibraryPreview({
   );
 
   const [initialCat, initialSlug] = (initialDrill ?? "").split("/");
+  // The first screen shows Resources; clicking into a drill hides them.
+  const [browsed, setBrowsed] = useState(Boolean(initialDrill));
+  const openDrill = (slug: string) => {
+    setDrillSlug(slug);
+    setBrowsed(true);
+  };
   const [categorySlug, setCategorySlug] = useState<string>(
     initialCat || categories[0]?.slug,
   );
@@ -297,7 +307,29 @@ export function DrillsLibraryPreview({
           </div>
 
           {/* Up next in this category */}
-          <aside className="lg:col-span-4">
+          <aside className="space-y-4 lg:col-span-4">
+            {!browsed && resources.length > 0 && (
+              <div className="rounded-2xl border border-primary/25 bg-primary/5 p-5">
+                <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                  <Paperclip className="size-4" /> Resources
+                </p>
+                <ul className="mt-3 space-y-1.5">
+                  {resources.map((r) => (
+                    <li key={r.id}>
+                      <a
+                        href={r.url}
+                        className="group flex items-center gap-3 rounded-xl bg-background p-3 transition hover:bg-primary/5"
+                      >
+                        <FileDown className="size-4 shrink-0 text-primary" />
+                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground/90">
+                          {r.title}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="rounded-2xl bg-muted/40 p-5">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
@@ -312,7 +344,7 @@ export function DrillsLibraryPreview({
                   <li key={drill.slug}>
                     <button
                       type="button"
-                      onClick={() => setDrillSlug(drill.slug)}
+                      onClick={() => openDrill(drill.slug)}
                       className="group flex w-full items-center gap-3 rounded-xl bg-background p-3 text-left transition hover:bg-primary/5"
                     >
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary/15">
@@ -401,7 +433,7 @@ export function DrillsLibraryPreview({
                   <button
                     key={drill.slug}
                     type="button"
-                    onClick={() => setDrillSlug(drill.slug)}
+                    onClick={() => openDrill(drill.slug)}
                     className={
                       active
                         ? "flex flex-col rounded-2xl border border-primary bg-primary/5 p-4 text-left ring-2 ring-primary/20 transition"

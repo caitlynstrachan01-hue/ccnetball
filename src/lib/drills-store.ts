@@ -67,6 +67,18 @@ export const DRILL_ROW_COLUMN_SETS = [
 export const DRILL_PDF_FOLDER = "pdfs";
 /** Storage folder (inside DRILL_VIDEO_BUCKET) for drill pictures. */
 export const DRILL_IMAGE_FOLDER = "images";
+/** Storage folder (inside DRILL_VIDEO_BUCKET) for general library resources. */
+export const RESOURCE_FOLDER = "resources";
+
+/** A downloadable resource on the library's first screen. */
+export type LibraryResource = {
+  id: string;
+  title: string;
+  filePath: string;
+  fileName: string | null;
+  /** Signed download link (members); absent if it couldn't be signed. */
+  url?: string;
+};
 
 function rowKey(category: string, slug: string) {
   return `${category}/${slug}`;

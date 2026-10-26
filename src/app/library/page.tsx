@@ -6,6 +6,7 @@ import { DrillsLibraryPreview } from "@/components/drills-library-preview";
 import {
   getLibraryAccess,
   loadDrillCategories,
+  loadLibraryResources,
 } from "@/lib/drills-store.server";
 
 export const metadata = {
@@ -55,7 +56,10 @@ export default async function LibraryPage({
     );
   }
 
-  const categories = await loadDrillCategories();
+  const [categories, resources] = await Promise.all([
+    loadDrillCategories(),
+    loadLibraryResources(),
+  ]);
 
   return (
     <>
@@ -103,7 +107,11 @@ export default async function LibraryPage({
 
       <section className="py-10 lg:py-14 print:py-0">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <DrillsLibraryPreview categories={categories} initialDrill={drill} />
+          <DrillsLibraryPreview
+            categories={categories}
+            initialDrill={drill}
+            resources={resources}
+          />
         </div>
       </section>
     </>
