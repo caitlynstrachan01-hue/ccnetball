@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/cart/cart-context";
 import {
-  POSTAGE_OPTIONS,
   formatPriceCents,
+  getPostageOptions,
   type PostageOption,
 } from "@/lib/shop-physical";
 
@@ -35,7 +35,9 @@ export function CheckoutForm() {
   const [billingPostcode, setBillingPostcode] = useState("");
 
   const [postageId, setPostageId] = useState<PostageOption["id"]>("standard");
-  const postage = POSTAGE_OPTIONS.find((p) => p.id === postageId)!;
+  const postageOptions = useMemo(() => getPostageOptions(items), [items]);
+  const postage =
+    postageOptions.find((p) => p.id === postageId) ?? postageOptions[0];
 
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -270,7 +272,7 @@ export function CheckoutForm() {
           <legend className="px-2 text-xs font-bold uppercase tracking-[0.2em] text-primary">
             Postage
           </legend>
-          {POSTAGE_OPTIONS.map((p) => (
+          {postageOptions.map((p) => (
             <label
               key={p.id}
               className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${

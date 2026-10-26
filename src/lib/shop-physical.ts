@@ -29,20 +29,59 @@ export type PostageOption = {
   priceCents: number;
 };
 
-export const POSTAGE_OPTIONS: PostageOption[] = [
-  {
-    id: "standard",
-    label: "Standard post",
-    description: "Australia Post regular — typically 3-7 business days.",
-    priceCents: 1200,
-  },
-  {
-    id: "express",
-    label: "Express post",
-    description: "Australia Post Express — typically 1-3 business days.",
-    priceCents: 2000,
-  },
-];
+/**
+ * Postage rates depend on what's in the cart.
+ * - Posters (wall chart + prints) ship in a tube: higher rate.
+ * - Card packs ship as a letter: lower rate.
+ * - Mixed cart: the poster rate applies (the tube drives the cost).
+ */
+export type PostageCategory = "poster" | "card";
+
+const POSTAGE_RATES: Record<
+  PostageCategory,
+  { standardCents: number; expressCents: number }
+> = {
+  poster: { standardCents: 1300, expressCents: 1700 },
+  card: { standardCents: 400, expressCents: 800 },
+};
+
+const POSTAGE_TURNAROUND: Record<"standard" | "express", string> = {
+  standard: "6-10 business days (longer for rural and regional).",
+  express: "2-4 business days (longer for rural and regional).",
+};
+
+export function getPostageCategory(slug: string): PostageCategory {
+  return isGreetingCardProduct(slug) ? "card" : "poster";
+}
+
+export function getCartPostageCategory(
+  items: Array<{ slug: string }>,
+): PostageCategory {
+  return items.some((i) => getPostageCategory(i.slug) === "poster")
+    ? "poster"
+    : "card";
+}
+
+export function getPostageOptions(
+  items: Array<{ slug: string }>,
+): PostageOption[] {
+  const category = getCartPostageCategory(items);
+  const rates = POSTAGE_RATES[category];
+  return [
+    {
+      id: "standard",
+      label: "Standard post",
+      description: POSTAGE_TURNAROUND.standard,
+      priceCents: rates.standardCents,
+    },
+    {
+      id: "express",
+      label: "Express post",
+      description: POSTAGE_TURNAROUND.express,
+      priceCents: rates.expressCents,
+    },
+  ];
+}
 
 export function formatPriceCents(cents: number): string {
   const dollars = cents / 100;

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/server";
 import {
-  POSTAGE_OPTIONS,
   formatPriceCents,
+  getPostageOptions,
   type PostageOption,
 } from "@/lib/shop-physical";
 import { getPhysicalProductsByIds } from "@/lib/shop-physical.server";
@@ -76,8 +76,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const postage = POSTAGE_OPTIONS.find((p) => p.id === body.postageType);
-  if (!postage) {
+  if (!body.postageType) {
     return NextResponse.json(
       { error: "Please choose a postage option." },
       { status: 400 },
@@ -87,6 +86,22 @@ export async function POST(request: Request) {
   // Validate every item against DB stock (server-side source of truth).
   const products = await getPhysicalProductsByIds(items.map((i) => i.productId));
   const byId = new Map(products.map((p) => [p.id, p]));
+
+  // Compute postage server-side from the DB-known slugs; never trust
+  // whatever price the client might have inferred.
+  const postageOptions = getPostageOptions(
+    items
+      .map((i) => byId.get(i.productId))
+      .filter((p): p is NonNullable<typeof p> => Boolean(p))
+      .map((p) => ({ slug: p.slug })),
+  );
+  const postage = postageOptions.find((p) => p.id === body.postageType);
+  if (!postage) {
+    return NextResponse.json(
+      { error: "Please choose a postage option." },
+      { status: 400 },
+    );
+  }
   for (const item of items) {
     const product = byId.get(item.productId);
     if (!product || !product.isActive) {
