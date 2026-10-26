@@ -204,6 +204,9 @@ function AddRuleModal({
       case "division_timeslots":
         if (!divisionId || timeslotIds.length === 0) return null;
         return { divisionId, timeslotIds };
+      case "division_locked_court":
+        if (!divisionId || !courtId) return null;
+        return { divisionId, courtId };
       case "team_bye_round":
         if (!teamId || !roundNumber) return null;
         return { teamId, roundNumber };
@@ -319,13 +322,24 @@ function AddRuleModal({
           />
         )}
 
-        {ruleType === "division_timeslots" && (
+        {(ruleType === "division_timeslots" ||
+          ruleType === "division_locked_court") && (
           <SingleSelect
             label="Division"
             value={divisionId}
             onChange={setDivisionId}
             options={divisions.map((d) => ({ value: d.id, label: d.name }))}
             emptyHint="Add divisions in Step 2 first."
+          />
+        )}
+
+        {ruleType === "division_locked_court" && (
+          <SingleSelect
+            label="Court"
+            value={courtId}
+            onChange={setCourtId}
+            options={courts.map((c) => ({ value: c.id, label: c.name }))}
+            emptyHint="Add courts in Step 1 first."
           />
         )}
 

@@ -131,7 +131,6 @@ export function CompetitionWizard({
         {activeStep === "teams" && (
           <TeamsStep
             competitionId={competition.id}
-            courts={courts}
             divisions={divisions}
             teams={teams}
             matchCellsPerRound={matchCellsPerRound}

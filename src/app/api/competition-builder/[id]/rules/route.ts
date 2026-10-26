@@ -29,6 +29,7 @@ const VALID_TYPES: RuleType[] = [
   "teams_different_times",
   "court_closed_round",
   "division_timeslots",
+  "division_locked_court",
   "team_bye_round",
 ];
 

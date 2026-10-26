@@ -455,6 +455,21 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
         teamByeRounds.get(teamId)!.add(round);
         break;
       }
+      // division_locked_court is applied below alongside legacy
+      // division.lockedCourtId.
+    }
+  }
+
+  // Divisions can be locked to a court either via the legacy
+  // divisions.locked_court_id column (deprecated UI) OR via a
+  // division_locked_court rule. The rule wins if both are present.
+  const divisionLockedCourt = new Map<string, string | null>(
+    divisions.map((d) => [d.id, d.lockedCourtId] as const),
+  );
+  for (const rule of rules) {
+    if (rule.ruleType === "division_locked_court") {
+      const p = rule.params as { divisionId: string; courtId: string };
+      divisionLockedCourt.set(p.divisionId, p.courtId);
     }
   }
 
@@ -475,9 +490,6 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
 
     // Order the hardest-to-place first (those with required timeslots, forced
     // courts via division lock, or shared-time constraints).
-    const divisionLockedCourt = new Map(
-      divisions.map((d) => [d.id, d.lockedCourtId] as const),
-    );
     const scored = roundPairings
       .map((p) => ({
         p,

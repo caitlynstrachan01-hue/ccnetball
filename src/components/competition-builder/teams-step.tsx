@@ -13,14 +13,12 @@ import {
   Users,
 } from "lucide-react";
 import type {
-  CompetitionCourt,
   CompetitionDivision,
   CompetitionTeam,
 } from "@/lib/competition-builder";
 
 type Props = {
   competitionId: string;
-  courts: CompetitionCourt[];
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
   matchCellsPerRound: number;
@@ -31,7 +29,6 @@ const UNASSIGNED = "__unassigned__";
 
 export function TeamsStep({
   competitionId,
-  courts,
   divisions,
   teams,
   matchCellsPerRound,
@@ -204,26 +201,6 @@ export function TeamsStep({
     if (res.ok) router.refresh();
   }
 
-  async function setDivisionCourt(
-    divisionId: string,
-    courtId: string | null,
-  ) {
-    const divName = divisions.find((d) => d.id === divisionId)?.name ?? "division";
-    const courtName =
-      courtId === null
-        ? "no lock"
-        : (courts.find((c) => c.id === courtId)?.name ?? "a court");
-    if (!confirmChange(`Lock ${divName} to ${courtName}?`)) return;
-    const res = await fetch(
-      `/api/competition-builder/${competitionId}/divisions`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ divisionId, lockedCourtId: courtId }),
-      },
-    );
-    if (res.ok) router.refresh();
-  }
 
   const unassigned = grouped.get(null) ?? [];
 
@@ -360,11 +337,6 @@ Eagles, Sharks, Falcons"
                   matchesPerRound: matches,
                   bye,
                 }}
-                lockedCourtId={division.lockedCourtId}
-                courts={courts}
-                onLockCourt={(courtId) =>
-                  setDivisionCourt(division.id, courtId)
-                }
                 emptyHint="Drag teams in from Unassigned."
               />
             );
@@ -446,9 +418,6 @@ type DivisionColumnProps = {
   onRenameDivision?: () => void;
   onDeleteDivision?: () => void;
   stats?: { teamCount: number; matchesPerRound: number; bye: boolean };
-  lockedCourtId?: string | null;
-  courts?: CompetitionCourt[];
-  onLockCourt?: (courtId: string | null) => void;
   emptyHint: string;
 };
 
@@ -467,9 +436,6 @@ function DivisionColumn({
   onRenameDivision,
   onDeleteDivision,
   stats,
-  lockedCourtId,
-  courts,
-  onLockCourt,
   emptyHint,
 }: DivisionColumnProps) {
   return (
@@ -530,26 +496,6 @@ function DivisionColumn({
           )}
         </div>
       </header>
-
-      {courts && onLockCourt && (
-        <label className="mt-3 block">
-          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-            Lock to court (optional)
-          </span>
-          <select
-            value={lockedCourtId ?? ""}
-            onChange={(e) => onLockCourt(e.target.value || null)}
-            className="mt-1 w-full rounded-lg border border-border/70 bg-background px-2 py-1.5 text-xs"
-          >
-            <option value="">— no lock</option>
-            {courts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
 
       <ul className="mt-3 min-h-[48px] space-y-1.5">
         {teams.length === 0 && (

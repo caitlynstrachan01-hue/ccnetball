@@ -73,6 +73,7 @@ export type RuleType =
   | "teams_different_times"
   | "court_closed_round"
   | "division_timeslots"
+  | "division_locked_court"
   | "team_bye_round";
 
 export type RuleParams =
@@ -81,6 +82,7 @@ export type RuleParams =
   | { type: "teams_different_times"; teamIds: string[] }
   | { type: "court_closed_round"; courtId: string; roundNumber: number }
   | { type: "division_timeslots"; divisionId: string; timeslotIds: string[] }
+  | { type: "division_locked_court"; divisionId: string; courtId: string }
   | { type: "team_bye_round"; teamId: string; roundNumber: number };
 
 export type Rule = {
@@ -115,6 +117,10 @@ export const RULE_TYPE_LABELS: Record<
   division_timeslots: {
     label: "A division only plays at certain timeslots",
     help: "e.g. Division 1 only plays in the early timeslots.",
+  },
+  division_locked_court: {
+    label: "A division must play on a specific court",
+    help: "Every game in that division is scheduled on the chosen court for the season.",
   },
   team_bye_round: {
     label: "A specific team has a bye in a nominated round",
@@ -171,6 +177,10 @@ export function renderRulePlainEnglish(
       return `${divisionName(p.divisionId)} only plays at ${list(
         p.timeslotIds.map(timeslotLabel),
       )}.`;
+    }
+    case "division_locked_court": {
+      const p = params as { divisionId: string; courtId: string };
+      return `${divisionName(p.divisionId)} always plays on ${courtName(p.courtId)}.`;
     }
     case "team_bye_round": {
       const p = params as { teamId: string; roundNumber: number };
