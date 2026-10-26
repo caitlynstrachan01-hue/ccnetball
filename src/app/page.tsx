@@ -259,24 +259,22 @@ export default function HomePage() {
       </section>
 
       {/* COACH SUPPORT */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-secondary via-[var(--brand-raspberry-dark)] to-secondary py-24 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[var(--brand-coral)]/15 via-background to-primary/10 py-24">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-32 -right-32 size-[32rem] rounded-full bg-primary/30 blur-[120px]" />
-          <div className="absolute -bottom-32 -left-32 size-[32rem] rounded-full bg-[var(--brand-coral)]/25 blur-[120px]" />
+          <div className="absolute -top-32 -right-32 size-[32rem] rounded-full bg-[var(--brand-coral)]/20 blur-[120px]" />
+          <div className="absolute -bottom-32 -left-32 size-[32rem] rounded-full bg-primary/15 blur-[120px]" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
           <Reveal className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[color:var(--brand-coral)]">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Coach support
             </p>
-            <h2 className="mt-3 font-display text-4xl font-bold tracking-tight text-white md:text-5xl">
+            <h2 className="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">
               Support for your{" "}
-              <span className="bg-gradient-to-r from-white to-[color:var(--brand-coral)] bg-clip-text italic text-transparent">
-                coaching journey
-              </span>.
+              <span className="gradient-text italic">coaching journey</span>.
             </h2>
-            <p className="mt-5 text-lg text-white/80">
+            <p className="mt-5 text-lg text-muted-foreground">
               Three digital tools built for Australian netball — plus Coach the
               Coaches, delivered in person for your coaching group.
             </p>
