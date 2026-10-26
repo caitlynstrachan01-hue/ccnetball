@@ -183,14 +183,6 @@ export async function sendShopOrderShippedNotification(
     payload.trackingNumber,
   )}`;
 
-  const postalAddress = formatAddress({
-    line1: payload.postalLine1,
-    line2: payload.postalLine2,
-    suburb: payload.postalSuburb,
-    state: payload.postalState,
-    postcode: payload.postalPostcode,
-  });
-
   const firstName =
     payload.customerName.split(" ")[0] || payload.customerName;
 
@@ -210,13 +202,10 @@ export async function sendShopOrderShippedNotification(
     ``,
     `You can expect it to arrive in ${eta} — a little longer if you're in a rural or regional area.`,
     ``,
-    `Shipping to: ${postalAddress}`,
-    ``,
-    `If there are any delivery issues, reply to this email and we'll help sort it out.`,
-    ``,
     `Thanks again for supporting a small Australian business.`,
     ``,
-    `Caitlyn & the CC Netball team`,
+    `Kind regards,`,
+    `The CC Netball team`,
     `ccnetball.com`,
   ].join("\n");
 
@@ -258,18 +247,10 @@ export async function sendShopOrderShippedNotification(
             </tr>
 
             <tr>
-              <td style="padding:20px 28px 4px;">
-                <p style="margin:0;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#E63B7A;font-weight:700;">Shipping to</p>
-                <p style="margin:8px 0 0;font-size:14px;font-weight:600;">${escape(payload.customerName)}</p>
-                <p style="margin:4px 0 0;font-size:14px;color:#1A1F36;">${escape(postalAddress)}</p>
-              </td>
-            </tr>
-
-            <tr>
               <td style="padding:24px 28px 8px;">
-                <p style="margin:0;font-size:14px;color:#1A1F36;">If there are any delivery issues, reply to this email and we&apos;ll help sort it out.</p>
-                <p style="margin:14px 0 0;font-size:14px;">Thanks again for supporting a small Australian business.</p>
-                <p style="margin:16px 0 0;font-size:14px;font-weight:600;">Caitlyn & the CC Netball team</p>
+                <p style="margin:0;font-size:14px;">Thanks again for supporting a small Australian business.</p>
+                <p style="margin:18px 0 0;font-size:14px;">Kind regards,</p>
+                <p style="margin:2px 0 0;font-size:14px;font-weight:600;">The CC Netball team</p>
               </td>
             </tr>
 
