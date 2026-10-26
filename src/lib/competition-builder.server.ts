@@ -8,6 +8,8 @@ import type {
   CompetitionTeam,
   CompetitionTimeslot,
   FillMode,
+  Rule,
+  RuleType,
 } from "./competition-builder";
 
 type CompetitionRow = {
@@ -93,6 +95,7 @@ export async function getCompetition(id: string): Promise<{
   timeslots: CompetitionTimeslot[];
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
+  rules: Rule[];
 } | null> {
   const supabase = await createClient();
   const { data: compRow, error: compError } = await supabase
@@ -104,7 +107,7 @@ export async function getCompetition(id: string): Promise<{
     .maybeSingle();
   if (compError || !compRow) return null;
 
-  const [courts, timeslots, divisions, teams] = await Promise.all([
+  const [courts, timeslots, divisions, teams, rules] = await Promise.all([
     supabase
       .from("competition_courts")
       .select("id, competition_id, name, ordinal")
@@ -125,6 +128,11 @@ export async function getCompetition(id: string): Promise<{
       .select("id, competition_id, name, division_id")
       .eq("competition_id", id)
       .order("name", { ascending: true }),
+    supabase
+      .from("competition_rules")
+      .select("id, competition_id, rule_type, params, plain_english, created_at")
+      .eq("competition_id", id)
+      .order("created_at", { ascending: true }),
   ]);
 
   return {
@@ -155,6 +163,16 @@ export async function getCompetition(id: string): Promise<{
       name: r.name,
       divisionId: r.division_id,
     })),
+    rules: (rules.data ?? []).map(
+      (r): Rule => ({
+        id: r.id,
+        competitionId: r.competition_id,
+        ruleType: r.rule_type as RuleType,
+        params: r.params,
+        plainEnglish: r.plain_english,
+        createdAt: r.created_at,
+      }),
+    ),
   };
 }
 

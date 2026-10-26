@@ -8,9 +8,11 @@ import type {
   CompetitionDivision,
   CompetitionTeam,
   CompetitionTimeslot,
+  Rule,
 } from "@/lib/competition-builder";
 import { SetupStep } from "./setup-step";
 import { TeamsStep } from "./teams-step";
+import { RulesStep } from "./rules-step";
 
 type Step = {
   id: string;
@@ -25,12 +27,14 @@ export function CompetitionWizard({
   timeslots,
   divisions,
   teams,
+  rules,
 }: {
   competition: Competition;
   courts: CompetitionCourt[];
   timeslots: CompetitionTimeslot[];
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
+  rules: Rule[];
 }) {
   const [activeStep, setActiveStep] = useState<string>("setup");
 
@@ -65,7 +69,7 @@ export function CompetitionWizard({
         id: "rules",
         title: "4. Rules",
         blurb: "Unlimited plain-English constraints",
-        status: "coming-soon",
+        status: rules.length > 0 ? "done" : "available",
       },
       {
         id: "draw",
@@ -74,7 +78,7 @@ export function CompetitionWizard({
         status: "coming-soon",
       },
     ],
-    [setupDone, teamsDone],
+    [setupDone, teamsDone, rules.length],
   );
 
   return (
@@ -128,9 +132,19 @@ export function CompetitionWizard({
             matchCellsPerRound={matchCellsPerRound}
           />
         )}
-        {activeStep !== "setup" && activeStep !== "teams" && (
-          <ComingSoon stepId={activeStep} />
+        {activeStep === "rules" && (
+          <RulesStep
+            competitionId={competition.id}
+            courts={courts}
+            timeslots={timeslots}
+            divisions={divisions}
+            teams={teams}
+            rules={rules}
+          />
         )}
+        {activeStep !== "setup" &&
+          activeStep !== "teams" &&
+          activeStep !== "rules" && <ComingSoon stepId={activeStep} />}
 
         <StepNav
           currentStep={activeStep}

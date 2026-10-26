@@ -53,6 +53,7 @@ export default async function CompetitionDetailPage({
             timeslots={data.timeslots}
             divisions={data.divisions}
             teams={data.teams}
+            rules={data.rules}
           />
         </div>
       </div>
