@@ -40,8 +40,8 @@ export default function ContactPage() {
                 Based in South East Queensland (QLD)
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-white/80">
-                Coaching throughout Australia, netball products, and netball
-                digital subscriptions.
+                Coaching throughout Australia. The Netball Shop. Digital
+                subscriptions.
               </p>
             </div>
 
