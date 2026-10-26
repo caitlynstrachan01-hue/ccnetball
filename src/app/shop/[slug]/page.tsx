@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Reveal } from "@/components/motion";
+import { CompetitionBuilderBuyButton } from "@/components/competition-builder-buy-button";
 import { PhysicalProductDetail } from "@/components/physical-product-detail";
 import {
   getProductBySlug,
@@ -207,17 +208,23 @@ export default async function ShopProductPage({
                 </div>
               </div>
 
-              <button
-                type="button"
-                disabled
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <ShoppingCart className="size-5" />
-                Add to cart
-              </button>
-              <p className="mt-3 text-center text-xs text-muted-foreground">
-                Checkout goes live at launch.
-              </p>
+              {product.slug === "competition-builder" ? (
+                <CompetitionBuilderBuyButton />
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <ShoppingCart className="size-5" />
+                    Add to cart
+                  </button>
+                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                    Checkout goes live at launch.
+                  </p>
+                </>
+              )}
 
               <Link
                 href="/contact"

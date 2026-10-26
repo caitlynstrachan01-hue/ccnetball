@@ -110,6 +110,49 @@ export async function POST(request: Request) {
           break;
         }
 
+        // Competition Builder — one-off $19.99 licence per competition.
+        if (
+          session.mode === "payment" &&
+          session.metadata?.product === "competition-builder"
+        ) {
+          const userId =
+            session.metadata.supabase_user_id ||
+            session.client_reference_id ||
+            null;
+          if (!userId) break;
+
+          // Idempotency — if a licence already exists for this session, stop.
+          const { data: existing } = await shopDb
+            .from("competition_licences")
+            .select("id")
+            .eq("stripe_session_id", session.id)
+            .maybeSingle();
+          if (existing) break;
+
+          const paymentIntentId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent?.id || null;
+
+          const { error: licError } = await shopDb.rpc(
+            "grant_competition_licence",
+            {
+              p_user_id: userId,
+              p_stripe_session_id: session.id,
+              p_stripe_payment_intent: paymentIntentId,
+              p_amount_cents: session.amount_total ?? 1999,
+              p_currency: (session.currency ?? "aud").toLowerCase(),
+            },
+          );
+          if (licError) {
+            console.error(
+              "Competition Builder licence grant failed:",
+              licError,
+            );
+          }
+          break;
+        }
+
         // Digital subscription flow (unchanged).
         if (session.mode !== "subscription") break;
 
