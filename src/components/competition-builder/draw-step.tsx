@@ -250,7 +250,7 @@ export function DrawStep({
             )}
             {report.unplaced === 0
               ? `Done — all ${report.totalGames} games placed across every round.`
-              : `${report.totalGames - report.unplaced} of ${report.totalGames} games placed. ${report.unplaced} couldn't fit under your current courts, timeslots and rules.`}
+              : `${report.totalGames - report.unplaced} of ${report.totalGames} games placed. ${report.unplaced} game${report.unplaced === 1 ? "" : "s"} will need a forfeit called in advance — no legal cell existed for them this round.`}
           </p>
           {report.ruleOutcomes.length > 0 && (
             <div className="mt-3 border-t border-amber-200/60 pt-3">
@@ -601,13 +601,24 @@ function renderUnplaced(
   if (unplaced.length === 0) return null;
   return (
     <div className="border-t border-amber-300 bg-amber-50 px-5 py-3 text-xs text-amber-900">
-      <strong className="font-semibold">Couldn&apos;t place:</strong>{" "}
-      {unplaced
-        .map(
-          (g) =>
-            `${teamName(g.teamAId)} v ${teamName(g.teamBId)} (${divisionNameForTeam(g.teamAId)})`,
-        )
-        .join("; ")}
+      <p className="font-semibold">
+        Forfeit required this round ({unplaced.length} game
+        {unplaced.length === 1 ? "" : "s"}):
+      </p>
+      <p className="mt-1">
+        Every cell was taken and no legal spot could be found, so one of
+        these games will need a forfeit called in advance. Choose which team
+        is awarded the win, record the forfeit with the association, and
+        notify both clubs.
+      </p>
+      <ul className="mt-1 list-disc pl-4">
+        {unplaced.map((g) => (
+          <li key={g.id}>
+            {teamName(g.teamAId)} v {teamName(g.teamBId)} (
+            {divisionNameForTeam(g.teamAId)})
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
