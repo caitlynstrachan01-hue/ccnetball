@@ -404,13 +404,83 @@ export function analyzeDraw(input: {
     }
   }
 
+  // Always offer an "add a division" assessment so the organiser sees it
+  // considered and knows whether it would move the needle or not.
+  if (nonEmpty.length >= 1) {
+    const totalTeamsInDivisions = divisionAnalysis.reduce(
+      (s, d) => s + d.teamCount,
+      0,
+    );
+    const target = divisions.length + 1;
+    const addDivOptions: string[] = [];
+    let addDivHeadline = "Would adding another division help?";
+    let addDivDetail = "";
+    const totalEven = totalTeamsInDivisions % 2 === 0;
+    const totalOdd = !totalEven;
+
+    if (oddDivisions.length >= 2 && totalEven && target >= 2) {
+      const perDiv = Math.floor(totalTeamsInDivisions / target / 2) * 2;
+      const last =
+        totalTeamsInDivisions - perDiv * (target - 1);
+      const sizes = Array(target - 1).fill(perDiv).concat([last]);
+      const allEven = sizes.every((s) => s % 2 === 0 && s >= 2);
+      addDivDetail = `Yes — your ${totalTeamsInDivisions} teams total could be redistributed across ${target} divisions to clear every bye.`;
+      if (allEven) {
+        addDivOptions.push(
+          `Create a new division on Step 2 and redistribute everyone into ${sizes.join(" + ")} = ${totalTeamsInDivisions}. All even, zero byes.`,
+        );
+      }
+      addDivOptions.push(
+        `A new division doesn't just fix the odd division it draws from — it changes the team distribution across every division together, so plan the split as a whole-of-competition move.`,
+      );
+    } else if (oddDivisions.length === 1 && totalOdd) {
+      addDivDetail = `Not for byes. Your total team count (${totalTeamsInDivisions}) is odd, so at least one division will carry a bye no matter how you split the teams. Adding or removing a team is the only way to clear the bye.`;
+      addDivOptions.push(
+        `Add 1 team overall (to reach ${totalTeamsInDivisions + 1}, an even count) so a split into even-size divisions becomes possible.`,
+      );
+      addDivOptions.push(
+        `Remove 1 team overall (to reach ${totalTeamsInDivisions - 1}, an even count) so a split into even-size divisions becomes possible.`,
+      );
+    } else if (nonEmpty.some((d) => d.teamCount >= 10)) {
+      addDivDetail = `Byes aren't the issue here, but adding another division could be worth it for match variety. A single long round-robin only pairs each team once; two shorter brackets lets teams revisit each other across the same rounds.`;
+      for (const d of nonEmpty.filter((x) => x.teamCount >= 10)) {
+        const half = Math.floor(d.teamCount / 2);
+        addDivOptions.push(
+          `Split ${d.name} into two divisions (${half} + ${d.teamCount - half} = ${d.teamCount}) for more focused play.`,
+        );
+      }
+      addDivOptions.push(
+        `Leave the current structure — fewer, bigger divisions means every team plays every other team at least once in the season.`,
+      );
+    } else {
+      addDivDetail = `Not needed right now. ${
+        oddDivisions.length === 0
+          ? `All divisions are even, so byes aren't a problem. `
+          : ""
+      }Divisions are a reasonable size, so a split wouldn't change byes or match counts materially.`;
+      addDivOptions.push(
+        `Leave the structure as-is — adding a division now would redistribute teams across every division together, not just add to one, and your current math is fine.`,
+      );
+      addDivOptions.push(
+        `Add a division anyway if you want more focused brackets (e.g. a dedicated beginners' or seniors' division).`,
+      );
+    }
+
+    suggestions.push({
+      severity: "info",
+      headline: addDivHeadline,
+      detail: addDivDetail,
+      options: addDivOptions,
+    });
+  }
+
   if (
-    suggestions.length === 0 &&
+    suggestions.filter((s) => s.severity === "action" || s.severity === "warning").length === 0 &&
     cellsPerRound > 0 &&
     totalMatchesPerRound > 0
   ) {
     const activeRules = rules.length;
-    suggestions.push({
+    suggestions.unshift({
       severity: "info",
       headline: "Everything looks tidy — ready to build.",
       detail: `${totalMatchesPerRound} matches a round into ${cellsPerRound} cells, no divisions with byes, no unassigned teams${activeRules > 0 ? `, ${activeRules} rule${activeRules === 1 ? "" : "s"} active and workable` : ""}.`,
