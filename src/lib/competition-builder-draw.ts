@@ -33,9 +33,17 @@ export type GenerateDrawInput = {
   totalRounds: number; // if 0, pick a sensible default per division
 };
 
+export type RuleOutcome = {
+  ruleId: string;
+  plainEnglish: string;
+  ruleType: string;
+  contributedToUnplaced: number;
+};
+
 export type GenerateDrawResult = {
   games: GeneratedGame[];
   issues: string[];
+  ruleOutcomes: RuleOutcome[];
 };
 
 export type DrawSuggestion = {
@@ -469,6 +477,9 @@ function defaultRounds(teams: CompetitionTeam[]): number {
 export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
   const { teams, divisions, courts, timeslots, rules } = input;
   const issues: string[] = [];
+  // Track which rule contributed to each unplaced game so we can report
+  // "I did my best — rule X cost you N games" afterwards.
+  const ruleContributions = new Map<string, number>();
 
   // Build pairings per division.
   const perDivisionTeams = new Map<string, CompetitionTeam[]>();
@@ -718,9 +729,17 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
         // Work out WHICH rule blocked every available slot, so we can
         // tell the organiser something useful.
         const reasons = new Set<string>();
+        const blamedRuleIds = new Set<string>();
         for (const slot of timeslots) {
           const slotLabel = slot.label;
           if (allowedForDivision && !allowedForDivision.has(slot.id)) {
+            const rule = rules.find(
+              (rr) =>
+                rr.ruleType === "division_timeslots" &&
+                (rr.params as { divisionId: string }).divisionId ===
+                  pairing.divisionId,
+            );
+            if (rule) blamedRuleIds.add(rule.id);
             reasons.add(
               `${nameOf(divisions, pairing.divisionId)} is restricted to timeslots that don't include ${slotLabel} (rule: "Division only plays at certain timeslots").`,
             );
@@ -733,12 +752,24 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
             ? required.get(pairing.teamBId)
             : undefined;
           if (reqA && !reqA.has(slot.id)) {
+            const rule = rules.find(
+              (rr) =>
+                rr.ruleType === "team_timeslot_required" &&
+                (rr.params as { teamId: string }).teamId === pairing.teamAId,
+            );
+            if (rule) blamedRuleIds.add(rule.id);
             reasons.add(
               `${teamName(teams, pairing.teamAId)} has a required-timeslot rule that excludes ${slotLabel}.`,
             );
             continue;
           }
           if (reqB && !reqB.has(slot.id)) {
+            const rule = rules.find(
+              (rr) =>
+                rr.ruleType === "team_timeslot_required" &&
+                (rr.params as { teamId: string }).teamId === pairing.teamBId,
+            );
+            if (rule) blamedRuleIds.add(rule.id);
             reasons.add(
               `${teamName(teams, pairing.teamBId)} has a required-timeslot rule that excludes ${slotLabel}.`,
             );
@@ -750,6 +781,13 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
             (pairing.teamBId &&
               forbidden.get(pairing.teamBId)?.has(slot.id))
           ) {
+            const rule = rules.find(
+              (rr) =>
+                rr.ruleType === "team_timeslot_forbidden" &&
+                ((rr.params as { teamId: string }).teamId === pairing.teamAId ||
+                  (rr.params as { teamId: string }).teamId === pairing.teamBId),
+            );
+            if (rule) blamedRuleIds.add(rule.id);
             reasons.add(
               `A forbidden-timeslot rule blocks ${slotLabel} for one of the teams in this game.`,
             );
@@ -765,6 +803,9 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
               `${slotLabel} is already full (every court at that slot is used by another game this round).`,
             );
           }
+        }
+        for (const id of blamedRuleIds) {
+          ruleContributions.set(id, (ruleContributions.get(id) ?? 0) + 1);
         }
 
         games.push({
@@ -791,7 +832,14 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
     }
   }
 
-  return { games, issues };
+  const ruleOutcomes: RuleOutcome[] = rules.map((rule) => ({
+    ruleId: rule.id,
+    plainEnglish: rule.plainEnglish,
+    ruleType: rule.ruleType,
+    contributedToUnplaced: ruleContributions.get(rule.id) ?? 0,
+  }));
+
+  return { games, issues, ruleOutcomes };
 }
 
 function setAddAll<K, V>(m: Map<K, Set<V>>, key: K, values: V[]) {

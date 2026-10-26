@@ -46,6 +46,12 @@ export function DrawStep({
     totalGames: number;
     unplaced: number;
     issues: string[];
+    ruleOutcomes: Array<{
+      ruleId: string;
+      plainEnglish: string;
+      ruleType: string;
+      contributedToUnplaced: number;
+    }>;
   } | null>(null);
 
   const teamName = (id: string | null) =>
@@ -93,6 +99,7 @@ export function DrawStep({
         totalGames: data.totalGames,
         unplaced: data.unplaced,
         issues: data.issues ?? [],
+        ruleOutcomes: data.ruleOutcomes ?? [],
       });
       router.refresh();
     } catch (err) {
@@ -245,15 +252,51 @@ export function DrawStep({
               ? `Done — all ${report.totalGames} games placed across every round.`
               : `${report.totalGames - report.unplaced} of ${report.totalGames} games placed. ${report.unplaced} couldn't fit under your current courts, timeslots and rules.`}
           </p>
+          {report.ruleOutcomes.length > 0 && (
+            <div className="mt-3 border-t border-amber-200/60 pt-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-foreground/70">
+                How your rules fared
+              </p>
+              <ul className="mt-2 space-y-1 text-xs">
+                {report.ruleOutcomes.map((r) => (
+                  <li key={r.ruleId} className="flex items-start gap-2">
+                    {r.contributedToUnplaced === 0 ? (
+                      <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                    ) : (
+                      <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-700" />
+                    )}
+                    <span>
+                      <span className="font-semibold">{r.plainEnglish}</span>{" "}
+                      {r.contributedToUnplaced === 0 ? (
+                        <span className="text-foreground/70">— honoured on every game.</span>
+                      ) : (
+                        <span className="text-amber-900">
+                          — I did my best to accommodate it, but it cost{" "}
+                          <strong>{r.contributedToUnplaced}</strong> game
+                          {r.contributedToUnplaced === 1 ? "" : "s"} that
+                          couldn&apos;t be placed.
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {report.issues.length > 0 && (
-            <ul className="mt-2 list-disc pl-6 text-xs text-amber-900">
-              {report.issues.slice(0, 10).map((issue, i) => (
-                <li key={i}>{issue}</li>
-              ))}
-              {report.issues.length > 10 && (
-                <li>…and {report.issues.length - 10} more.</li>
-              )}
-            </ul>
+            <details className="mt-3 border-t border-amber-200/60 pt-3">
+              <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-foreground/70">
+                Game-by-game explanations ({report.issues.length})
+              </summary>
+              <ul className="mt-2 list-disc pl-6 text-xs text-amber-900">
+                {report.issues.slice(0, 20).map((issue, i) => (
+                  <li key={i}>{issue}</li>
+                ))}
+                {report.issues.length > 20 && (
+                  <li>…and {report.issues.length - 20} more.</li>
+                )}
+              </ul>
+            </details>
           )}
         </div>
       )}

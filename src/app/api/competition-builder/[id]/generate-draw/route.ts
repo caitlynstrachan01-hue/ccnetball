@@ -136,5 +136,6 @@ export async function POST(
     totalGames: result.games.length,
     unplaced: result.games.filter((g) => g.unplaced).length,
     issues: result.issues,
+    ruleOutcomes: result.ruleOutcomes,
   });
 }
