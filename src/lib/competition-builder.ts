@@ -96,7 +96,7 @@ export const RULE_TYPE_LABELS: Record<
   },
   teams_different_times: {
     label: "Two or more teams can never play at the same time",
-    help: "Use this for teams sharing a coach or players across divisions.",
+    help: "Use this whenever teams share a person across the season — a shared coach, a shared umpire who also plays, or a player who rotates between two teams. Applies to every round.",
   },
   court_closed_round: {
     label: "A court is out of play for one round",
