@@ -99,9 +99,19 @@ export default async function ShopPage() {
               <div className="mt-6 space-y-5">
                 {visibleDigital.map((product, i) => {
                   const Icon = ICONS[product.icon];
+                  const isLaunchingSoon = product.slug === "drills-library";
                   return (
                     <Reveal key={product.slug} delay={0.05 + i * 0.04}>
-                      <article className="group flex flex-col rounded-2xl border border-border/70 bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                      <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                        {isLaunchingSoon && (
+                          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/55 backdrop-blur-[1px]">
+                            <p className="rotate-[-6deg] rounded-xl bg-red-600 px-5 py-2 text-center font-display text-xl font-extrabold uppercase tracking-wide text-white shadow-xl ring-4 ring-red-600/30 md:text-2xl">
+                              Launching
+                              <br />
+                              January 2027
+                            </p>
+                          </div>
+                        )}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary/15">
                             <Icon className="size-6" />
