@@ -38,6 +38,13 @@ export type GenerateDrawResult = {
   issues: string[];
 };
 
+export type DrawSuggestion = {
+  severity: "info" | "warning" | "action";
+  headline: string;
+  detail?: string;
+  options: string[];
+};
+
 export type DrawAnalysis = {
   cellsPerRound: number;
   totalMatchesPerRound: number;
@@ -49,11 +56,7 @@ export type DrawAnalysis = {
     matchesPerRound: number;
     hasBye: boolean;
   }>;
-  suggestions: Array<{
-    severity: "info" | "warning" | "action";
-    headline: string;
-    detail: string;
-  }>;
+  suggestions: DrawSuggestion[];
 };
 
 /**
@@ -92,85 +95,203 @@ export function analyzeDraw(input: {
       (totalMatchesPerRound / cellsPerRound) * 100,
     ));
 
-  const suggestions: DrawAnalysis["suggestions"] = [];
+  const suggestions: DrawSuggestion[] = [];
 
-  // Capacity suggestions.
+  // Capacity suggestions — demand vs cells.
   if (cellsPerRound === 0) {
     suggestions.push({
       severity: "action",
-      headline: "Add courts and timeslots on Step 1.",
+      headline: "You haven't set up any match cells yet.",
       detail:
-        "You need at least one court × timeslot cell before any game can be placed.",
+        "No games can be placed until there's at least one court × timeslot cell.",
+      options: [
+        "Add at least 1 court on Step 1.",
+        "Add at least 1 timeslot on Step 1.",
+      ],
     });
   } else if (totalMatchesPerRound > cellsPerRound) {
     const short = totalMatchesPerRound - cellsPerRound;
+    const extraCourts = timeslots.length > 0 ? Math.ceil(short / timeslots.length) : short;
+    const extraSlots = courts.length > 0 ? Math.ceil(short / courts.length) : short;
+    const options: string[] = [];
+    options.push(
+      `Add ${extraCourts} more court${extraCourts === 1 ? "" : "s"} on Step 1 (${extraCourts * timeslots.length} extra cells per round).`,
+    );
+    options.push(
+      `Add ${extraSlots} more timeslot${extraSlots === 1 ? "" : "s"} on Step 1 (${extraSlots * courts.length} extra cells per round).`,
+    );
+    // Mixed option — e.g. +1 court AND +1 timeslot.
+    const mixedCourt = 1;
+    const mixedSlot = Math.max(
+      1,
+      Math.ceil((short - timeslots.length) / Math.max(1, courts.length + 1)),
+    );
+    if (
+      (courts.length + mixedCourt) * (timeslots.length + mixedSlot) >=
+      totalMatchesPerRound
+    ) {
+      options.push(
+        `Add 1 court AND ${mixedSlot} timeslot${mixedSlot === 1 ? "" : "s"} on Step 1 to balance the growth.`,
+      );
+    }
+    // Reduce demand by trimming the largest division.
+    const largest = divisionAnalysis.reduce(
+      (a, b) => (b.teamCount > a.teamCount ? b : a),
+      divisionAnalysis[0] ?? { name: "", teamCount: 0 },
+    );
+    if (largest && largest.teamCount > 2) {
+      options.push(
+        `Move ${short * 2} team${short * 2 === 1 ? "" : "s"} out of ${largest.name} (currently ${largest.teamCount}) to another division or Unassigned — this shrinks the demand by ${short} matches per round.`,
+      );
+    }
     suggestions.push({
       severity: "action",
       headline: `You're short ${short} match cell${short === 1 ? "" : "s"} per round.`,
-      detail: `You need ${totalMatchesPerRound} games placed each round but only have ${cellsPerRound} cells (${courts.length} courts × ${timeslots.length} timeslots). Add another court or timeslot, or shift a team out of a division.`,
+      detail: `You need ${totalMatchesPerRound} games placed each round but only have ${cellsPerRound} cells (${courts.length} courts × ${timeslots.length} timeslots).`,
+      options,
     });
   } else if (totalMatchesPerRound < cellsPerRound) {
     const spare = cellsPerRound - totalMatchesPerRound;
+    const options: string[] = [];
+    options.push(
+      `Leave it — ${spare} cell${spare === 1 ? "" : "s"} per round will sit empty but every team still plays.`,
+    );
+    if (courts.length > 1 && spare >= timeslots.length) {
+      options.push(
+        `Remove 1 court on Step 1 to tighten the schedule (${timeslots.length} fewer cells per round).`,
+      );
+    }
+    if (timeslots.length > 1 && spare >= courts.length) {
+      options.push(
+        `Remove 1 timeslot on Step 1 to tighten the schedule (${courts.length} fewer cells per round).`,
+      );
+    }
+    options.push(
+      "Add more teams across the divisions so the extra cells get used.",
+    );
     suggestions.push({
       severity: "info",
       headline: `${spare} match cell${spare === 1 ? "" : "s"} per round will sit empty.`,
-      detail: `You've set up ${cellsPerRound} cells but only need ${totalMatchesPerRound} games. Nothing wrong with that — but if you want them full you could add more teams or trim a court/timeslot.`,
+      detail: `You've set up ${cellsPerRound} cells but only need ${totalMatchesPerRound} games.`,
+      options,
     });
   }
 
   // Bye suggestions.
   const oddDivisions = divisionAnalysis.filter((d) => d.hasBye);
   if (oddDivisions.length >= 2) {
-    const [a, b] = oddDivisions;
+    const options: string[] = [];
+    // Suggest moving one team between every pair of odd divisions.
+    for (let i = 0; i < oddDivisions.length; i++) {
+      for (let j = i + 1; j < oddDivisions.length; j++) {
+        const a = oddDivisions[i];
+        const b = oddDivisions[j];
+        options.push(
+          `Move 1 team from ${a.name} (${a.teamCount}) to ${b.name} (${b.teamCount}) — both become even (${a.teamCount - 1} and ${b.teamCount + 1}).`,
+        );
+        options.push(
+          `Move 1 team from ${b.name} (${b.teamCount}) to ${a.name} (${a.teamCount}) — both become even (${b.teamCount - 1} and ${a.teamCount + 1}).`,
+        );
+      }
+    }
+    for (const d of oddDivisions) {
+      options.push(
+        `Add 1 team to ${d.name} (go from ${d.teamCount} to ${d.teamCount + 1}).`,
+      );
+      options.push(
+        `Remove 1 team from ${d.name} (go from ${d.teamCount} to ${d.teamCount - 1}).`,
+      );
+    }
     suggestions.push({
       severity: "action",
-      headline: `Move a team between ${a.name} and ${b.name} to kill 2 byes per round.`,
-      detail: `Both have odd team counts (${a.teamCount} and ${b.teamCount}), so each carries a bye every round. Shifting one team from either division into the other makes both even — zero byes across the whole season from this cause.`,
+      headline: `${oddDivisions.length} divisions carry a bye every round — ${oddDivisions.map((d) => `${d.name} (${d.teamCount})`).join(", ")}.`,
+      detail:
+        "Each has an odd team count. Pick any of the moves below to kill the byes.",
+      options,
     });
   } else if (oddDivisions.length === 1) {
     const d = oddDivisions[0];
+    const options: string[] = [
+      `Add 1 team to ${d.name} (go from ${d.teamCount} to ${d.teamCount + 1}).`,
+      `Remove 1 team from ${d.name} (go from ${d.teamCount} to ${d.teamCount - 1}).`,
+    ];
+    // Suggest moving from an even division if one has 2+ teams to spare.
+    const donors = divisionAnalysis
+      .filter((x) => !x.hasBye && x.teamCount >= 4 && x.divisionId !== d.divisionId);
+    for (const donor of donors) {
+      options.push(
+        `Move 1 team from ${donor.name} into ${d.name} — ${donor.name} drops to ${donor.teamCount - 1} (odd) and ${d.name} rises to ${d.teamCount + 1} (even). Trades one bye for another.`,
+      );
+    }
     suggestions.push({
       severity: "warning",
-      headline: `${d.name} has an odd team count (${d.teamCount}).`,
-      detail: `A team will sit out every round in ${d.name}. Add or remove one team (${d.teamCount - 1} or ${d.teamCount + 1}) to clear the bye.`,
+      headline: `${d.name} has an odd team count (${d.teamCount}) — bye every round.`,
+      options,
     });
   }
 
   // Teams without a division.
-  const unassigned = teams.filter((t) => !t.divisionId).length;
-  if (unassigned > 0) {
+  const unassigned = teams.filter((t) => !t.divisionId);
+  if (unassigned.length > 0) {
+    const options: string[] = [
+      `Drag the ${unassigned.length} unassigned team${unassigned.length === 1 ? "" : "s"} into a division on Step 2.`,
+      `Delete them from Step 2 if they're not playing after all.`,
+    ];
+    if (divisions.length === 0) {
+      options.unshift("Create at least one division on Step 2 first.");
+    }
     suggestions.push({
       severity: "warning",
-      headline: `${unassigned} team${unassigned === 1 ? "" : "s"} still in Unassigned.`,
-      detail:
-        "Unassigned teams won't be in the draw. Drag them into a division back on Step 2.",
+      headline: `${unassigned.length} team${unassigned.length === 1 ? "" : "s"} still in Unassigned (${unassigned
+        .map((t) => t.name)
+        .slice(0, 4)
+        .join(", ")}${unassigned.length > 4 ? "…" : ""}).`,
+      detail: "Unassigned teams won't be in the draw.",
+      options,
     });
   }
 
-  // Even sizing — if divisions are wildly uneven, mention it.
+  // Even sizing — if divisions are wildly uneven, suggest balancing moves.
   const nonEmpty = divisionAnalysis.filter((d) => d.teamCount > 0);
   if (nonEmpty.length >= 2) {
     const counts = nonEmpty.map((d) => d.teamCount);
     const max = Math.max(...counts);
     const min = Math.min(...counts);
     if (max - min >= 3 && oddDivisions.length === 0) {
+      const biggest = nonEmpty.find((d) => d.teamCount === max)!;
+      const smallest = nonEmpty.find((d) => d.teamCount === min)!;
+      const options: string[] = [];
+      const movable = Math.min(
+        Math.floor((max - min) / 2),
+        Math.max(1, (max - min - 1) / 2),
+      );
+      if (movable >= 1) {
+        options.push(
+          `Move ${movable} team${movable === 1 ? "" : "s"} from ${biggest.name} (${max}) to ${smallest.name} (${min}) — they'd be ${max - movable} and ${min + movable}, closer in size.`,
+        );
+      }
+      options.push(
+        "Leave it — the gap doesn't hurt the fixture, but bigger divisions give those teams more games.",
+      );
       suggestions.push({
         severity: "info",
-        headline: "Division sizes are quite uneven.",
-        detail: `${nonEmpty
-          .map((d) => `${d.name}: ${d.teamCount}`)
-          .join(
-            " · ",
-          )}. If a shift between divisions is on the table, keeping them closer in size keeps every team on court the same number of weeks.`,
+        headline: `Division sizes vary a lot (${min} to ${max}).`,
+        detail: nonEmpty.map((d) => `${d.name}: ${d.teamCount}`).join(" · "),
+        options,
       });
     }
   }
 
-  if (suggestions.length === 0 && cellsPerRound > 0 && totalMatchesPerRound > 0) {
+  if (
+    suggestions.length === 0 &&
+    cellsPerRound > 0 &&
+    totalMatchesPerRound > 0
+  ) {
     suggestions.push({
       severity: "info",
       headline: "Everything looks tidy — ready to build.",
       detail: `${totalMatchesPerRound} matches a round into ${cellsPerRound} cells, no divisions with byes, no unassigned teams.`,
+      options: [],
     });
   }
 

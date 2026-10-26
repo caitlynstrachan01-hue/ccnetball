@@ -447,7 +447,7 @@ function PreflightPanel({
               {analysis.suggestions.map((s, i) => (
                 <li
                   key={i}
-                  className={`rounded-xl border px-3 py-2 text-xs ${
+                  className={`rounded-xl border p-3 text-xs ${
                     s.severity === "action"
                       ? "border-primary/30 bg-primary/5"
                       : s.severity === "warning"
@@ -464,7 +464,27 @@ function PreflightPanel({
                     )}
                     {s.headline}
                   </p>
-                  <p className="mt-1 text-foreground/80">{s.detail}</p>
+                  {s.detail && (
+                    <p className="mt-1 text-foreground/80">{s.detail}</p>
+                  )}
+                  {s.options.length > 0 && (
+                    <>
+                      <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                        Options
+                      </p>
+                      <ul className="mt-1 space-y-1">
+                        {s.options.map((opt, j) => (
+                          <li
+                            key={j}
+                            className="flex items-start gap-1.5 text-foreground/90"
+                          >
+                            <span className="mt-0.5 text-primary">•</span>
+                            <span>{opt}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
