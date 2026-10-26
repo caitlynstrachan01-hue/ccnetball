@@ -115,6 +115,60 @@ export async function listShopOrders(): Promise<AdminShopOrder[]> {
   return (data as Row[]).map(toOrder);
 }
 
+export type WaitlistEntry = {
+  id: string;
+  productId: string;
+  productSlug: string;
+  productName: string;
+  productStock: number;
+  email: string;
+  name: string | null;
+  createdAt: string;
+  notifiedAt: string | null;
+};
+
+export async function listWaitlistEntries(): Promise<WaitlistEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("shop_waitlist")
+    .select(
+      "id, email, name, created_at, notified_at, product_id, shop_physical_products ( slug, name, stock )",
+    )
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.error("listWaitlistEntries failed:", error);
+    return [];
+  }
+  type Row = {
+    id: string;
+    email: string;
+    name: string | null;
+    created_at: string;
+    notified_at: string | null;
+    product_id: string;
+    shop_physical_products:
+      | { slug: string; name: string; stock: number }
+      | { slug: string; name: string; stock: number }[]
+      | null;
+  };
+  return (data as Row[]).map((row) => {
+    const prod = Array.isArray(row.shop_physical_products)
+      ? row.shop_physical_products[0]
+      : row.shop_physical_products;
+    return {
+      id: row.id,
+      productId: row.product_id,
+      productSlug: prod?.slug ?? "",
+      productName: prod?.name ?? "(unknown)",
+      productStock: prod?.stock ?? 0,
+      email: row.email,
+      name: row.name,
+      createdAt: row.created_at,
+      notifiedAt: row.notified_at,
+    };
+  });
+}
+
 export async function getShopOrderById(
   id: string,
 ): Promise<AdminShopOrder | null> {

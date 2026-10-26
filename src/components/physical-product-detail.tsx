@@ -5,6 +5,7 @@ import { ArrowLeft, Minus, Plus, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "./cart/cart-context";
 import { GreetingCardMockup } from "./greeting-card-mockup";
+import { WaitlistForm } from "./waitlist-form";
 import {
   type PhysicalProduct,
   formatPriceCents,
@@ -193,6 +194,15 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
             <p className="mt-6 text-xs text-muted-foreground">
               Postage calculated at checkout. Shipped from Brisbane, Australia.
             </p>
+
+            {soldOut && (
+              <div className="mt-8">
+                <WaitlistForm
+                  productId={product.id}
+                  productName={product.name}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

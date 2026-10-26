@@ -74,6 +74,92 @@ function formatAddress(opts: {
   return parts.join(", ");
 }
 
+export async function sendBackInStockNotification(opts: {
+  email: string;
+  name: string | null;
+  productName: string;
+  productSlug: string;
+}): Promise<void> {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.log("Back-in-stock email (no RESEND_API_KEY):", opts.email);
+    return;
+  }
+
+  const FROM =
+    process.env.CONTACT_FROM_EMAIL || "CCNetball <noreply@ccnetball.com>";
+  const BCC = process.env.CONTACT_TO_EMAIL || "info.ccnetball@gmail.com";
+
+  const url = `https://www.ccnetball.com/shop/${opts.productSlug}`;
+  const firstName = (opts.name?.split(" ")[0] || "").trim();
+  const greeting = firstName ? `Hi ${firstName},` : "Good news!";
+  const subject = `Back in stock — ${opts.productName}`;
+
+  const text = [
+    greeting,
+    ``,
+    `Good news — the ${opts.productName} is back in stock at CC Netball.`,
+    ``,
+    `You asked us to let you know, so here we are. Jump in before it sells out again:`,
+    url,
+    ``,
+    `Caitlyn & the CC Netball team`,
+    `ccnetball.com`,
+  ].join("\n");
+
+  const html = `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f6f4ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1A1F36;line-height:1.5;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f4ee;padding:24px 12px;">
+      <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(26,31,54,0.06);">
+          <tr>
+            <td style="padding:32px 28px 24px;background:linear-gradient(135deg,#E63B7A,#FFB4A2);color:#ffffff;text-align:center;">
+              <p style="margin:0 0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.9;">CC Netball</p>
+              <h1 style="margin:0;font-size:26px;font-weight:800;line-height:1.2;">It&apos;s back!</h1>
+              <p style="margin:10px 0 0;font-size:15px;font-weight:500;opacity:0.95;">The item you were waiting for is in stock again.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 28px 8px;">
+              <p style="margin:0;font-size:16px;">${escape(greeting)}</p>
+              <p style="margin:14px 0 0;font-size:16px;">Good news — the <strong>${escape(opts.productName)}</strong> is back in stock at CC Netball.</p>
+              <p style="margin:14px 0 0;font-size:14px;color:#1A1F36;">You asked us to let you know, so here we are. Jump in before it sells out again.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px 24px;">
+              <a href="${url}" style="display:inline-block;background:#E63B7A;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700;font-size:14px;">Grab yours now</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 20px;font-size:14px;">
+              <p style="margin:0;font-weight:600;">Caitlyn & the CC Netball team</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px 20px;background:#f6f4ee;border-top:1px solid #e5e7eb;font-size:11px;color:#6B7280;text-align:center;">
+              <a href="https://ccnetball.com" style="color:#E63B7A;text-decoration:none;font-weight:600;">ccnetball.com</a>
+            </td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  const resend = new Resend(RESEND_API_KEY);
+  await resend.emails.send({
+    from: FROM,
+    to: opts.email,
+    bcc: BCC,
+    replyTo: BCC,
+    subject,
+    text,
+    html,
+  });
+}
+
 export async function sendShopOrderShippedNotification(
   payload: ShippedPayload,
 ): Promise<void> {
