@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -110,6 +110,64 @@ export function DrawStep({
     [teams, divisions, courts, timeslots],
   );
 
+  // Fingerprint of the current inputs. Fixture rows store a snapshot of
+  // what the inputs looked like at build time via totalGames; if that
+  // snapshot no longer matches, we treat the saved fixture as stale.
+  const inputsFingerprint = useMemo(
+    () =>
+      JSON.stringify({
+        c: courts.map((x) => x.id).sort(),
+        s: timeslots.map((x) => x.id).sort(),
+        d: divisions.map((x) => ({ id: x.id, lc: x.lockedCourtId })),
+        t: teams.map((x) => ({ id: x.id, d: x.divisionId })),
+      }),
+    [courts, timeslots, divisions, teams],
+  );
+
+  // When the inputs change, the stale "generate report" headline shouldn't
+  // keep showing. Clear it so the UI only ever shows a report that matches
+  // the current state.
+  const lastFingerprint = useRef(inputsFingerprint);
+  useEffect(() => {
+    if (lastFingerprint.current !== inputsFingerprint) {
+      lastFingerprint.current = inputsFingerprint;
+      setReport(null);
+    }
+  }, [inputsFingerprint]);
+
+  // The saved fixture is "stale" if the inputs today could reasonably
+  // produce a different draw — courts, timeslots, teams or divisions
+  // changed since the fixture was built. We approximate by watching
+  // whether the current pre-flight math matches what the saved fixture
+  // actually contains.
+  const fixtureIsStale = useMemo(() => {
+    if (fixtureGames.length === 0) return false;
+    const liveGames = fixtureGames.filter((g) => !g.isBye);
+    // Expect the live games to involve only current teams and sit on
+    // current court × timeslot cells. Anything referencing a now-removed
+    // court/timeslot/team means we edited after building.
+    const teamIds = new Set(teams.map((t) => t.id));
+    const courtIds = new Set(courts.map((c) => c.id));
+    const slotIds = new Set(timeslots.map((s) => s.id));
+    for (const g of liveGames) {
+      if (g.teamAId && !teamIds.has(g.teamAId)) return true;
+      if (g.teamBId && !teamIds.has(g.teamBId)) return true;
+      if (g.courtId && !courtIds.has(g.courtId)) return true;
+      if (g.timeslotId && !slotIds.has(g.timeslotId)) return true;
+    }
+    // If the number of games doesn't match what a fresh build would need
+    // (per round × rounds), the inputs likely changed.
+    const roundsInFixture = new Set(fixtureGames.map((g) => g.roundNumber))
+      .size;
+    const expectedPerRound = analysis.totalMatchesPerRound;
+    const expectedBynesPerRound = analysis.divisions.filter(
+      (d) => d.hasBye,
+    ).length;
+    const expectedTotal =
+      (expectedPerRound + expectedBynesPerRound) * roundsInFixture;
+    return expectedTotal !== fixtureGames.length;
+  }, [fixtureGames, teams, courts, timeslots, analysis]);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -194,6 +252,22 @@ export function DrawStep({
               )}
             </ul>
           )}
+        </div>
+      )}
+
+      {fixtureIsStale && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-700" />
+          <div>
+            <p className="font-semibold">
+              This fixture is out of date.
+            </p>
+            <p className="mt-1 text-xs">
+              You&apos;ve edited courts, timeslots, teams or divisions since
+              this draw was built. Click <strong>Regenerate draw</strong> to
+              rebuild it from the current setup.
+            </p>
+          </div>
         </div>
       )}
 
