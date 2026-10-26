@@ -234,9 +234,14 @@ export function analyzeDraw(input: {
   const unassigned = teams.filter((t) => !t.divisionId);
   if (unassigned.length > 0) {
     const options: string[] = [
-      `Drag the ${unassigned.length} unassigned team${unassigned.length === 1 ? "" : "s"} into a division on Step 2.`,
-      `Delete them from Step 2 if they're not playing after all.`,
+      `Drag the ${unassigned.length} unassigned team${unassigned.length === 1 ? "" : "s"} into an existing division on Step 2.`,
     ];
+    if (unassigned.length >= 2) {
+      options.push(
+        `Create a new division (e.g. "Division ${divisions.length + 1}") on Step 2 and drop the ${unassigned.length} unassigned team${unassigned.length === 1 ? "" : "s"} into it — gives everyone a spot to play.`,
+      );
+    }
+    options.push(`Delete them from Step 2 if they're not playing after all.`);
     if (divisions.length === 0) {
       options.unshift("Create at least one division on Step 2 first.");
     }
@@ -249,6 +254,29 @@ export function analyzeDraw(input: {
       detail: "Unassigned teams won't be in the draw.",
       options,
     });
+  }
+
+  // Big single division — a split could add variety.
+  const largeDivisions = divisionAnalysis.filter((d) => d.teamCount >= 10);
+  if (largeDivisions.length > 0) {
+    for (const d of largeDivisions) {
+      const half = Math.floor(d.teamCount / 2);
+      const other = d.teamCount - half;
+      const splitSuggestion =
+        d.teamCount % 2 === 0
+          ? `Create a new division on Step 2 and move ${half} teams across (so ${d.name} has ${half}, new one has ${other}). Both stay even — zero byes, and teams play more often in a shorter cycle.`
+          : `Create a new division on Step 2 and move ${other} teams across (so ${d.name} has ${half}, new one has ${other}). Smaller cycles mean every team gets more games across the season.`;
+      suggestions.push({
+        severity: "info",
+        headline: `${d.name} is large (${d.teamCount} teams) — a split could give everyone more play.`,
+        detail:
+          "A single long round-robin means each pair meets once. Two shorter brackets means teams can revisit each other and play more games across the same number of rounds.",
+        options: [
+          `Leave ${d.name} as-is — teams play each other once in the season.`,
+          splitSuggestion,
+        ],
+      });
+    }
   }
 
   // Even sizing — if divisions are wildly uneven, suggest balancing moves.
