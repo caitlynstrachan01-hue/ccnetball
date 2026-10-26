@@ -255,31 +255,27 @@ export function DrawStep({
         </div>
       )}
 
-      {fixtureIsStale && (
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-700" />
-          <div>
-            <p className="font-semibold">
-              This fixture is out of date.
-            </p>
-            <p className="mt-1 text-xs">
-              You&apos;ve edited courts, timeslots, teams or divisions since
-              this draw was built. Click <strong>Regenerate draw</strong> to
-              rebuild it from the current setup.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {fixtureGames.length === 0 ? (
+      {fixtureGames.length === 0 || fixtureIsStale ? (
         <div className="rounded-2xl border border-dashed border-border/70 bg-background p-10 text-center">
           <Sparkles className="mx-auto size-10 text-muted-foreground" />
           <p className="mt-3 font-display text-base font-bold">
-            No draw generated yet.
+            {fixtureIsStale
+              ? "The previous draw was cleared."
+              : "No draw generated yet."}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Hit <strong>Generate draw</strong> to build the full season
-            fixture.
+            {fixtureIsStale ? (
+              <>
+                You edited courts, timeslots, teams or divisions since the
+                last draw was built. Review the Pre-flight check above, then
+                hit <strong>Generate draw</strong> to rebuild.
+              </>
+            ) : (
+              <>
+                Hit <strong>Generate draw</strong> to build the full season
+                fixture.
+              </>
+            )}
           </p>
         </div>
       ) : (
