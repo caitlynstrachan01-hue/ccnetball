@@ -210,7 +210,6 @@ export const PROGRAMS: Program[] = [
     durationMinutes: 60,
     capacity: "Per athlete",
     bestFor: "Athletes serious about self-analysis",
-    hidden: true,
   },
   {
     id: "online",
