@@ -10,6 +10,7 @@ import type {
   CompetitionTimeslot,
 } from "@/lib/competition-builder";
 import { SetupStep } from "./setup-step";
+import { TeamsStep } from "./teams-step";
 
 type Step = {
   id: string;
@@ -34,7 +35,11 @@ export function CompetitionWizard({
   const [activeStep, setActiveStep] = useState<string>("setup");
 
   const setupDone = courts.length > 0 && timeslots.length > 0;
-  const teamsDone = teams.length > 0 && divisions.length > 0;
+  const teamsDone =
+    teams.length > 0 &&
+    divisions.length > 0 &&
+    teams.every((t) => t.divisionId);
+  const matchCellsPerRound = courts.length * timeslots.length;
 
   const steps: Step[] = useMemo(
     () => [
@@ -48,11 +53,7 @@ export function CompetitionWizard({
         id: "teams",
         title: "2. Teams & divisions",
         blurb: "Drag teams into divisions",
-        status: teamsDone
-          ? "done"
-          : setupDone
-            ? "coming-soon"
-            : "coming-soon",
+        status: teamsDone ? "done" : setupDone ? "available" : "coming-soon",
       },
       {
         id: "grading",
@@ -118,7 +119,18 @@ export function CompetitionWizard({
             timeslots={timeslots}
           />
         )}
-        {activeStep !== "setup" && <ComingSoon stepId={activeStep} />}
+        {activeStep === "teams" && (
+          <TeamsStep
+            competitionId={competition.id}
+            courts={courts}
+            divisions={divisions}
+            teams={teams}
+            matchCellsPerRound={matchCellsPerRound}
+          />
+        )}
+        {activeStep !== "setup" && activeStep !== "teams" && (
+          <ComingSoon stepId={activeStep} />
+        )}
       </main>
     </div>
   );
