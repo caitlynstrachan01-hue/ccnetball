@@ -212,24 +212,37 @@ export async function POST(request: Request) {
     },
   });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: lineItems,
-    customer_email: body.customer.email,
-    success_url: `${siteUrl}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}/shop/cancelled?session_id={CHECKOUT_SESSION_ID}`,
-    metadata: {
-      order_id: orderId,
-      order_number: orderNumber,
-      shop_order: "true",
-    },
-    payment_intent_data: {
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: lineItems,
+      customer_email: body.customer.email,
+      success_url: `${siteUrl}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/shop/cancelled?session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         order_id: orderId,
         order_number: orderNumber,
+        shop_order: "true",
       },
-    },
-  });
+      payment_intent_data: {
+        metadata: {
+          order_id: orderId,
+          order_number: orderNumber,
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Stripe session create failed:", err);
+    const message = err instanceof Error ? err.message : "Stripe error";
+    return NextResponse.json(
+      {
+        error: "Could not start payment. Please try again.",
+        detail: message,
+      },
+      { status: 500 },
+    );
+  }
 
   // Save the Stripe session id back on the order so the success page can
   // look it up. Updates on shop_orders need service role (no public policy
