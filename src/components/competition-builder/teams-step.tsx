@@ -126,11 +126,18 @@ export function TeamsStep({
     const team = teams.find((t) => t.id === teamId);
     if (!team) return;
     if ((team.divisionId ?? null) === targetDivisionId) return;
-    const target =
-      targetDivisionId === null
-        ? "Unassigned"
-        : (divisions.find((d) => d.id === targetDivisionId)?.name ?? "another division");
-    if (!confirmChange(`Move "${team.name}" into ${target}?`)) return;
+    // A team coming out of Unassigned into a division is just finishing the
+    // add — we already warned about the add. Only confirm when moving an
+    // already-placed team to another division or back to Unassigned.
+    const comingFromUnassigned = team.divisionId === null;
+    if (!comingFromUnassigned) {
+      const target =
+        targetDivisionId === null
+          ? "Unassigned"
+          : (divisions.find((d) => d.id === targetDivisionId)?.name ??
+            "another division");
+      if (!confirmChange(`Move "${team.name}" into ${target}?`)) return;
+    }
     try {
       const res = await fetch(
         `/api/competition-builder/${competitionId}/teams`,
