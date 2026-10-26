@@ -347,9 +347,8 @@ export async function sendShopOrderCustomerConfirmation(
     ``,
     `We'll be in touch once your order has been shipped.`,
     ``,
-    `If you have any questions, reply to this email and we'll get back to you.`,
-    ``,
-    `Caitlyn & the CC Netball team`,
+    `Kind regards,`,
+    `The CC Netball team`,
     `ccnetball.com`,
   ].join("\n");
 
@@ -423,8 +422,9 @@ export async function sendShopOrderCustomerConfirmation(
 
             <tr>
               <td style="padding:24px 28px 8px;">
-                <p style="margin:0;font-size:14px;color:#1A1F36;">We&apos;ll be in touch once your order has been shipped. Reply to this email if you have any questions — we&apos;re here to help.</p>
-                <p style="margin:16px 0 0;font-size:14px;font-weight:600;">Caitlyn & the CC Netball team</p>
+                <p style="margin:0;font-size:14px;color:#1A1F36;">We&apos;ll be in touch once your order has been shipped.</p>
+                <p style="margin:18px 0 0;font-size:14px;">Kind regards,</p>
+                <p style="margin:2px 0 0;font-size:14px;font-weight:600;">The CC Netball team</p>
               </td>
             </tr>
 
