@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, Clock3, Lock, PanelRight } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Lock, PanelRight } from "lucide-react";
 import type {
   Competition,
   CompetitionCourt,
@@ -53,7 +53,7 @@ export function CompetitionWizard({
         id: "teams",
         title: "2. Teams & divisions",
         blurb: "Drag teams into divisions",
-        status: teamsDone ? "done" : setupDone ? "available" : "coming-soon",
+        status: teamsDone ? "done" : "available",
       },
       {
         id: "grading",
@@ -131,6 +131,12 @@ export function CompetitionWizard({
         {activeStep !== "setup" && activeStep !== "teams" && (
           <ComingSoon stepId={activeStep} />
         )}
+
+        <StepNav
+          currentStep={activeStep}
+          steps={steps}
+          onNavigate={(id) => setActiveStep(id)}
+        />
       </main>
     </div>
   );
@@ -146,6 +152,52 @@ function StepIcon({ status }: { status: Step["status"] }) {
       <PanelRight className="mt-0.5 size-5 shrink-0 text-foreground/70" />
     );
   return <Lock className="mt-0.5 size-5 shrink-0 text-muted-foreground" />;
+}
+
+function StepNav({
+  currentStep,
+  steps,
+  onNavigate,
+}: {
+  currentStep: string;
+  steps: Step[];
+  onNavigate: (id: string) => void;
+}) {
+  const index = steps.findIndex((s) => s.id === currentStep);
+  const prev = index > 0 ? steps[index - 1] : null;
+  // "Next" skips ahead to the first step after this one that is available
+  // (not coming-soon) — so progression never stalls.
+  const next = steps
+    .slice(index + 1)
+    .find((s) => s.status !== "coming-soon");
+
+  return (
+    <div className="mt-10 flex items-center justify-between border-t border-border/60 pt-6">
+      {prev ? (
+        <button
+          type="button"
+          onClick={() => onNavigate(prev.id)}
+          className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:bg-muted"
+        >
+          ← {prev.title.replace(/^\d+\.\s*/, "")}
+        </button>
+      ) : (
+        <span />
+      )}
+      {next ? (
+        <button
+          type="button"
+          onClick={() => onNavigate(next.id)}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.01]"
+        >
+          Next: {next.title.replace(/^\d+\.\s*/, "")}
+          <ArrowRight className="size-4" />
+        </button>
+      ) : (
+        <span />
+      )}
+    </div>
+  );
 }
 
 function ComingSoon({ stepId }: { stepId: string }) {
