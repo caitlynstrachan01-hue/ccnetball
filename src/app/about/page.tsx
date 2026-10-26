@@ -25,8 +25,9 @@ export default function AboutPage() {
                 Meet <span className="gradient-text">Caitlyn Strachan</span>.
               </h1>
               <p className="mt-6 max-w-2xl text-xl text-muted-foreground">
-                Former Australian Diamond. Triple premiership winner. Now
-                coaching the next generation.
+                Former Australian Diamond. Triple ANZ Championship premiership
+                winner. Queensland selector. Elite accredited coach. Head
+                coach, Queensland Firebirds reserves (2027).
               </p>
             </Reveal>
 
@@ -77,8 +78,9 @@ export default function AboutPage() {
                 wishes she&apos;d had on her own way up.
               </p>
               <p>
-                Caitlyn is currently completing her elite coaching
-                accreditation, with a clear long-term goal: to coach in the
+                Caitlyn is an elite accredited coach, a Queensland selector,
+                and in 2027 steps in as head coach of the Queensland Firebirds
+                reserve team, with a clear long-term goal: to coach in the
                 Suncorp Super Netball competition.
               </p>
 

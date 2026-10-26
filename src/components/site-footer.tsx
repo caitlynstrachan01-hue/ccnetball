@@ -16,9 +16,10 @@ export function SiteFooter() {
             <span>Netball</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-white/70">
-            Netball coaching with Caitlyn Strachan. Former Australian Diamond,
-            three-time premiership winner, currently completing her elite
-            coaching accreditation.
+            The complete netball platform by Caitlyn Strachan. Former Australian
+            Diamond, triple ANZ Championship premiership winner, Queensland
+            selector, elite accredited coach, and head coach of the Queensland
+            Firebirds reserve team in 2027.
           </p>
           <div className="mt-6 flex gap-3">
             <a
