@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Download,
+  Lightbulb,
   Loader2,
   Sparkles,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import type {
   CompetitionTimeslot,
   FixtureGame,
 } from "@/lib/competition-builder";
+import { analyzeDraw } from "@/lib/competition-builder-draw";
 
 type Props = {
   competitionId: string;
@@ -103,6 +105,11 @@ export function DrawStep({
     courts.length > 0 &&
     timeslots.length > 0;
 
+  const analysis = useMemo(
+    () => analyzeDraw({ teams, divisions, courts, timeslots }),
+    [teams, divisions, courts, timeslots],
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -150,6 +157,8 @@ export function DrawStep({
           2.
         </div>
       )}
+
+      <PreflightPanel analysis={analysis} />
 
       {error && (
         <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -293,6 +302,114 @@ export function DrawStep({
         </div>
       )}
     </div>
+  );
+}
+
+function PreflightPanel({
+  analysis,
+}: {
+  analysis: ReturnType<typeof analyzeDraw>;
+}) {
+  const needsAttention = analysis.suggestions.some(
+    (s) => s.severity === "action" || s.severity === "warning",
+  );
+
+  return (
+    <section className="rounded-2xl border border-border/70 bg-background">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-muted/40 px-5 py-3">
+        <p className="flex items-center gap-2 font-display text-sm font-bold">
+          <Lightbulb className="size-4 text-primary" />
+          Pre-flight check
+        </p>
+        <p className="text-xs text-muted-foreground">
+          <strong className="text-foreground">
+            {analysis.totalMatchesPerRound}
+          </strong>{" "}
+          matches / round into{" "}
+          <strong className="text-foreground">
+            {analysis.cellsPerRound}
+          </strong>{" "}
+          cells ({analysis.utilizationPct}% used)
+        </p>
+      </header>
+
+      <div className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            Divisions
+          </p>
+          {analysis.divisions.length === 0 ? (
+            <p className="mt-2 text-xs italic text-muted-foreground">
+              Add divisions in Step 2.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-1 text-sm">
+              {analysis.divisions.map((d) => (
+                <li
+                  key={d.divisionId}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="font-semibold">{d.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {d.teamCount} teams · {d.matchesPerRound} matches
+                    {d.hasBye && (
+                      <span className="ml-1 font-semibold text-amber-700">
+                        · bye each round
+                      </span>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            Suggestions
+          </p>
+          {analysis.suggestions.length === 0 ? (
+            <p className="mt-2 text-xs italic text-muted-foreground">
+              Nothing to report yet.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {analysis.suggestions.map((s, i) => (
+                <li
+                  key={i}
+                  className={`rounded-xl border px-3 py-2 text-xs ${
+                    s.severity === "action"
+                      ? "border-primary/30 bg-primary/5"
+                      : s.severity === "warning"
+                        ? "border-amber-300 bg-amber-50"
+                        : "border-border/70 bg-card"
+                  }`}
+                >
+                  <p className="font-semibold">
+                    {s.severity === "action" && (
+                      <Sparkles className="mr-1 inline size-3 text-primary" />
+                    )}
+                    {s.severity === "warning" && (
+                      <AlertTriangle className="mr-1 inline size-3 text-amber-700" />
+                    )}
+                    {s.headline}
+                  </p>
+                  <p className="mt-1 text-foreground/80">{s.detail}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {needsAttention && (
+        <p className="border-t border-border/60 px-5 py-3 text-xs italic text-muted-foreground">
+          You can still Generate the draw — these are advice, not blockers.
+          Go back to Step 1 or 2 if you want to apply any of the suggestions
+          first.
+        </p>
+      )}
+    </section>
   );
 }
 
