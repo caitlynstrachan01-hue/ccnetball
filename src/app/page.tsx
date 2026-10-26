@@ -119,7 +119,7 @@ export default function HomePage() {
 
                   <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
                     <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[color:var(--brand-coral)]">
-                      The coach
+                      Founder &amp; head coach
                     </p>
                     <p className="mt-1 font-display text-2xl font-extrabold text-white md:text-3xl">
                       Caitlyn Strachan

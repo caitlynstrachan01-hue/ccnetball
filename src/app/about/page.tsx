@@ -72,7 +72,7 @@ export default function AboutPage() {
                 inside the highest-performing programs in the country.
               </p>
               <p>
-                She retired from elite competition in 2020 and immediately
+                She stepped away from playing in 2020 and immediately
                 turned the lens. Today she coaches developing athletes across
                 Australia, designing the kind of training programs she
                 wishes she&apos;d had on her own way up.
