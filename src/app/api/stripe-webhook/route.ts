@@ -94,9 +94,9 @@ export async function POST(request: Request) {
             })
             .eq("id", orderId);
 
-          // Send both the internal notification (to Rich) and the branded
-          // customer confirmation (BCC'd to Rich). Failure of either must
-          // not block the other.
+          // Send both the internal CC Netball notification and the branded
+          // customer confirmation (BCC'd to CC Netball). Failure of either
+          // must not block the other.
           try {
             await sendShopOrderNotification(order);
           } catch (err) {
