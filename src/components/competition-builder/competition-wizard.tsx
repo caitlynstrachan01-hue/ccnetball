@@ -155,6 +155,7 @@ export function CompetitionWizard({
             timeslots={timeslots}
             divisions={divisions}
             teams={teams}
+            rules={rules}
             fixtureGames={fixtureGames}
           />
         )}

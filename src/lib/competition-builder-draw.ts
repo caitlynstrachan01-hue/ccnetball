@@ -70,8 +70,10 @@ export function analyzeDraw(input: {
   divisions: CompetitionDivision[];
   courts: CompetitionCourt[];
   timeslots: CompetitionTimeslot[];
+  rules?: Rule[];
 }): DrawAnalysis {
   const { teams, divisions, courts, timeslots } = input;
+  const rules = input.rules ?? [];
   const cellsPerRound = courts.length * timeslots.length;
 
   const divisionAnalysis = divisions.map((d) => {
@@ -310,15 +312,70 @@ export function analyzeDraw(input: {
     }
   }
 
+  // Rule-induced capacity checks. For each division that has a
+  // division_timeslots or division_locked_court rule, compute the
+  // effective cells available per round for that division and flag
+  // when it's less than matches needed.
+  const divisionTimeslotsRule = new Map<string, Set<string>>();
+  const divisionLockedCourtRule = new Map<string, string>();
+  for (const rule of rules) {
+    if (rule.ruleType === "division_timeslots") {
+      const p = rule.params as { divisionId: string; timeslotIds: string[] };
+      divisionTimeslotsRule.set(p.divisionId, new Set(p.timeslotIds));
+    }
+    if (rule.ruleType === "division_locked_court") {
+      const p = rule.params as { divisionId: string; courtId: string };
+      divisionLockedCourtRule.set(p.divisionId, p.courtId);
+    }
+  }
+
+  for (const d of divisionAnalysis) {
+    const slotCount = divisionTimeslotsRule.has(d.divisionId)
+      ? divisionTimeslotsRule.get(d.divisionId)!.size
+      : timeslots.length;
+    const courtCount = divisionLockedCourtRule.has(d.divisionId) ? 1 : courts.length;
+    const effectiveCells = slotCount * courtCount;
+    if (
+      d.matchesPerRound > 0 &&
+      effectiveCells > 0 &&
+      d.matchesPerRound > effectiveCells
+    ) {
+      const options: string[] = [];
+      if (divisionTimeslotsRule.has(d.divisionId)) {
+        options.push(
+          `Add more timeslots to the "${d.name} only plays at…" rule in Step 4 (needs at least ${Math.ceil(d.matchesPerRound / courtCount)}).`,
+        );
+        options.push(
+          `Remove the "${d.name} only plays at…" rule entirely in Step 4.`,
+        );
+      }
+      if (divisionLockedCourtRule.has(d.divisionId)) {
+        options.push(
+          `Remove the "${d.name} always plays on…" rule so it can use every court.`,
+        );
+      }
+      options.push(
+        `Trim ${d.name} to ${effectiveCells * 2} team${effectiveCells * 2 === 1 ? "" : "s"} so matches/round (${effectiveCells}) fits the rule's cells.`,
+      );
+      suggestions.push({
+        severity: "action",
+        headline: `${d.name} rules give only ${effectiveCells} cell${effectiveCells === 1 ? "" : "s"} per round, but it needs ${d.matchesPerRound}.`,
+        detail: `${slotCount} allowed timeslot${slotCount === 1 ? "" : "s"} × ${courtCount} allowed court${courtCount === 1 ? "" : "s"} = ${effectiveCells} slots. Games will be left unplaced each round.`,
+        options,
+      });
+    }
+  }
+
   if (
     suggestions.length === 0 &&
     cellsPerRound > 0 &&
     totalMatchesPerRound > 0
   ) {
+    const activeRules = rules.length;
     suggestions.push({
       severity: "info",
       headline: "Everything looks tidy — ready to build.",
-      detail: `${totalMatchesPerRound} matches a round into ${cellsPerRound} cells, no divisions with byes, no unassigned teams.`,
+      detail: `${totalMatchesPerRound} matches a round into ${cellsPerRound} cells, no divisions with byes, no unassigned teams${activeRules > 0 ? `, ${activeRules} rule${activeRules === 1 ? "" : "s"} active and workable` : ""}.`,
       options: [],
     });
   }

@@ -169,6 +169,13 @@ function AddRuleModal({
       return;
     }
 
+    if (fixtureExists) {
+      const ok = window.confirm(
+        "By adjusting the rules, your current draw will be out of date. A new draw will need to be made.\n\nPress OK to continue.",
+      );
+      if (!ok) return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(

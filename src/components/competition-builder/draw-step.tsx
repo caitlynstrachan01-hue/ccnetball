@@ -16,6 +16,7 @@ import type {
   CompetitionTeam,
   CompetitionTimeslot,
   FixtureGame,
+  Rule,
 } from "@/lib/competition-builder";
 import { analyzeDraw } from "@/lib/competition-builder-draw";
 
@@ -25,6 +26,7 @@ type Props = {
   timeslots: CompetitionTimeslot[];
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
+  rules: Rule[];
   fixtureGames: FixtureGame[];
 };
 
@@ -34,6 +36,7 @@ export function DrawStep({
   timeslots,
   divisions,
   teams,
+  rules,
   fixtureGames,
 }: Props) {
   const router = useRouter();
@@ -106,8 +109,8 @@ export function DrawStep({
     timeslots.length > 0;
 
   const analysis = useMemo(
-    () => analyzeDraw({ teams, divisions, courts, timeslots }),
-    [teams, divisions, courts, timeslots],
+    () => analyzeDraw({ teams, divisions, courts, timeslots, rules }),
+    [teams, divisions, courts, timeslots, rules],
   );
 
   // Fingerprint of the current inputs. Fixture rows store a snapshot of
