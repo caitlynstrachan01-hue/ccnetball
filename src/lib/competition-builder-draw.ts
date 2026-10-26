@@ -187,23 +187,26 @@ export function analyzeDraw(input: {
     });
   }
 
-  // Bye suggestions.
+  // Bye suggestions. Only suggest moves that genuinely IMPROVE the bye
+  // situation — never recommend swaps that just trade one odd division
+  // for another.
   const oddDivisions = divisionAnalysis.filter((d) => d.hasBye);
   if (oddDivisions.length >= 2) {
     const options: string[] = [];
-    // Suggest moving one team between every pair of odd divisions.
+    // Pair-wise moves between odd divisions — both become even, net -2 byes.
     for (let i = 0; i < oddDivisions.length; i++) {
       for (let j = i + 1; j < oddDivisions.length; j++) {
         const a = oddDivisions[i];
         const b = oddDivisions[j];
         options.push(
-          `Move 1 team from ${a.name} (${a.teamCount}) to ${b.name} (${b.teamCount}) — both become even (${a.teamCount - 1} and ${b.teamCount + 1}).`,
+          `Move 1 team from ${a.name} (${a.teamCount}) to ${b.name} (${b.teamCount}) — both become even (${a.teamCount - 1} and ${b.teamCount + 1}). Zero byes.`,
         );
         options.push(
-          `Move 1 team from ${b.name} (${b.teamCount}) to ${a.name} (${a.teamCount}) — both become even (${b.teamCount - 1} and ${a.teamCount + 1}).`,
+          `Move 1 team from ${b.name} (${b.teamCount}) to ${a.name} (${a.teamCount}) — both become even (${b.teamCount - 1} and ${a.teamCount + 1}). Zero byes.`,
         );
       }
     }
+    // Add/remove within each odd division.
     for (const d of oddDivisions) {
       options.push(
         `Add 1 team to ${d.name} (go from ${d.teamCount} to ${d.teamCount + 1}).`,
@@ -212,30 +215,51 @@ export function analyzeDraw(input: {
         `Remove 1 team from ${d.name} (go from ${d.teamCount} to ${d.teamCount - 1}).`,
       );
     }
+    // 3-way redistribution — if the TOTAL across all current divisions is
+    // even, we can create a new division and split everyone into fully
+    // even groups.
+    const totalTeamsInDivisions = divisionAnalysis.reduce(
+      (s, d) => s + d.teamCount,
+      0,
+    );
+    if (totalTeamsInDivisions >= 6 && totalTeamsInDivisions % 2 === 0) {
+      const target = divisionAnalysis.length + 1;
+      // Three equal(ish) even groups.
+      const base = Math.floor(totalTeamsInDivisions / target / 2) * 2;
+      const remainder = totalTeamsInDivisions - base * (target - 1);
+      const splitSizes = Array(target - 1)
+        .fill(base)
+        .concat([remainder]);
+      // If the computed sizes aren't all even (edge case), fall back to a
+      // simple even-pair split.
+      const allEven = splitSizes.every((s) => s % 2 === 0 && s >= 2);
+      if (allEven) {
+        options.push(
+          `Create a new division on Step 2 and redistribute all ${totalTeamsInDivisions} teams across ${target} divisions (${splitSizes.join(" + ")} = ${totalTeamsInDivisions}). Every division ends up even — zero byes across the whole season.`,
+        );
+      }
+    }
     suggestions.push({
       severity: "action",
       headline: `${oddDivisions.length} divisions carry a bye every round — ${oddDivisions.map((d) => `${d.name} (${d.teamCount})`).join(", ")}.`,
       detail:
-        "Each has an odd team count. Pick any of the moves below to kill the byes.",
+        "Each has an odd team count. Pick any option below — all leave zero byes.",
       options,
     });
   } else if (oddDivisions.length === 1) {
     const d = oddDivisions[0];
+    // Only suggest fixes that genuinely clear the bye. The old suggestion
+    // of pulling a team from an even donor is NOT a fix — it just moves
+    // the bye.
     const options: string[] = [
       `Add 1 team to ${d.name} (go from ${d.teamCount} to ${d.teamCount + 1}).`,
       `Remove 1 team from ${d.name} (go from ${d.teamCount} to ${d.teamCount - 1}).`,
     ];
-    // Suggest moving from an even division if one has 2+ teams to spare.
-    const donors = divisionAnalysis
-      .filter((x) => !x.hasBye && x.teamCount >= 4 && x.divisionId !== d.divisionId);
-    for (const donor of donors) {
-      options.push(
-        `Move 1 team from ${donor.name} into ${d.name} — ${donor.name} drops to ${donor.teamCount - 1} (odd) and ${d.name} rises to ${d.teamCount + 1} (even). Trades one bye for another.`,
-      );
-    }
     suggestions.push({
       severity: "warning",
       headline: `${d.name} has an odd team count (${d.teamCount}) — bye every round.`,
+      detail:
+        "The only way to clear this bye without creating another odd division is to add or remove one team.",
       options,
     });
   }
