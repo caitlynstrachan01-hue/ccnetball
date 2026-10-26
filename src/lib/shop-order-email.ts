@@ -35,6 +35,19 @@ type OrderRow = {
   total_cents: number;
 };
 
+type ShippedPayload = {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  postageType: "standard" | "express";
+  trackingNumber: string;
+  postalLine1: string;
+  postalLine2: string | null;
+  postalSuburb: string;
+  postalState: string;
+  postalPostcode: string;
+};
+
 function escape(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -59,6 +72,143 @@ function formatAddress(opts: {
     opts.country || "Australia",
   ].filter(Boolean) as string[];
   return parts.join(", ");
+}
+
+export async function sendShopOrderShippedNotification(
+  payload: ShippedPayload,
+): Promise<void> {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.log("Shipped notification (no RESEND_API_KEY):", payload.orderNumber);
+    return;
+  }
+
+  const FROM =
+    process.env.CONTACT_FROM_EMAIL || "CCNetball <noreply@ccnetball.com>";
+  const BCC = process.env.CONTACT_TO_EMAIL || "info.ccnetball@gmail.com";
+
+  const isExpress = payload.postageType === "express";
+  const postageLabel = isExpress
+    ? "Australia Post Express"
+    : "Australia Post Standard";
+  const eta = isExpress ? "2-4 business days" : "6-10 business days";
+
+  const trackUrl = `https://auspost.com.au/mypost/track/#/details/${encodeURIComponent(
+    payload.trackingNumber,
+  )}`;
+
+  const postalAddress = formatAddress({
+    line1: payload.postalLine1,
+    line2: payload.postalLine2,
+    suburb: payload.postalSuburb,
+    state: payload.postalState,
+    postcode: payload.postalPostcode,
+  });
+
+  const firstName =
+    payload.customerName.split(" ")[0] || payload.customerName;
+
+  const subject = isExpress
+    ? `Your CC Netball order is on its way (express)! — ${payload.orderNumber}`
+    : `Your CC Netball order is on its way! — ${payload.orderNumber}`;
+
+  const text = [
+    `Hi ${firstName},`,
+    ``,
+    `Great news — your CC Netball order has been shipped${isExpress ? " express" : ""} today.`,
+    ``,
+    `Order number: ${payload.orderNumber}`,
+    `Sent via: ${postageLabel}`,
+    `Tracking number: ${payload.trackingNumber}`,
+    `Track your parcel: ${trackUrl}`,
+    ``,
+    `You can expect it to arrive in ${eta} — a little longer if you're in a rural or regional area.`,
+    ``,
+    `Shipping to: ${postalAddress}`,
+    ``,
+    `If there are any delivery issues, reply to this email and we'll help sort it out.`,
+    ``,
+    `Thanks again for supporting a small Australian business.`,
+    ``,
+    `Caitlyn & the CC Netball team`,
+    `ccnetball.com`,
+  ].join("\n");
+
+  const html = `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f6f4ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1A1F36;line-height:1.5;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f4ee;padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(26,31,54,0.06);">
+            <tr>
+              <td style="padding:32px 28px 24px;background:linear-gradient(135deg,#E63B7A,#FFB4A2);color:#ffffff;text-align:center;">
+                <p style="margin:0 0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.9;">CC Netball · ${isExpress ? "Express" : "Standard"} Post</p>
+                <h1 style="margin:0;font-size:26px;font-weight:800;line-height:1.2;">On its way, ${escape(firstName)}!</h1>
+                <p style="margin:10px 0 0;font-size:15px;font-weight:500;opacity:0.95;">Your order has been shipped${isExpress ? " express" : ""} today.</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 28px 4px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;">
+                  <tr><td style="padding:6px 0;color:#6B7280;width:160px;">Order number</td><td style="padding:6px 0;font-weight:700;">${escape(payload.orderNumber)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#6B7280;">Sent via</td><td style="padding:6px 0;font-weight:600;">${escape(postageLabel)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#6B7280;">Tracking number</td><td style="padding:6px 0;font-weight:700;letter-spacing:0.5px;">${escape(payload.trackingNumber)}</td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:20px 28px 4px;">
+                <a href="${trackUrl}" style="display:inline-block;background:#E63B7A;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:999px;font-weight:700;font-size:14px;">Track your parcel</a>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:16px 28px 4px;">
+                <p style="margin:0;font-size:14px;color:#1A1F36;">You can expect it to arrive in <strong>${eta}</strong> — a little longer if you&apos;re in a rural or regional area.</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:20px 28px 4px;">
+                <p style="margin:0;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#E63B7A;font-weight:700;">Shipping to</p>
+                <p style="margin:8px 0 0;font-size:14px;font-weight:600;">${escape(payload.customerName)}</p>
+                <p style="margin:4px 0 0;font-size:14px;color:#1A1F36;">${escape(postalAddress)}</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 28px 8px;">
+                <p style="margin:0;font-size:14px;color:#1A1F36;">If there are any delivery issues, reply to this email and we&apos;ll help sort it out.</p>
+                <p style="margin:14px 0 0;font-size:14px;">Thanks again for supporting a small Australian business.</p>
+                <p style="margin:16px 0 0;font-size:14px;font-weight:600;">Caitlyn & the CC Netball team</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:16px 28px 20px;background:#f6f4ee;border-top:1px solid #e5e7eb;font-size:11px;color:#6B7280;text-align:center;">
+                <a href="https://ccnetball.com" style="color:#E63B7A;text-decoration:none;font-weight:600;">ccnetball.com</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  const resend = new Resend(RESEND_API_KEY);
+  await resend.emails.send({
+    from: FROM,
+    to: payload.customerEmail,
+    bcc: BCC,
+    replyTo: BCC,
+    subject,
+    text,
+    html,
+  });
 }
 
 export async function sendShopOrderCustomerConfirmation(
