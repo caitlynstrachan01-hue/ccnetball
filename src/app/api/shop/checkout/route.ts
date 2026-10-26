@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import {
   formatPriceCents,
   getPostageOptions,
@@ -137,7 +137,11 @@ export async function POST(request: Request) {
   );
   const totalCents = subtotalCents + postage.priceCents;
 
-  const supabase = createAdminClient();
+  // Order inserts happen through the anon client (allowed by RLS to insert
+  // pending orders only). Service role is only needed to attach the Stripe
+  // session_id afterwards; if it's not configured we skip that step —
+  // the webhook can still find the order via its order_id metadata.
+  const supabase = await createClient();
 
   const orderNumber = generateOrderNumber();
 
@@ -174,7 +178,10 @@ export async function POST(request: Request) {
   if (insert.error || !insert.data) {
     console.error("Order insert failed:", insert.error);
     return NextResponse.json(
-      { error: "Could not create the order. Please try again." },
+      {
+        error: "Could not create the order. Please try again.",
+        detail: insert.error?.message,
+      },
       { status: 500 },
     );
   }
@@ -224,10 +231,19 @@ export async function POST(request: Request) {
     },
   });
 
-  await supabase
-    .from("shop_orders")
-    .update({ stripe_session_id: session.id })
-    .eq("id", orderId);
+  // Save the Stripe session id back on the order so the success page can
+  // look it up. Updates on shop_orders need service role (no public policy
+  // for updates), so fall back silently if it's not configured — the
+  // webhook will still find the order via its order_id metadata.
+  try {
+    const admin = createAdminClient();
+    await admin
+      .from("shop_orders")
+      .update({ stripe_session_id: session.id })
+      .eq("id", orderId);
+  } catch (err) {
+    console.warn("Could not attach session_id to order:", err);
+  }
 
   return NextResponse.json({ url: session.url });
 }
