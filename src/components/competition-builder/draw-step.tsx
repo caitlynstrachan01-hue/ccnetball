@@ -130,8 +130,9 @@ export function DrawStep({
         s: timeslots.map((x) => x.id).sort(),
         d: divisions.map((x) => ({ id: x.id, lc: x.lockedCourtId })),
         t: teams.map((x) => ({ id: x.id, d: x.divisionId })),
+        r: rules.map((x) => ({ id: x.id, p: x.params })),
       }),
-    [courts, timeslots, divisions, teams],
+    [courts, timeslots, divisions, teams, rules],
   );
 
   // When the inputs change, the stale "generate report" headline shouldn't

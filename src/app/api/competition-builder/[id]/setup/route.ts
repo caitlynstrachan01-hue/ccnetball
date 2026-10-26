@@ -35,11 +35,25 @@ export async function PATCH(
   }
   update.updated_at = new Date().toISOString();
 
+  // Owner lookup first so a non-owner gets a clear 403 rather than a
+  // silent "update affected 0 rows" success.
+  const { data: comp } = await supabase
+    .from("competitions")
+    .select("owner_user_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (!comp)
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  if (comp.owner_user_id !== user.id)
+    return NextResponse.json(
+      { error: "Not your competition." },
+      { status: 403 },
+    );
+
   const { error } = await supabase
     .from("competitions")
     .update(update)
-    .eq("id", id)
-    .eq("owner_user_id", user.id);
+    .eq("id", id);
   if (error) {
     return NextResponse.json(
       { error: "Could not save.", detail: error.message },

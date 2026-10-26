@@ -607,7 +607,7 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
   const forbidden = new Map<string, Set<string>>(); // teamId → forbidden timeslotIds
   const required = new Map<string, Set<string>>(); // teamId → required timeslotIds
   const divisionAllowed = new Map<string, Set<string>>();
-  const sharedGroups: Array<Set<string>> = [];
+  const sharedGroups: Array<{ ruleId: string; teams: Set<string> }> = [];
   const courtClosed = new Map<string, Set<number>>(); // courtId → closed round numbers
   const teamByeRounds = new Map<string, Set<number>>(); // teamId → forced bye rounds
 
@@ -635,7 +635,10 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
         );
         break;
       case "teams_different_times":
-        sharedGroups.push(new Set(p.teamIds as string[]));
+        sharedGroups.push({
+          ruleId: rule.id,
+          teams: new Set(p.teamIds as string[]),
+        });
         break;
       case "court_closed_round": {
         const courtId = p.courtId as string;
@@ -785,13 +788,13 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
         let sharedConflict = false;
         for (const g of sharedGroups) {
           if (
-            !(pairing.teamAId && g.has(pairing.teamAId)) &&
-            !(pairing.teamBId && g.has(pairing.teamBId))
+            !(pairing.teamAId && g.teams.has(pairing.teamAId)) &&
+            !(pairing.teamBId && g.teams.has(pairing.teamBId))
           )
             continue;
           for (const [teamId, atSlot] of teamAtTimeslot) {
             if (
-              g.has(teamId) &&
+              g.teams.has(teamId) &&
               atSlot === slot.id &&
               teamId !== pairing.teamAId &&
               teamId !== pairing.teamBId
@@ -936,14 +939,14 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
             // teams_different_times — shared-time partner already here?
             for (const g of sharedGroups) {
               if (
-                !(pairing.teamAId && g.has(pairing.teamAId)) &&
-                !(pairing.teamBId && g.has(pairing.teamBId))
+                !(pairing.teamAId && g.teams.has(pairing.teamAId)) &&
+                !(pairing.teamBId && g.teams.has(pairing.teamBId))
               )
                 continue;
               let hit = false;
               for (const [teamId, atSlot] of teamAtTimeslot) {
                 if (
-                  g.has(teamId) &&
+                  g.teams.has(teamId) &&
                   atSlot === slot.id &&
                   teamId !== pairing.teamAId &&
                   teamId !== pairing.teamBId
@@ -953,11 +956,7 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
                 }
               }
               if (hit) {
-                const rule = rules.find(
-                  (rr) =>
-                    rr.ruleType === "teams_different_times" &&
-                    g.size === (rr.params as { teamIds: string[] }).teamIds.length,
-                );
+                const rule = rules.find((rr) => rr.id === g.ruleId);
                 if (rule)
                   violations.push({
                     ruleId: rule.id,
