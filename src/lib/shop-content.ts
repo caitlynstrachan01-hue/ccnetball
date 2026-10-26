@@ -83,26 +83,26 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     icon: "clipboard-list",
   },
   {
-    slug: "centre-pass",
-    name: "Centre Pass",
+    slug: "competition-builder",
+    name: "Competition Builder",
     short:
-      "A side app that builds your full season fixture — grading games, divisions and draws — in an afternoon.",
+      "For messy netball competitions. Unlimited rules, so the quirks that break a spreadsheet draw just become part of the fixture.",
     description:
-      "Centre Pass is a helpful side app for associations and clubs who want a quick, clean draw without the usual spreadsheet pain. Give it your courts, timeslots, teams and start date and it builds the full season fixture — including grading rounds and byes — in minutes. It recommends team-per-division splits that maximise court time, but always defers to what you want. Not meant to replace the main competition management apps netball runs on; it's the tool you reach for when you just need the draw done.",
+      "Competition Builder brings clarity to the messy real-world netball draw. Give it your courts, timeslots, teams and start date, and it builds the full season fixture — including grading rounds and byes — in minutes. Its point of difference is the unlimited rules engine: write any constraint you have as a plain sentence and the fixture is built around it, not patched afterwards. Rules can be anything — a team in Division 1 that cannot play at the same timeslot as a team in Division 3 because they share a coach, a court that is out of play for one specific game, a division that must always play on a certain court, a team that can only play early timeslots, and so on. It recommends team-per-division splits that maximise court time, but always defers to what you and your organisers decide.",
     features: [
       "Full season fixture in an afternoon",
+      "Unlimited rules — any constraint you can describe",
       "Grading games auto-populated",
       "Recommended division splits to maximise court time",
       "You always have the final say on divisions and placements",
       "Court, timeslot and start-date aware",
-      "One flat price per competition",
     ],
     price: "$19.99 per competition",
     pricingNote:
       "One flat payment per competition — no tiers, no per-team charges. A licence covers you right up until the start date of the competition. Each new competition needs a fresh licence.",
     highlights: [
+      "Unlimited Rules Engine",
       "Full Season Fixture",
-      "Includes Grading Games",
       "Maximise Court Availability",
     ],
     icon: "trophy",
