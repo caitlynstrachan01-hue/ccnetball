@@ -83,43 +83,26 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     icon: "clipboard-list",
   },
   {
-    slug: "competition-builder",
-    name: "Competition Builder",
+    slug: "centre-pass",
+    name: "Centre Pass",
     short:
-      "Build a full season fixture — grading games, divisions and draws — in minutes.",
+      "A side app that builds your full season fixture — grading games, divisions and draws — in an afternoon.",
     description:
-      "Competition Builder lets you set up an entire competition in the time it usually takes to make a coffee. Enter your teams, courts, time slots and season length, and the app generates grading games and the full fixture automatically. Results from grading rounds feed intelligent recommendations on team placement — move them up, hold, or drop a division. The engine optimises division sizes so every team plays as much netball as possible with the fewest byes.",
+      "Centre Pass is a helpful side app for associations and clubs who want a quick, clean draw without the usual spreadsheet pain. Give it your courts, timeslots, teams and start date and it builds the full season fixture — including grading rounds and byes — in minutes. It recommends team-per-division splits that maximise court time, but always defers to what you want. Not meant to replace the main competition management apps netball runs on; it's the tool you reach for when you just need the draw done.",
     features: [
-      "Full season fixture generated in minutes",
+      "Full season fixture in an afternoon",
       "Grading games auto-populated",
-      "Placement recommendations from grading results",
-      "Optimal division sizes to minimise byes",
-      "Court, time slot and team-count aware",
-      "Simple team-count confirmation flow",
+      "Recommended division splits to maximise court time",
+      "You always have the final say on divisions and placements",
+      "Court, timeslot and start-date aware",
+      "One flat price per competition",
     ],
-    price: "From $29.99 per competition",
-    pricingTiers: [
-      {
-        label: "Small",
-        detail: "Up to 30 teams",
-        price: "$29.99",
-      },
-      {
-        label: "Medium",
-        detail: "31 to 70 teams",
-        price: "$69.99",
-      },
-      {
-        label: "Large",
-        detail: "More than 70 teams",
-        price: "$99.99",
-      },
-    ],
+    price: "$19.99 per competition",
     pricingNote:
-      "One payment per competition. Your access continues right up until the start date of the competition — then you're ready to build the next one. Every new competition needs a fresh licence, so you can set different parameters and team numbers each season.",
+      "One flat payment per competition — no tiers, no per-team charges. A licence covers you right up until the start date of the competition. Each new competition needs a fresh licence.",
     highlights: [
-      "Netball Season Fixtures",
-      "Including Grading Games",
+      "Full Season Fixture",
+      "Includes Grading Games",
       "Maximise Court Availability",
     ],
     icon: "trophy",
