@@ -27,6 +27,7 @@ type Props = {
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
   rules: Rule[];
+  fixtureExists: boolean;
 };
 
 export function RulesStep({
@@ -36,12 +37,20 @@ export function RulesStep({
   divisions,
   teams,
   rules,
+  fixtureExists,
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
+  function confirmChange(what: string): boolean {
+    if (!fixtureExists) return true;
+    return window.confirm(
+      `${what}\n\nYou've already generated a draw. This change will make it out of date — you'll need to click Regenerate draw in Step 5 to rebuild. Continue?`,
+    );
+  }
+
   async function deleteRule(ruleId: string) {
-    if (!window.confirm("Remove this rule?")) return;
+    if (!confirmChange("Remove this rule?")) return;
     const res = await fetch(
       `/api/competition-builder/${competitionId}/rules?ruleId=${encodeURIComponent(ruleId)}`,
       { method: "DELETE" },
@@ -109,6 +118,7 @@ export function RulesStep({
           timeslots={timeslots}
           divisions={divisions}
           teams={teams}
+          fixtureExists={fixtureExists}
           onClose={() => setOpen(false)}
           onSaved={() => {
             setOpen(false);
@@ -126,6 +136,7 @@ function AddRuleModal({
   timeslots,
   divisions,
   teams,
+  fixtureExists,
   onClose,
   onSaved,
 }: {
@@ -134,6 +145,7 @@ function AddRuleModal({
   timeslots: CompetitionTimeslot[];
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
+  fixtureExists: boolean;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -237,6 +249,14 @@ function AddRuleModal({
             <X className="size-5" />
           </button>
         </div>
+
+        {fixtureExists && (
+          <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Heads up — adding this rule will make your current draw out of
+            date. You&apos;ll need to click <strong>Regenerate draw</strong>{" "}
+            in Step 5 after saving.
+          </p>
+        )}
 
         <label className="mt-5 block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">

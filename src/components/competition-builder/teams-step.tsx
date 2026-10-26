@@ -24,6 +24,7 @@ type Props = {
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
   matchCellsPerRound: number;
+  fixtureExists: boolean;
 };
 
 const UNASSIGNED = "__unassigned__";
@@ -34,7 +35,14 @@ export function TeamsStep({
   divisions,
   teams,
   matchCellsPerRound,
+  fixtureExists,
 }: Props) {
+  function confirmChange(what: string): boolean {
+    if (!fixtureExists) return true;
+    return window.confirm(
+      `${what}\n\nYou've already generated a draw. This change will make it out of date — you'll need to click Regenerate draw in Step 5 to rebuild. Continue?`,
+    );
+  }
   const router = useRouter();
   const [bulkInput, setBulkInput] = useState("");
   const [newDivisionName, setNewDivisionName] = useState("");
@@ -62,6 +70,12 @@ export function TeamsStep({
       .map((s) => s.trim())
       .filter(Boolean);
     if (names.length === 0) return;
+    if (
+      !confirmChange(
+        `Add ${names.length} new team${names.length === 1 ? "" : "s"} to this competition?`,
+      )
+    )
+      return;
     setBusy(true);
     setError(null);
     try {
@@ -88,6 +102,7 @@ export function TeamsStep({
     e.preventDefault();
     const name = newDivisionName.trim();
     if (!name) return;
+    if (!confirmChange(`Add "${name}" as a new division?`)) return;
     setBusy(true);
     setError(null);
     try {
@@ -114,6 +129,11 @@ export function TeamsStep({
     const team = teams.find((t) => t.id === teamId);
     if (!team) return;
     if ((team.divisionId ?? null) === targetDivisionId) return;
+    const target =
+      targetDivisionId === null
+        ? "Unassigned"
+        : (divisions.find((d) => d.id === targetDivisionId)?.name ?? "another division");
+    if (!confirmChange(`Move "${team.name}" into ${target}?`)) return;
     try {
       const res = await fetch(
         `/api/competition-builder/${competitionId}/teams`,
@@ -148,7 +168,7 @@ export function TeamsStep({
   }
 
   async function deleteTeam(teamId: string, teamName: string) {
-    if (!window.confirm(`Remove team "${teamName}"?`)) return;
+    if (!confirmChange(`Remove team "${teamName}"?`)) return;
     const res = await fetch(
       `/api/competition-builder/${competitionId}/teams?teamId=${encodeURIComponent(teamId)}`,
       { method: "DELETE" },
@@ -172,7 +192,7 @@ export function TeamsStep({
 
   async function deleteDivision(divisionId: string, name: string) {
     if (
-      !window.confirm(
+      !confirmChange(
         `Remove the "${name}" division? Its teams will go back to Unassigned.`,
       )
     )
@@ -188,6 +208,12 @@ export function TeamsStep({
     divisionId: string,
     courtId: string | null,
   ) {
+    const divName = divisions.find((d) => d.id === divisionId)?.name ?? "division";
+    const courtName =
+      courtId === null
+        ? "no lock"
+        : (courts.find((c) => c.id === courtId)?.name ?? "a court");
+    if (!confirmChange(`Lock ${divName} to ${courtName}?`)) return;
     const res = await fetch(
       `/api/competition-builder/${competitionId}/divisions`,
       {

@@ -15,11 +15,19 @@ export function SetupStep({
   competition,
   courts,
   timeslots,
+  fixtureExists,
 }: {
   competition: Competition;
   courts: CompetitionCourt[];
   timeslots: CompetitionTimeslot[];
+  fixtureExists: boolean;
 }) {
+  function confirmChange(what: string): boolean {
+    if (!fixtureExists) return true;
+    return window.confirm(
+      `${what}\n\nYou've already generated a draw. This change will make it out of date — you'll need to click Regenerate draw in Step 5 to rebuild. Continue?`,
+    );
+  }
   const router = useRouter();
 
   const [name, setName] = useState(competition.name);
@@ -70,6 +78,7 @@ export function SetupStep({
     e.preventDefault();
     const name = newCourt.trim();
     if (!name) return;
+    if (!confirmChange(`Add "${name}" as a new court?`)) return;
     const res = await fetch(
       `/api/competition-builder/${competition.id}/courts`,
       {
@@ -85,6 +94,8 @@ export function SetupStep({
   }
 
   async function removeCourt(courtId: string) {
+    const name = courts.find((c) => c.id === courtId)?.name ?? "this court";
+    if (!confirmChange(`Remove "${name}"?`)) return;
     await fetch(
       `/api/competition-builder/${competition.id}/courts?courtId=${encodeURIComponent(courtId)}`,
       { method: "DELETE" },
@@ -96,6 +107,7 @@ export function SetupStep({
     e.preventDefault();
     const label = newTimeslot.trim();
     if (!label) return;
+    if (!confirmChange(`Add "${label}" as a new timeslot?`)) return;
     const startsAtMinutes = newTimeslotMinutes
       ? parseTimeToMinutes(newTimeslotMinutes)
       : null;
@@ -115,6 +127,9 @@ export function SetupStep({
   }
 
   async function removeTimeslot(timeslotId: string) {
+    const label =
+      timeslots.find((t) => t.id === timeslotId)?.label ?? "this timeslot";
+    if (!confirmChange(`Remove "${label}"?`)) return;
     await fetch(
       `/api/competition-builder/${competition.id}/timeslots?timeslotId=${encodeURIComponent(timeslotId)}`,
       { method: "DELETE" },

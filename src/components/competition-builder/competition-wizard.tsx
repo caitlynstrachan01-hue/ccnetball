@@ -125,6 +125,7 @@ export function CompetitionWizard({
             competition={competition}
             courts={courts}
             timeslots={timeslots}
+            fixtureExists={fixtureGames.length > 0}
           />
         )}
         {activeStep === "teams" && (
@@ -134,6 +135,7 @@ export function CompetitionWizard({
             divisions={divisions}
             teams={teams}
             matchCellsPerRound={matchCellsPerRound}
+            fixtureExists={fixtureGames.length > 0}
           />
         )}
         {activeStep === "rules" && (
@@ -144,6 +146,7 @@ export function CompetitionWizard({
             divisions={divisions}
             teams={teams}
             rules={rules}
+            fixtureExists={fixtureGames.length > 0}
           />
         )}
         {activeStep === "draw" && (
