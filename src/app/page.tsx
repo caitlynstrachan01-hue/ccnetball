@@ -43,7 +43,7 @@ export default function HomePage() {
               <Reveal>
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                   <Sparkles className="size-3.5" />
-                  Now coaching across Australia
+                  The complete netball platform — Australia-wide
                 </div>
               </Reveal>
 
@@ -59,10 +59,11 @@ export default function HomePage() {
 
               <Reveal delay={0.15}>
                 <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-                  Caitlyn Strachan played for the Australian Diamonds. Won
-                  three premierships with the Melbourne Vixens and Queensland
-                  Firebirds. Now she coaches the next generation, one athlete
-                  at a time.
+                  Caitlyn Strachan — former Australian Diamond, triple ANZ
+                  Championship premiership winner, Queensland selector, and
+                  head coach of the Queensland Firebirds reserve team in 2027.
+                  Elite coaching, video analysis, drills library and tools —
+                  in one place.
                 </p>
               </Reveal>
 

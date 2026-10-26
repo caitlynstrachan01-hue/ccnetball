@@ -1,6 +1,6 @@
 export const SITE = {
   name: "CCNetball",
-  tagline: "Netball coaching with Caitlyn Strachan",
+  tagline: "The complete netball platform — coaching, drills library, analysis and tools, by Caitlyn Strachan",
   domain: "ccnetball.com",
   email: "info.ccnetball@gmail.com",
   instagram: "https://instagram.com/ccnetball_",

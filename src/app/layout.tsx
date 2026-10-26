@@ -31,12 +31,12 @@ export const metadata: Metadata = {
     template: "%s · CCNetball",
   },
   description:
-    "Caitlyn Strachan played for the Australian Diamonds and won three premierships with the Vixens and Firebirds. Now she coaches netball athletes across Australia. 1-on-1, small group, team training, video analysis and online mentoring.",
+    "Caitlyn Strachan — former Australian Diamond, triple ANZ Championship premiership winner, Queensland selector, and head coach of the Queensland Firebirds reserve team in 2027. The complete netball platform: in-person coaching, video game analysis, the Netball Drills Library, Competition Builder, and the Netball Shop.",
   metadataBase: new URL("https://ccnetball.com"),
   openGraph: {
     title: "CCNetball | Netball coaching with Caitlyn Strachan",
     description:
-      "Train with a former Australian Diamond and triple premiership winner. 1-on-1, group, team and online netball coaching across Australia.",
+      "Train with a former Australian Diamond, Queensland selector and Firebirds reserve head coach. Elite accredited coaching, video analysis, drills library, shop and tools — the complete netball platform.",
     url: "https://ccnetball.com",
     siteName: "CCNetball",
     locale: "en_AU",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CCNetball | Netball coaching with Caitlyn Strachan",
     description:
-      "Train with a former Australian Diamond. 1-on-1, group, team and online coaching.",
+      "Train with a former Australian Diamond, Queensland selector and Firebirds reserve head coach. Elite accredited coaching, video analysis, drills library, shop and tools.",
   },
   robots: { index: true, follow: true },
 };
