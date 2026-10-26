@@ -44,6 +44,16 @@ export type CompetitionTeam = {
   divisionId: string | null;
 };
 
+export type FixtureGame = {
+  id: string;
+  roundNumber: number;
+  courtId: string | null;
+  timeslotId: string | null;
+  teamAId: string | null;
+  teamBId: string | null;
+  isBye: boolean;
+};
+
 export type CompetitionLicence = {
   id: string;
   userId: string;

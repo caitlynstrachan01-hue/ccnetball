@@ -8,6 +8,7 @@ import type {
   CompetitionTeam,
   CompetitionTimeslot,
   FillMode,
+  FixtureGame,
   Rule,
   RuleType,
 } from "./competition-builder";
@@ -96,6 +97,7 @@ export async function getCompetition(id: string): Promise<{
   divisions: CompetitionDivision[];
   teams: CompetitionTeam[];
   rules: Rule[];
+  fixtureGames: FixtureGame[];
 } | null> {
   const supabase = await createClient();
   const { data: compRow, error: compError } = await supabase
@@ -107,7 +109,8 @@ export async function getCompetition(id: string): Promise<{
     .maybeSingle();
   if (compError || !compRow) return null;
 
-  const [courts, timeslots, divisions, teams, rules] = await Promise.all([
+  const [courts, timeslots, divisions, teams, rules, fixtureGames] =
+    await Promise.all([
     supabase
       .from("competition_courts")
       .select("id, competition_id, name, ordinal")
@@ -133,6 +136,13 @@ export async function getCompetition(id: string): Promise<{
       .select("id, competition_id, rule_type, params, plain_english, created_at")
       .eq("competition_id", id)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("competition_fixture_games")
+      .select(
+        "id, round_number, court_id, timeslot_id, team_a_id, team_b_id, is_bye",
+      )
+      .eq("competition_id", id)
+      .order("round_number", { ascending: true }),
   ]);
 
   return {
@@ -171,6 +181,17 @@ export async function getCompetition(id: string): Promise<{
         params: r.params,
         plainEnglish: r.plain_english,
         createdAt: r.created_at,
+      }),
+    ),
+    fixtureGames: (fixtureGames.data ?? []).map(
+      (r): FixtureGame => ({
+        id: r.id,
+        roundNumber: r.round_number,
+        courtId: r.court_id,
+        timeslotId: r.timeslot_id,
+        teamAId: r.team_a_id,
+        teamBId: r.team_b_id,
+        isBye: r.is_bye,
       }),
     ),
   };

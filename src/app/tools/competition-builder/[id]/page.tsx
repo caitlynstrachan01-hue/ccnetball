@@ -54,6 +54,7 @@ export default async function CompetitionDetailPage({
             divisions={data.divisions}
             teams={data.teams}
             rules={data.rules}
+            fixtureGames={data.fixtureGames}
           />
         </div>
       </div>
