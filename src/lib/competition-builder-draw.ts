@@ -12,6 +12,11 @@ import type {
   Rule,
 } from "./competition-builder";
 
+export type RuleViolation = {
+  ruleId: string;
+  plainEnglish: string;
+};
+
 export type GeneratedGame = {
   round: number;
   divisionId: string;
@@ -22,6 +27,7 @@ export type GeneratedGame = {
   timeslotId: string | null;
   unplaced?: boolean;
   reason?: string;
+  violations?: RuleViolation[];
 };
 
 export type GenerateDrawInput = {
@@ -750,6 +756,191 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
       }
 
       if (!placed) {
+        // Soft-constraint pass. The strict pass couldn't fit this pairing
+        // anywhere — rather than drop it, find the cell that violates the
+        // fewest rules and place it there with a note. Only truly fall
+        // back to "unplaced" when every cell is physically taken.
+        let bestCell: {
+          slot: CompetitionTimeslot;
+          court: CompetitionCourt;
+          violations: RuleViolation[];
+        } | null = null;
+
+        for (const slot of timeslots) {
+          for (const court of courts) {
+            const cellKey = `${court.id}:${slot.id}`;
+            if (cellTaken.has(cellKey)) continue;
+            const violations: RuleViolation[] = [];
+
+            if (allowedForDivision && !allowedForDivision.has(slot.id)) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "division_timeslots" &&
+                  (rr.params as { divisionId: string }).divisionId ===
+                    pairing.divisionId,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            if (pairing.teamAId && forbidden.get(pairing.teamAId)?.has(slot.id)) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "team_timeslot_forbidden" &&
+                  (rr.params as { teamId: string }).teamId === pairing.teamAId,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            if (pairing.teamBId && forbidden.get(pairing.teamBId)?.has(slot.id)) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "team_timeslot_forbidden" &&
+                  (rr.params as { teamId: string }).teamId === pairing.teamBId,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            const reqA = pairing.teamAId ? required.get(pairing.teamAId) : null;
+            if (reqA && !reqA.has(slot.id)) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "team_timeslot_required" &&
+                  (rr.params as { teamId: string }).teamId === pairing.teamAId,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            const reqB = pairing.teamBId ? required.get(pairing.teamBId) : null;
+            if (reqB && !reqB.has(slot.id)) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "team_timeslot_required" &&
+                  (rr.params as { teamId: string }).teamId === pairing.teamBId,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            if (courtClosed.get(court.id)?.has(r)) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "court_closed_round" &&
+                  (rr.params as { courtId: string; roundNumber: number }).courtId ===
+                    court.id &&
+                  (rr.params as { courtId: string; roundNumber: number })
+                    .roundNumber === r,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            if (forcedCourtId && court.id !== forcedCourtId) {
+              const rule = rules.find(
+                (rr) =>
+                  rr.ruleType === "division_locked_court" &&
+                  (rr.params as { divisionId: string }).divisionId ===
+                    pairing.divisionId,
+              );
+              if (rule)
+                violations.push({
+                  ruleId: rule.id,
+                  plainEnglish: rule.plainEnglish,
+                });
+            }
+            // teams_different_times — shared-time partner already here?
+            for (const g of sharedGroups) {
+              if (
+                !(pairing.teamAId && g.has(pairing.teamAId)) &&
+                !(pairing.teamBId && g.has(pairing.teamBId))
+              )
+                continue;
+              let hit = false;
+              for (const [teamId, atSlot] of teamAtTimeslot) {
+                if (
+                  g.has(teamId) &&
+                  atSlot === slot.id &&
+                  teamId !== pairing.teamAId &&
+                  teamId !== pairing.teamBId
+                ) {
+                  hit = true;
+                  break;
+                }
+              }
+              if (hit) {
+                const rule = rules.find(
+                  (rr) =>
+                    rr.ruleType === "teams_different_times" &&
+                    g.size === (rr.params as { teamIds: string[] }).teamIds.length,
+                );
+                if (rule)
+                  violations.push({
+                    ruleId: rule.id,
+                    plainEnglish: rule.plainEnglish,
+                  });
+                break;
+              }
+            }
+
+            if (
+              bestCell === null ||
+              violations.length < bestCell.violations.length
+            ) {
+              bestCell = { slot, court, violations };
+              if (violations.length === 0) break;
+            }
+          }
+          if (bestCell && bestCell.violations.length === 0) break;
+        }
+
+        if (bestCell) {
+          const cellKey = `${bestCell.court.id}:${bestCell.slot.id}`;
+          cellTaken.add(cellKey);
+          if (pairing.teamAId)
+            teamAtTimeslot.set(pairing.teamAId, bestCell.slot.id);
+          if (pairing.teamBId)
+            teamAtTimeslot.set(pairing.teamBId, bestCell.slot.id);
+          for (const v of bestCell.violations) {
+            ruleContributions.set(
+              v.ruleId,
+              (ruleContributions.get(v.ruleId) ?? 0) + 1,
+            );
+          }
+          games.push({
+            round: r,
+            divisionId: pairing.divisionId,
+            teamAId: pairing.teamAId,
+            teamBId: pairing.teamBId,
+            isBye: false,
+            courtId: bestCell.court.id,
+            timeslotId: bestCell.slot.id,
+            violations: bestCell.violations,
+          });
+          if (bestCell.violations.length > 0) {
+            issues.push(
+              `Round ${r} — ${teamName(teams, pairing.teamAId)} v ${teamName(teams, pairing.teamBId)} placed on ${bestCell.court.name} at ${bestCell.slot.label} with ${bestCell.violations.length} rule compromise${bestCell.violations.length === 1 ? "" : "s"}: ${bestCell.violations.map((v) => `"${v.plainEnglish}"`).join("; ")}`,
+            );
+          }
+          placed = true;
+          continue;
+        }
+
+        // Only truly unplaced if every cell is physically taken.
         // Work out WHICH rule blocked every available slot, so we can
         // tell the organiser something useful.
         const reasons = new Set<string>();

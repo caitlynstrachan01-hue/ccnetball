@@ -115,6 +115,7 @@ export async function POST(
       team_a_id: g.teamAId,
       team_b_id: g.teamBId,
       is_bye: g.isBye,
+      rule_violations: g.violations ?? [],
     }));
     const { error: insErr } = await supabase
       .from("competition_fixture_games")

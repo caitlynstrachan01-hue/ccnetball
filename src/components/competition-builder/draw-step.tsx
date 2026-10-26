@@ -388,6 +388,15 @@ export function DrawStep({
                                       <p className="mt-0.5 text-[11px] text-muted-foreground">
                                         {divisionNameForTeam(game.teamAId)}
                                       </p>
+                                      {game.ruleViolations.length > 0 && (
+                                        <div className="mt-1.5 rounded-md bg-amber-50 px-2 py-1 text-[10px] text-amber-900">
+                                          <AlertTriangle className="mr-1 inline size-3 shrink-0" />
+                                          <strong>Compromise:</strong>{" "}
+                                          {game.ruleViolations
+                                            .map((v) => v.plainEnglish)
+                                            .join(" · ")}
+                                        </div>
+                                      )}
                                     </div>
                                   ) : (
                                     <span className="text-xs text-muted-foreground">

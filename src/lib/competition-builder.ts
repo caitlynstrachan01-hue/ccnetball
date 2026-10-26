@@ -52,6 +52,7 @@ export type FixtureGame = {
   teamAId: string | null;
   teamBId: string | null;
   isBye: boolean;
+  ruleViolations: Array<{ ruleId: string; plainEnglish: string }>;
 };
 
 export type CompetitionLicence = {

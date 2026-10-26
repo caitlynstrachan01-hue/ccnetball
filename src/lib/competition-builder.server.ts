@@ -139,7 +139,7 @@ export async function getCompetition(id: string): Promise<{
     supabase
       .from("competition_fixture_games")
       .select(
-        "id, round_number, court_id, timeslot_id, team_a_id, team_b_id, is_bye",
+        "id, round_number, court_id, timeslot_id, team_a_id, team_b_id, is_bye, rule_violations",
       )
       .eq("competition_id", id)
       .order("round_number", { ascending: true }),
@@ -192,6 +192,7 @@ export async function getCompetition(id: string): Promise<{
         teamAId: r.team_a_id,
         teamBId: r.team_b_id,
         isBye: r.is_bye,
+        ruleViolations: r.rule_violations ?? [],
       }),
     ),
   };
