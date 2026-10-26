@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import type { PhysicalProduct } from "./shop-physical";
 
 type Row = {
@@ -71,7 +71,7 @@ export async function getPhysicalProductsByIds(
   ids: string[],
 ): Promise<PhysicalProduct[]> {
   if (!ids.length) return [];
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("shop_physical_products")
     .select(
