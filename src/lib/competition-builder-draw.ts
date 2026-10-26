@@ -516,24 +516,40 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
     const cellTaken = new Set<string>(); // "courtId:timeslotId"
     const teamAtTimeslot = new Map<string, string>(); // teamId → timeslotId
 
-    // Order the hardest-to-place first (those with required timeslots, forced
-    // courts via division lock, or shared-time constraints).
+    // Order most-constrained first: count how many (court × timeslot) cells
+    // each pairing could legally go in, given every rule and whatever's
+    // already locked by division. Fewer options → placed first, so a
+    // pairing with 2 valid slots doesn't lose them to a pairing that could
+    // go anywhere.
+    function countValidCells(p: Pairing): number {
+      if (p.isBye) return Number.MAX_SAFE_INTEGER;
+      const divAllow = divisionAllowed.get(p.divisionId);
+      const forcedCourt = divisionLockedCourt.get(p.divisionId);
+      const candidates = forcedCourt
+        ? courts.filter((c) => c.id === forcedCourt)
+        : courts;
+      const reqA = p.teamAId ? required.get(p.teamAId) : undefined;
+      const reqB = p.teamBId ? required.get(p.teamBId) : undefined;
+      let count = 0;
+      for (const slot of timeslots) {
+        if (divAllow && !divAllow.has(slot.id)) continue;
+        if (reqA && !reqA.has(slot.id)) continue;
+        if (reqB && !reqB.has(slot.id)) continue;
+        if (
+          (p.teamAId && forbidden.get(p.teamAId)?.has(slot.id)) ||
+          (p.teamBId && forbidden.get(p.teamBId)?.has(slot.id))
+        )
+          continue;
+        for (const c of candidates) {
+          if (courtClosed.get(c.id)?.has(r)) continue;
+          count += 1;
+        }
+      }
+      return count;
+    }
     const scored = roundPairings
-      .map((p) => ({
-        p,
-        hardness:
-          (required.has(p.teamAId ?? "") ? 2 : 0) +
-          (required.has(p.teamBId ?? "") ? 2 : 0) +
-          (divisionLockedCourt.get(p.divisionId) ? 2 : 0) +
-          (sharedGroups.some(
-            (g) =>
-              (p.teamAId && g.has(p.teamAId)) ||
-              (p.teamBId && g.has(p.teamBId)),
-          )
-            ? 1
-            : 0),
-      }))
-      .sort((a, b) => b.hardness - a.hardness)
+      .map((p) => ({ p, options: countValidCells(p) }))
+      .sort((a, b) => a.options - b.options)
       .map((x) => x.p);
 
     for (const pairing of scored) {
