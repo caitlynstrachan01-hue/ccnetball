@@ -49,6 +49,14 @@ export function formatPriceCents(cents: number): string {
   return `$${dollars.toFixed(2)}`;
 }
 
+export function isWallChartProduct(slug: string): boolean {
+  return /-wall-chart$/.test(slug);
+}
+
+export function isGreetingCardProduct(slug: string): boolean {
+  return /-cards-pk\d+$/.test(slug);
+}
+
 export function stockMessage(stock: number): {
   message: string | null;
   tone: "available" | "low" | "sold-out";

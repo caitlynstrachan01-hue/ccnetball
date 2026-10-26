@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { ShoppingBag, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion";
-import {
-  GreetingCardMockup,
-  isGreetingCardProduct,
-} from "@/components/greeting-card-mockup";
-import { isWallChartProduct } from "@/components/wall-chart-mockup";
+import { GreetingCardMockup } from "@/components/greeting-card-mockup";
 import {
   type PhysicalProduct,
   formatPriceCents,
+  isGreetingCardProduct,
+  isWallChartProduct,
   stockMessage,
 } from "@/lib/shop-physical";
 

@@ -69,6 +69,4 @@ export function GreetingCardMockup({
   );
 }
 
-export function isGreetingCardProduct(slug: string): boolean {
-  return /-cards-pk\d+$/.test(slug);
-}
+export { isGreetingCardProduct } from "@/lib/shop-physical";

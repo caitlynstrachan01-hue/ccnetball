@@ -4,14 +4,12 @@ import { useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "./cart/cart-context";
-import {
-  GreetingCardMockup,
-  isGreetingCardProduct,
-} from "./greeting-card-mockup";
-import { WallChartMockup, isWallChartProduct } from "./wall-chart-mockup";
+import { GreetingCardMockup } from "./greeting-card-mockup";
 import {
   type PhysicalProduct,
   formatPriceCents,
+  isGreetingCardProduct,
+  isWallChartProduct,
   stockMessage,
 } from "@/lib/shop-physical";
 
@@ -65,7 +63,12 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
                 isCard ? (
                   <GreetingCardMockup src={photo} alt={product.name} />
                 ) : isWallChart ? (
-                  <WallChartMockup src={photo} alt={product.name} />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={photo}
+                    alt={product.name}
+                    className="h-full w-full object-contain"
+                  />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
