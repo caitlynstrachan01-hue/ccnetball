@@ -42,7 +42,7 @@ const POSTAGE_RATES: Record<
   { standardCents: number; expressCents: number }
 > = {
   poster: { standardCents: 1320, expressCents: 1720 },
-  card: { standardCents: 400, expressCents: 800 },
+  card: { standardCents: 420, expressCents: 685 },
 };
 
 const POSTAGE_TURNAROUND: Record<"standard" | "express", string> = {
