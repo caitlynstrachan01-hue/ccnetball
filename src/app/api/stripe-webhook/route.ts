@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { sendShopOrderNotification } from "@/lib/shop-order-email";
 
 export const runtime = "nodejs";
@@ -31,7 +31,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Bad signature." }, { status: 400 });
   }
 
+  // Entitlements (subscription flow) still needs the service-role key.
+  // Shop orders live on a table with RLS disabled and explicit grants to
+  // anon, so the anon client is enough for them.
   const supabase = createAdminClient();
+  const shopDb = await createClient();
 
   try {
     switch (event.type) {
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
               ? session.payment_intent
               : session.payment_intent?.id || null;
 
-          const { data: order } = await supabase
+          const { data: order } = await shopDb
             .from("shop_orders")
             .select("*")
             .eq("id", orderId)
@@ -65,7 +69,7 @@ export async function POST(request: Request) {
 
           // Decrement stock atomically; if it fails, flag the order instead
           // of leaving stock in an inconsistent state.
-          const { error: decError } = await supabase.rpc(
+          const { error: decError } = await shopDb.rpc(
             "shop_decrement_stock",
             {
               items: order.items.map((i: { product_id: string; quantity: number }) => ({
@@ -78,7 +82,7 @@ export async function POST(request: Request) {
             console.error("shop_decrement_stock failed:", decError);
           }
 
-          await supabase
+          await shopDb
             .from("shop_orders")
             .update({
               status: "paid",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { formatPriceCents } from "@/lib/shop-physical";
 import { ClearCartOnMount } from "@/components/cart/clear-cart-on-mount";
 
@@ -22,7 +22,7 @@ export default async function SuccessPage({
   let email: string | null = null;
 
   if (session_id) {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const { data } = await supabase
       .from("shop_orders")
       .select("order_number, total_cents, customer_email")

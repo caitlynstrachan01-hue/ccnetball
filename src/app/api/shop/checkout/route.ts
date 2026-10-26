@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   formatPriceCents,
   getPostageOptions,
@@ -245,12 +245,9 @@ export async function POST(request: Request) {
   }
 
   // Save the Stripe session id back on the order so the success page can
-  // look it up. Updates on shop_orders need service role (no public policy
-  // for updates), so fall back silently if it's not configured — the
-  // webhook will still find the order via its order_id metadata.
+  // look it up.
   try {
-    const admin = createAdminClient();
-    await admin
+    await supabase
       .from("shop_orders")
       .update({ stripe_session_id: session.id })
       .eq("id", orderId);
