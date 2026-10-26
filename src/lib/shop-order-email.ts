@@ -61,6 +61,161 @@ function formatAddress(opts: {
   return parts.join(", ");
 }
 
+export async function sendShopOrderCustomerConfirmation(
+  order: OrderRow,
+): Promise<void> {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.log("Customer confirmation (no RESEND_API_KEY):", order.order_number);
+    return;
+  }
+
+  const FROM =
+    process.env.CONTACT_FROM_EMAIL || "CCNetball <noreply@ccnetball.com>";
+  const BCC = process.env.CONTACT_TO_EMAIL || "info.ccnetball@gmail.com";
+
+  const postageLabel =
+    order.postage_type === "express" ? "Express post" : "Standard post";
+
+  const postalAddress = formatAddress({
+    line1: order.postal_line1,
+    line2: order.postal_line2,
+    suburb: order.postal_suburb,
+    state: order.postal_state,
+    postcode: order.postal_postcode,
+    country: order.postal_country,
+  });
+
+  const subject = `Thanks for your order — ${order.order_number}`;
+
+  const text = [
+    `Hi ${order.customer_name.split(" ")[0] || order.customer_name},`,
+    ``,
+    `Thanks so much for your order with CC Netball — this email confirms your payment has been received.`,
+    ``,
+    `Order number: ${order.order_number}`,
+    ``,
+    `--- Items ---`,
+    ...order.items.map(
+      (i) =>
+        `${i.quantity} × ${i.name}  @ ${formatPriceCents(i.unit_price_cents)}  = ${formatPriceCents(i.line_total_cents)}`,
+    ),
+    ``,
+    `Subtotal: ${formatPriceCents(order.subtotal_cents)}`,
+    `Postage (${postageLabel}): ${formatPriceCents(order.postage_cents)}`,
+    `TOTAL PAID: ${formatPriceCents(order.total_cents)}`,
+    ``,
+    `--- Shipping to ---`,
+    `${order.customer_name}`,
+    `${postalAddress}`,
+    ``,
+    `We'll be in touch once your order has been shipped.`,
+    ``,
+    `If you have any questions, reply to this email and we'll get back to you.`,
+    ``,
+    `Caitlyn & the CC Netball team`,
+    `ccnetball.com`,
+  ].join("\n");
+
+  const itemRows = order.items
+    .map(
+      (i) => `
+      <tr>
+        <td style="padding:8px 0;font-weight:600;">${escape(i.name)}</td>
+        <td style="padding:8px 0;text-align:center;color:#6B7280;">× ${i.quantity}</td>
+        <td style="padding:8px 0;text-align:right;color:#6B7280;">${formatPriceCents(i.unit_price_cents)}</td>
+        <td style="padding:8px 0;text-align:right;font-weight:700;">${formatPriceCents(i.line_total_cents)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const firstName =
+    order.customer_name.split(" ")[0] || order.customer_name;
+
+  const html = `<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f6f4ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1A1F36;line-height:1.5;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f4ee;padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(26,31,54,0.06);">
+            <tr>
+              <td style="padding:32px 28px 24px;background:linear-gradient(135deg,#E63B7A,#FFB4A2);color:#ffffff;text-align:center;">
+                <p style="margin:0 0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.9;">CC Netball</p>
+                <h1 style="margin:0;font-size:26px;font-weight:800;line-height:1.2;">Thanks, ${escape(firstName)}!</h1>
+                <p style="margin:10px 0 0;font-size:15px;font-weight:500;opacity:0.95;">Your order has been received and payment confirmed.</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 28px 4px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;">
+                  <tr>
+                    <td style="padding:6px 0;color:#6B7280;width:140px;">Order number</td>
+                    <td style="padding:6px 0;font-weight:700;font-size:16px;color:#1A1F36;">${escape(order.order_number)}</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:16px 28px 4px;">
+                <p style="margin:0;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#E63B7A;font-weight:700;">Your items</p>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:10px;font-size:14px;border-collapse:collapse;">
+                  ${itemRows}
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:14px 28px 4px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;">
+                  <tr><td style="padding:4px 0;color:#6B7280;">Subtotal</td><td style="padding:4px 0;text-align:right;">${formatPriceCents(order.subtotal_cents)}</td></tr>
+                  <tr><td style="padding:4px 0;color:#6B7280;">Postage · ${escape(postageLabel)}</td><td style="padding:4px 0;text-align:right;">${formatPriceCents(order.postage_cents)}</td></tr>
+                  <tr><td style="padding:12px 0 0;border-top:1px solid #e5e7eb;font-weight:700;font-size:15px;">Total paid</td><td style="padding:12px 0 0;border-top:1px solid #e5e7eb;text-align:right;font-weight:800;font-size:16px;color:#E63B7A;">${formatPriceCents(order.total_cents)}</td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 28px 4px;">
+                <p style="margin:0;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#E63B7A;font-weight:700;">Shipping to</p>
+                <p style="margin:8px 0 0;font-size:14px;font-weight:600;">${escape(order.customer_name)}</p>
+                <p style="margin:4px 0 0;font-size:14px;color:#1A1F36;">${escape(postalAddress)}</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 28px 8px;">
+                <p style="margin:0;font-size:14px;color:#1A1F36;">We&apos;ll be in touch once your order has been shipped. Reply to this email if you have any questions — we&apos;re here to help.</p>
+                <p style="margin:16px 0 0;font-size:14px;font-weight:600;">Caitlyn & the CC Netball team</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:16px 28px 20px;background:#f6f4ee;border-top:1px solid #e5e7eb;font-size:11px;color:#6B7280;text-align:center;">
+                <a href="https://ccnetball.com" style="color:#E63B7A;text-decoration:none;font-weight:600;">ccnetball.com</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  const resend = new Resend(RESEND_API_KEY);
+  await resend.emails.send({
+    from: FROM,
+    to: order.customer_email,
+    bcc: BCC,
+    replyTo: BCC,
+    subject,
+    text,
+    html,
+  });
+}
+
 export async function sendShopOrderNotification(order: OrderRow): Promise<void> {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_API_KEY) {

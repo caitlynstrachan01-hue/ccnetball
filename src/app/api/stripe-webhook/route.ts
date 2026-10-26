@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { sendShopOrderNotification } from "@/lib/shop-order-email";
+import {
+  sendShopOrderCustomerConfirmation,
+  sendShopOrderNotification,
+} from "@/lib/shop-order-email";
 
 export const runtime = "nodejs";
 
@@ -91,10 +94,18 @@ export async function POST(request: Request) {
             })
             .eq("id", orderId);
 
+          // Send both the internal notification (to Rich) and the branded
+          // customer confirmation (BCC'd to Rich). Failure of either must
+          // not block the other.
           try {
             await sendShopOrderNotification(order);
           } catch (err) {
-            console.error("Shop order email failed:", err);
+            console.error("Shop order admin email failed:", err);
+          }
+          try {
+            await sendShopOrderCustomerConfirmation(order);
+          } catch (err) {
+            console.error("Customer confirmation email failed:", err);
           }
           break;
         }
