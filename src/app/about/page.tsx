@@ -1,9 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Trophy, Award, Compass, Sparkles, MapPin } from "lucide-react";
-import { CREDENTIALS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
-import { CareerPathway } from "@/components/career-pathway";
 
 export const metadata = {
   title: "About Caitlyn Strachan",
@@ -49,8 +45,8 @@ export default function AboutPage() {
       </section>
 
       <section className="py-20">
-        <div className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-3 lg:px-10">
-          <Reveal as="article" className="lg:col-span-2">
+        <div className="mx-auto max-w-3xl px-6 lg:px-10">
+          <Reveal as="article">
             <div className="space-y-6 text-lg leading-relaxed text-foreground/90">
               <p>
                 Caitlyn grew up in Echuca, Victoria, and worked her way
@@ -98,66 +94,10 @@ export default function AboutPage() {
                   Caitlyn Strachan
                 </footer>
               </blockquote>
-
-              <h2 className="font-display text-3xl font-bold tracking-tight">
-                Coaching philosophy
-              </h2>
-              <p>
-                Every athlete is different. Every session is built around
-                the player in front of her. Caitlyn creates a safe, positive
-                training environment that gives athletes the confidence,
-                self-reliance and decision-making tools to think for
-                themselves on court.
-              </p>
-              <p>
-                Her programs are <strong>fun, challenging and personal</strong>.
-                Whether you&apos;re chasing rep selection or learning the
-                basics, you get coaching that meets you where you are and
-                pulls you forward.
-              </p>
             </div>
-
-            <div className="mt-10">
-              <Link
-                href="/book"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
-              >
-                Train with Caitlyn <ArrowRight className="size-4" />
-              </Link>
-            </div>
-          </Reveal>
-
-          <Reveal as="div" delay={0.1} className="space-y-4 lg:col-span-1">
-            <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
-              <h3 className="font-display text-xs font-bold uppercase tracking-[0.18em]">
-                Career highlights
-              </h3>
-              <ul className="mt-4 space-y-4">
-                {CREDENTIALS.map((c, i) => (
-                  <li key={c.label} className="flex items-start gap-3">
-                    <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[color:var(--brand-coral)]">
-                      {i === 0 && <Award className="size-4" />}
-                      {i === 1 && <Trophy className="size-4" />}
-                      {i === 2 && <Sparkles className="size-4" />}
-                      {i === 3 && <MapPin className="size-4" />}
-                      {i === 4 && <Compass className="size-4" />}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white">{c.label}</p>
-                      {c.detail && (
-                        <p className="text-xs text-white/70">{c.detail}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
           </Reveal>
         </div>
       </section>
-
-      <CareerPathway />
     </>
   );
 }
