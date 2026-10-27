@@ -17,6 +17,41 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "netball-off-season-parents-guide",
+    title:
+      "The Netball Off-Season — A Parent's Guide to Helping Your Child Rest, Reset and Plan for 2027",
+    excerpt:
+      "Former Diamond Caitlyn Strachan shows netball parents how to help their child use the off-season well: rest, build fitness, then set goals for 2027.",
+    date: "2026-11-09T05:00:00Z",
+    readMinutes: 4,
+    category: "Mindset",
+    body: [
+      "Your child has just finished a huge year of netball. Training through winter, games every weekend, and plenty of fun with their friends along the way. Now the season's over, and you might be wondering what comes next.",
+      "Here's the good news: the off-season isn't time off from improving. Used well, it's where next season is won. And as a parent, you play a big part in getting it right.",
+      "## Let them have a genuine break",
+      "The first step is the easiest, and it's one a lot of families skip. Give your child a proper break. Even a couple of weeks of absolutely no netball does wonders for their body and their mind.",
+      "But a break from netball isn't a break from being active. Get them to the park, have a kick of the footy together, head to the beach, go for a bike ride or let them try a different sport. Keep them moving and keep it fun.",
+      "In my experience, the kids who come back to pre-season fresh and hungry always get more out of it than the ones who come back flat.",
+      "## Before Christmas: fitness and strength first",
+      "Once they've had their break, it's time to ease back in. Before Christmas, most of your child's training should be fitness and strength, with only a small amount of ball work and craft.",
+      "This builds their engine and their body, so they're ready to handle the load when the ball work ramps up. Make sure any strength work suits their age and stage, and is guided by a qualified coach.",
+      "## From January: back to the ball",
+      "From January, the balance shifts. Training builds into a lot more ball skills, craft and court application, putting the fitness and strength they've built to work in game situations.",
+      "## Help them set two goals, not twenty",
+      "This is where a lot of young players go wrong. They try to improve every skill at once, and end up not really improving any of them.",
+      "Instead, help your child choose a couple of goals for on court and a couple for off court. For example:",
+      "- On court: better space awareness, or more preliminary moves to break free of their defender.\n- Off court: a regular strength routine, or a better sleep and recovery routine.",
+      "They don't have to work it out alone. Encourage them to talk to their coach, reflect honestly on their season, or sit down together as a family to work out what to target. Write the goals down, stick them somewhere they'll see them, and check in each month.",
+      "## Remind them they're already good",
+      "This might be the most important thing you say to your child all summer. They already bring great strengths to their team. Working on a skill doesn't mean it's a weakness. It means they're chasing the one percenters, and aiming to be better today than they were yesterday.",
+      "How you frame it matters. A child who feels their improvement goals are a list of flaws will dread pre-season. A child who sees them as the next step will chase them.",
+      "## Ready to plan for 2027?",
+      "Want a hand setting the right goals and building a plan to reach them? Enquire about a session with Caitlyn at ccnetball.com. It's a great way to help your child start 2027 on the front foot.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "constellation-cup-2026-diamonds-silver-ferns",
     title:
       "Constellation Cup 2026 — The Gap Has Closed, and Australian Netball Can't Pretend Otherwise",
