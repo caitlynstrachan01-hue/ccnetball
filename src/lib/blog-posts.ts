@@ -219,6 +219,38 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "super-netball-signing-period-every-player-out-of-contract",
+    title:
+      "Every Super Netball Player Is Out of Contract. Netball, We Have to Do Better.",
+    excerpt:
+      "Every Super Netball player is out of contract at once, again. Former Diamond Caitlyn Strachan on what it means for players, fans and the 2027 World Cup.",
+    date: "2026-07-31",
+    readMinutes: 4,
+    category: "Analysis",
+    body: [
+      "Every single player in Suncorp Super Netball is out of contract. Not most of them. All of them.",
+      "We're heading into one of the wildest signing periods the league has ever seen, and the question I keep coming back to is simple: why didn't we learn from the last time this happened?",
+      "## We've been here before",
+      "This isn't new. At the end of 2018, just two seasons into the league, almost every Super Netball player came off contract at once. The result was a merry-go-round of player movement that reshaped every club overnight.",
+      "In 2023, players were left in limbo again as contracting stalled, with fringe players in particular sitting at home with no idea whether they'd have a club the following season.",
+      "Now here we are in 2026, and the whole league is resetting at once. Again.",
+      "## Signing blind",
+      "Spare a thought for the players. Right now, an athlete deciding where to sign has no idea who'll be standing next to them on court. You might commit to a club for its coach, its culture or its game plan, then watch half the squad you signed for walk out the door.",
+      "Netball is a game built on connections. A goal keeper and goal defence who've played together for years read each other without speaking. A shooting circle that's had a pre-season together knows exactly where the space will be. Those connections take time to build, and a league-wide reset tears them up all at once.",
+      "And it's not just the stars who feel it. For fringe players, training partners and young athletes trying to break in, this kind of uncertainty can decide whether they stay in the sport at all.",
+      "## Spare a thought for the fans too",
+      "Fans don't follow a logo. They follow people. They buy the memberships, wear the jerseys and bring their kids to games because of the players they've connected with.",
+      "When every list can change overnight, a fan could turn up next season supporting an almost entirely new cohort of players. That's a hard ask, and it's not how you build the loyal, long-term audience every club needs.",
+      "## What doing better looks like",
+      "This is fixable. A few things would make a real difference:",
+      "- Stagger contract lengths, so the whole league never comes off contract in the same year.\n- Settle the player agreement well before contracts expire, so clubs and players aren't left waiting.\n- Give players and clubs the option of longer deals, so combinations and club identities have time to grow.",
+      "Super Netball is the best competition in the world, and I'm proud it's played on our home soil. That's exactly why we need to protect it. The players deserve certainty, the fans deserve continuity, and the game deserves better planning.",
+      "Netball, we have to do better here.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "parents-guide-to-supporting-a-netball-athlete",
     title:
       "Netball Parents: How to Support Your Child's Development (and What Quietly Holds Them Back)",
