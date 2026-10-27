@@ -181,33 +181,6 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
-    slug: "how-to-prepare-for-netball-trials",
-    title: "How to prepare for netball trials",
-    excerpt:
-      "What to focus on in the weeks before trials, what to ignore, and how to walk into the gym ready to be picked.",
-    date: "2026-11-02",
-    readMinutes: 6,
-    category: "Mindset",
-    body: [
-      "Trials are stressful. You spend months training, then get judged on a single session by coaches who barely know your name. I've sat on both sides of that line. I missed every Victorian state team I trialled for as a bottom-age athlete, then later played for Australia. Here's what I learned.",
-      "## Train the way you want to play",
-      "The biggest shift in my own game happened when I stopped coasting through training and started training at the pace I needed to play. Trials are won in the months before, not on the day. If you've practised at 70 percent intensity, you can't suddenly perform at 100 percent in the trial. The body doesn't work that way.",
-      "Two weeks before trials, audit your last three sessions. Did you go at full game pace on every drill? Did you communicate? Did you finish strong? If not, that's where to start.",
-      "## Know exactly what they're looking for",
-      "Selectors look at three things: your skill, your work rate, and your decision making under pressure. Skill is what gets you to the trial. Work rate and decision making are what get you selected.",
-      "If you know your skill is solid, stop drilling skills the week of trials. Spend the time playing small-sided games where you have to read the play and make calls under fatigue. That's the muscle they're testing.",
-      "## The day itself",
-      "Eat what you normally eat. Wear what you normally wear. Don't try anything new. The day of trials is the wrong day for new shoes, new socks, new pre-game meals.",
-      "Get there early. Move properly in your warm-up. Find one or two players you don't know and introduce yourself. Coaches notice the athletes who can connect with strangers fast. That's a leadership signal that has nothing to do with skill.",
-      "## When they call your group",
-      "Talk. Constantly. To your team, to the umpire, to yourself if no one else is listening. Coaches are watching for athletes who organise the people around them. Even simple calls like 'I'm with you', 'I've got the player on the post', or 'good ball' are noticed.",
-      "Make a mistake? Reset in two seconds and go again. Coaches do not select athletes who hold onto errors.",
-      "## After the result",
-      "If you get selected, well done. The work changes from getting in to staying in. If you don't, do not stop playing. I missed my first three Victorian state trials as a bottom-age athlete and went on to play for Australia. Non-selection is information, not a verdict.",
-      "Ask the coach for one thing to work on. Most coaches will give you a real answer if you ask without ego. Then go and work on it for the next twelve months. That's the path.",
-    ],
-  },
-  {
     slug: "parents-guide-to-supporting-a-netball-athlete",
     title: "A parent's guide to supporting a developing netball athlete",
     excerpt:
