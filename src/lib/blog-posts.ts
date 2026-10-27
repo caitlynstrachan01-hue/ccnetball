@@ -460,6 +460,35 @@ export const BLOG_POSTS: BlogPost[] = [
       "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
     ],
   },
+  {
+    slug: "mahalia-cassidy-fittest-player",
+    title:
+      "How Mahalia Cassidy Trains to Be One of Super Netball's Fittest Players",
+    excerpt:
+      "Sunshine Coast Lightning's Mahalia Cassidy on playing Centre, training at game intensity, and the off-season habits behind her engine.",
+    date: "2021-11-04",
+    updated: "2026-10-28",
+    readMinutes: 4,
+    category: "Athlete spotlight",
+    body: [
+      "Mahalia Cassidy plays Centre and Wing Defence with the Sunshine Coast Lightning and is regarded as one of the fittest players in the Suncorp Super Netball competition.",
+      "Her teammates describe her as a workhorse: consistent, never giving up and safe with the ball in hand. In this conversation, Mahalia shares how she thinks about the Centre role, how she trains at game intensity, and the off-season habits that keep her engine running.",
+      "## The role of a Centre in netball",
+      "The Centre is the primary connection linking the attack end to the defence end and back again. The Centre works in close partnership with the Wing Defence to apply pressure on attackers and slow ball movement for the circle defence. In offensive situations, the Centre fills a trailing and supporting role with the Wing Attack while delivering passes to shooters in the circle.",
+      "## What Mahalia loves about playing Centre",
+      "Mahalia describes a love-hate relationship with the repeated efforts required in the position. She values being involved across the entire court and making an impact throughout gameplay.",
+      "## Training intensity and how it transfers to game day",
+      "Mahalia approaches training with high intensity and energy, believing this translates directly into match performance through habit formation. She acknowledges difficult training days when fatigued or sleep-deprived, and emphasises the importance of perseverance and drawing energy from teammates during challenging sessions.",
+      "## Off-season fitness and recovery",
+      "Previously, Mahalia's off-seasons involved knee rehabilitation from injuries. In a recent off-season with extended time away from netball, she focused on strength and power training for injury prevention while maintaining flexibility through pilates, walking and recreational riding.",
+      "## Mahalia's favourite quote",
+      "\"Work and you'll get what you need; work harder and you'll get what you want.\"",
+      "Related reading: Train the Way You Want to Play, on the mindset shift that turns training into game-day performance.",
+      "Want to build the engine of a Centre? One-on-one and small group sessions with CC Netball sharpen the fitness, footwork and ball skills the position demands. Make an enquiry at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
