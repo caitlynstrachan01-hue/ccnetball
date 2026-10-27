@@ -5,9 +5,10 @@ import { Reveal } from "@/components/motion";
 import { InstagramIcon, FacebookIcon } from "@/components/social-icons";
 
 export const metadata = {
-  title: "Contact",
+  title: "Contact CC Netball",
   description:
-    "Coaching enquiries, team bookings, or general questions. Reply within one business day.",
+    "Netball coaching enquiries, team bookings, association questions or general queries. Caitlyn Strachan replies within one business day.",
+  alternates: { canonical: "https://ccnetball.com/contact" },
 };
 
 export default function ContactPage() {

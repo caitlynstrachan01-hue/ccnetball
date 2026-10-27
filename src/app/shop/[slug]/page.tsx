@@ -38,11 +38,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const url = `https://ccnetball.com/shop/${slug}`;
   const digital = getProductBySlug(slug);
   if (digital) {
     return {
       title: `${digital.name} — The Netball Shop`,
       description: digital.short,
+      alternates: { canonical: url },
+      openGraph: {
+        title: digital.name,
+        description: digital.short,
+        type: "website",
+        url,
+      },
     };
   }
   const physical = await getPhysicalProductBySlug(slug);
@@ -50,6 +58,16 @@ export async function generateMetadata({
     return {
       title: `${physical.name} — The Netball Shop`,
       description: physical.short,
+      alternates: { canonical: url },
+      openGraph: {
+        title: physical.name,
+        description: physical.short,
+        type: "website",
+        url,
+        images: physical.photos?.[0]
+          ? [{ url: `https://ccnetball.com${physical.photos[0]}` }]
+          : undefined,
+      },
     };
   }
   return { title: "Product not found" };

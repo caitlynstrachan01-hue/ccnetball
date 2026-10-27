@@ -10,9 +10,10 @@ import {
 } from "@/lib/drills-store.server";
 
 export const metadata = {
-  title: "Netball Drills Library — Members",
+  title: "Netball Drill Library",
   description:
-    "Browse the CC Netball drills library — organised by focus area and filmed by Caitlyn.",
+    "Hundreds of netball drills with coaching cues, progressions and video — filmed and taught by former Australian Diamond Caitlyn Strachan. Browse by position, skill and focus area.",
+  alternates: { canonical: "https://ccnetball.com/library" },
 };
 
 export default async function LibraryPage({

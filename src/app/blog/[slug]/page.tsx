@@ -32,10 +32,19 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return { title: "Post not found" };
+  const url = `https://ccnetball.com/blog/${slug}`;
   return {
     title: post.title,
     description: post.excerpt,
-    openGraph: { title: post.title, description: post.excerpt },
+    alternates: { canonical: url },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      url,
+      publishedTime: new Date(post.date).toISOString(),
+      authors: ["Caitlyn Strachan"],
+    },
   };
 }
 

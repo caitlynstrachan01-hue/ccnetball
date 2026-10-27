@@ -24,9 +24,10 @@ const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
 };
 
 export const metadata = {
-  title: "The Netball Shop",
+  title: "The Netball Shop — posters, cards and coaching tools",
   description:
-    "Netball-themed posters, wall charts and card packs — plus the Drills Library and Trial App subscriptions.",
+    "Netball posters, wall charts, card packs and digital coaching tools designed by former Australian Diamond Caitlyn Strachan. Shipped from Brisbane across Australia.",
+  alternates: { canonical: "https://ccnetball.com/shop" },
 };
 
 export const dynamic = "force-dynamic";

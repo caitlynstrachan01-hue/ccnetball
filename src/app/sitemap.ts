@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { getPublishedPosts } from "@/lib/blog-posts";
+import { listActivePhysicalProducts } from "@/lib/shop-physical.server";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = "https://ccnetball.com";
   const now = new Date();
 
@@ -10,6 +11,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/programs",
     "/book",
+    "/shop",
+    "/shop/drills-library",
+    "/shop/trial-app",
+    "/library",
     "/gallery",
     "/blog",
     "/contact",
@@ -29,5 +34,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...routes, ...posts];
+  // Shop product pages — fetched from Supabase. Guarded so a Supabase hiccup
+  // can't break the sitemap build.
+  let shopProducts: MetadataRoute.Sitemap = [];
+  try {
+    const products = await listActivePhysicalProducts();
+    shopProducts = products.map((p) => ({
+      url: `${base}/shop/${p.slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // ignore — sitemap still serves the static + blog routes
+  }
+
+  return [...routes, ...posts, ...shopProducts];
 }

@@ -4,6 +4,13 @@ import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { PROGRAMS } from "@/lib/site-content";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/motion";
 
+export const metadata = {
+  title: "Netball coaching, drill library and tools by Caitlyn Strachan",
+  description:
+    "The complete netball platform, created by former Australian Diamond Caitlyn Strachan. In-person coaching across Australia, video game analysis, the Netball Drill Library, Competition Builder for associations, and the Netball Shop.",
+  alternates: { canonical: "https://ccnetball.com/" },
+};
+
 const HOMEPAGE_PROGRAM_IDS = [
   "video-analysis",
   "1on1",

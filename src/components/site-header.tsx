@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { href: "/programs", label: "Programs" },
   { href: "/shop", label: "THE SHOP" },
   // { href: "/gallery", label: "Gallery" }, // Temporarily hidden — un-comment to bring back.
-  // { href: "/blog", label: "Blog" }, // Temporarily hidden — un-comment to bring back.
+  { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
 

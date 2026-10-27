@@ -4,9 +4,10 @@ import { PROGRAMS } from "@/lib/site-content";
 import { Reveal } from "@/components/motion";
 
 export const metadata = {
-  title: "Programs",
+  title: "Netball Coaching Programs — 1-on-1, team and video analysis",
   description:
-    "Six coaching programs from Caitlyn Strachan. 1-on-1, small group, team training, video analysis, online mentoring, and coach development.",
+    "Netball coaching programs delivered by former Australian Diamond Caitlyn Strachan: 1-on-1 training, small group, team training, video game analysis, online mentoring and coach development. Across Australia.",
+  alternates: { canonical: "https://ccnetball.com/programs" },
 };
 
 export default function ProgramsPage() {

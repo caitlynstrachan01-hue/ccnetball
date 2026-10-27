@@ -4,9 +4,10 @@ import { Reveal } from "@/components/motion";
 import { CalEmbed } from "@/components/cal-embed";
 
 export const metadata = {
-  title: "Book a Session",
+  title: "Book Netball Coaching with Caitlyn Strachan",
   description:
-    "Book your CCNetball coaching session. 1-on-1, small group, team training, video analysis or online mentoring with Caitlyn Strachan.",
+    "Book a netball coaching session with former Australian Diamond Caitlyn Strachan — 1-on-1, small group, team training, video game analysis or online mentoring. Across Australia.",
+  alternates: { canonical: "https://ccnetball.com/book" },
 };
 
 export default function BookPage() {

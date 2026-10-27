@@ -2,9 +2,10 @@ import Image from "next/image";
 import { Reveal } from "@/components/motion";
 
 export const metadata = {
-  title: "About Caitlyn Strachan",
+  title: "About Caitlyn Strachan — Australian Diamond and Elite Netball Coach",
   description:
-    "Former Australian Diamond, triple ANZ Championship premiership winner, Queensland State Netball Team Selector, Elite Netball Accreditation, and Queensland Firebirds Reserves Head Coach in 2027.",
+    "Meet Caitlyn Strachan, founder of CC Netball — former Australian Diamond, triple ANZ Championship premiership winner, Queensland State Selector, Elite Accredited Netball Coach, and Queensland Firebirds Reserves Head Coach in 2027.",
+  alternates: { canonical: "https://ccnetball.com/about" },
 };
 
 export default function AboutPage() {

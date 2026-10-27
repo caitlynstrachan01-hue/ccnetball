@@ -7,9 +7,10 @@ import { getPublishedPosts } from "@/lib/blog-posts";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Blog",
+  title: "Netball Blog — athlete development, trials, mindset and recovery",
   description:
-    "Athlete interviews, position deep-dives, mindset and recovery, from a coach who has lived it at the highest level.",
+    "Netball insights from former Australian Diamond Caitlyn Strachan — athlete interviews, position deep-dives, trial prep, mindset, nutrition and recovery for developing players.",
+  alternates: { canonical: "https://ccnetball.com/blog" },
 };
 
 const dateFormat = new Intl.DateTimeFormat("en-AU", {
