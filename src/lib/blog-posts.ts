@@ -317,6 +317,36 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "retiring-from-elite-netball",
+    title:
+      "Now the Dust Has Settled — The Strange World of Retiring From Elite Netball",
+    excerpt:
+      "Former Diamond Caitlyn Strachan on the strange feeling of retiring from elite netball, becoming a fan in the crowd, and finding a new passion in coaching.",
+    date: "2024-08-04",
+    readMinutes: 4,
+    category: "Mindset",
+    body: [
+      "Now that the dust has settled, I want to talk about something that doesn't get spoken about enough in sport: retirement.",
+      "It's a strange feeling. In elite sport, you spend hours on end trying to get better. You refine your skills, chase the one percenters and work to be better than you were yesterday. Then one day you reach the point of retirement, and the thing you've poured all of that into is simply gone. You can't do what you love anymore.",
+      "## What you really miss",
+      "I love netball. But just as much, I loved the people. The friends I made, the teammates I shared the highs and lows with, the everyday rhythm of being part of a team. When you retire, you don't just step away from the game. You step away from a whole world.",
+      "## The first game as a fan",
+      "Here's something nobody tells you about: the first game you attend after you retire.",
+      "You walk into the arena, and you're no longer a player. You're a fan in the crowd. You know the warm-up, the calls, the feeling on court, but you're watching it from the stands. It's such a strange transition, and it's one I wasn't prepared for.",
+      "## Finding my way back to the game",
+      "Now that I'm further removed from my playing days, I've come to love the connection past players keep with the sport. The game never really leaves you, and the people you played with and against become part of a bigger netball family.",
+      "I've also found a new passion in coaching. Even throughout my playing days, I was constantly told I'd make a great coach because of my tactical mind. It turns out they were right. Coaching has given me a new way to stay in the game I love, and a new way to help others chase their own goals.",
+      "## Not everyone gets to choose",
+      "I'm one of the lucky ones. I called time on my career when I felt it was the right time to move on and explore other opportunities.",
+      "Not everyone gets that choice. Some of my friends didn't have another contract on the table, and processing retirement was even harder for them because it came with being delisted. Losing the game on your own terms is hard enough. Losing it on someone else's is harder again.",
+      "## A grateful look back",
+      "I'm not sharing this as a \"poor me\" story. I'm so grateful for every opportunity elite sport has given me. I'm sharing it to give you an insight into the strange world of retirement, a part of an athlete's journey that's rarely talked about but that every one of us eventually faces.",
+      "The playing days end. The love of the game doesn't.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "behavioural-change-high-performance",
     title:
       "Train the Way You Want to Play: The One Habit That Got Me Selected",
