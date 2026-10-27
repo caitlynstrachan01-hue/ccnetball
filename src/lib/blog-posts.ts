@@ -122,6 +122,38 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "far-north-flames-ruby-north-recap",
+    title:
+      "Far North Flames — A Season of Growth, and Proof Ruby North Belongs",
+    excerpt:
+      "Caitlyn Strachan on earning her Elite Coaching Accreditation with the Far North Flames, and why Ruby North is a real pathway for regional players.",
+    date: "2026-08-22",
+    readMinutes: 5,
+    category: "Coaching",
+    body: [
+      "Some seasons stay with you long after the final whistle. My season with the Far North Flames is one of them.",
+      "I joined the Flames to complete my Elite Coaching Accreditation, the second-highest coaching qualification in Australian netball. It isn't an easy one to earn. The assessment happens in a live high-performance environment, and mine ran through the final weeks of the Flames' Home Round preparation, finishing on court at Game 1 of their Home Round. This accreditation now opens up doors to coaching in the SSN and the Reserve competition.",
+      "I'm grateful to Flames head coach Sharon Massey-Chase and the entire Flames team. Coaching this group was a breath of fresh air. They were eager to learn, and their love for the game showed in everything they did.",
+      "## Coaching from the other end of the state",
+      "For a big part of the season, I was a long way from Cairns. Distance is one of the real challenges of regional coaching, and it would have been easy for the connection to drift.",
+      "What kept it strong was my relationship with Sharon. We stayed in regular contact through messages and emails, discussing what the team was doing really well and where the growth opportunities still lay for the group. Distance changes how you coach. It doesn't have to change how connected you are.",
+      "## Welcomed with open arms",
+      "When I finally arrived in Cairns, there was no guardedness about someone new walking into their program, just players hungry for an extra set of eyes and coaches who valued the support. That says a lot about the culture Sharon has built.",
+      "And what a group it was. The quality of netball in the final round was nothing short of exceptional. The Flames' games against North Queensland United and the Capricorn Claws were tight contests, each one going down to the wire.",
+      "## Ruby North is the real deal",
+      "I'll say it plainly: the standard of that final round would hold its own in the HPNL Ruby competition in Brisbane. For a competition in only its second year, that's remarkable.",
+      "It also answers a question regional netball has wrestled with for a long time. Talented players in the north have often faced a hard choice: move south to chase the pathway, or stay home and hope to be noticed. Ruby North changes that. It's a genuine pathway with a genuine link to the HPNL in Brisbane, and players no longer have to leave home to be seen.",
+      "## The Firebirds are watching",
+      "The Queensland Firebirds' support for the region made a statement. Head coach Kiri Wills and assistant coach Paula Stuart travelled north to run a clinic for local players and coaches, and for the final rounds, Roselee Jencke, Tracey Bruce and Kiri were courtside in Cairns.",
+      "That presence matters. When some of the most experienced minds in Queensland netball turn up to watch, every young player in the region hears the same message: you're being watched, and you belong in the conversation.",
+      "## Thank you, Flames",
+      "To the players, coaches, families and everyone at the Far North Flames: thank you for welcoming me and my family, and for trusting me with such an important part of your season. It was a privilege. Far North Queensland netball is in good hands, and I can't wait to see where this group goes next.",
+      "Interested in a clinic or coaching workshop in your region? Enquire at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "netball-trials-tips-what-selectors-look-for",
     title:
       "Trials Aren't Just About Talent. Here's What Selectors Are Really Watching.",
