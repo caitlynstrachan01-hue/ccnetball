@@ -57,6 +57,19 @@ export const PRESS_ITEMS: PressItem[] = [
     linkLabel: "See the post on Instagram",
   },
   {
+    id: "ace-netball-academy-progress-2026",
+    source: "ACE Netball Club",
+    date: "25 Jul 2026",
+    tag: "Coaching",
+    headline:
+      "ACE Netball Development Academy progress update",
+    quote:
+      "Completed 4 of 6 high-performance coaching sessions with ex-Australian Diamonds athlete Caitlyn Strachan (nee Nevins) and current Queensland pathway players.",
+    attribution: "ACE Netball Club",
+    href: "https://www.facebook.com/ACENetballClubOfficial/posts/-ace-netball-development-academy-progress-update-we-are-incredibly-proud-of-our-/1585809723479780/",
+    linkLabel: "See the post on Facebook",
+  },
+  {
     id: "gold-coast-bulletin-somerset-vicki-wilson",
     source: "Gold Coast Bulletin",
     date: "26 Aug 2025",
