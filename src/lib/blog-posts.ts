@@ -347,6 +347,38 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "diamonds-win-2023-netball-world-cup",
+    title:
+      "World Champions Again — Why the Diamonds Are Still the Benchmark of World Netball",
+    excerpt:
+      "The Diamonds beat England 61–45 to win the 2023 Netball World Cup. Former Diamond Caitlyn Strachan on the clinical, dominant netball behind a 12th title.",
+    date: "2023-08-07",
+    readMinutes: 4,
+    category: "Analysis",
+    body: [
+      "World champions. Again.",
+      "The Australian Diamonds have won the 2023 Netball World Cup in Cape Town, beating England 61–45 in the final. It's Australia's 12th World Cup title, and it was delivered with the kind of clinical, supreme netball that reminds the world exactly who the benchmark is.",
+      "## Watching as a former Diamond",
+      "There's something special about watching the Diamonds win a World Cup when you've worn the green and gold yourself. I know what sits behind a moment like that: the hours on end spent refining the smallest details, the camps, the sacrifices made by every player and their families, and the trust built between teammates over years. Watching from the other side, I felt nothing but pride. When the final whistle blew, I wasn't just watching a team win. I was watching my sisters take the green and gold dress to new heights.",
+      "## Absolute dominance when it mattered",
+      "Finals are supposed to be tight. This one wasn't. The Diamonds won every quarter and pulled away to a 16-goal victory over an England side that had beaten them by a single goal earlier in the tournament.",
+      "That's what makes this team special. They didn't just win the rematch, they controlled it. Every pass had purpose, every contest was competed for, and every time England tried to build momentum, the Diamonds shut the door.",
+      "Kiera Austin was outstanding, named player of the match after shooting 15 goals and missing only two. On the biggest stage, she was ice cool.",
+      "## Composure under pressure",
+      "The road to the final wasn't easy. The semi-final against Jamaica was a genuine arm wrestle, and the Diamonds held on to win 57–54. That's the other side of a champion team: when it's tight and the pressure's on, they find a way.",
+      "Winning a close semi-final, then producing a clinical performance in the final 24 hours later, tells you everything about the depth, fitness and mental strength of this group.",
+      "## The benchmark of world netball",
+      "The Diamonds are the benchmark. The standard of their ball movement, defensive pressure and execution under fatigue is what every other nation is measuring itself against.",
+      "That doesn't happen by accident. It comes from a deep player pool, the strength of Super Netball, and a culture where every player knows their role and executes it.",
+      "## What young players can take from it",
+      "If you watched the final, here's what to look for next time:",
+      "- Clean basics under pressure. Safe hands, accurate passes and balanced footwork, all at full intensity.\n- Responding to setbacks. A pool loss to England became fuel for the final.\n- Playing your role. Every Diamond on court knew exactly what their job was, and did it.",
+      "Congratulations to the Diamonds. You've made the whole country proud.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "behavioural-change-high-performance",
     title:
       "Train the Way You Want to Play: The One Habit That Got Me Selected",
