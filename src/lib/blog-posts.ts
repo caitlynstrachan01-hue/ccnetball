@@ -10,6 +10,28 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "elite-coach-accreditation",
+    title: "Elite Coach Accreditation — what it means and what's next",
+    excerpt:
+      "In October I completed Netball Australia's highest coaching qualification. Here's what the assessment involved, and why it matters for CC Netball.",
+    date: "2026-10-20",
+    readMinutes: 3,
+    category: "Coaching",
+    body: [
+      "In October I completed my Elite Coach Accreditation with Netball Queensland. The assessment was held during the Ruby North round in Cairns while I was coaching the Far North Flames. It's the highest coaching accreditation in Australian netball, and I'm proud to be one of the newest coaches to earn it.",
+      "## What the accreditation means",
+      "Elite Coach Accreditation is Netball Australia's top coaching qualification. It is awarded only after sustained assessment across session design, in-game decision-making, athlete management, communication, and the ability to run a high-performance program. It's the credential required to coach at the elite level of Australian netball.",
+      "## The assessment",
+      "Mine took place over a Ruby North round in Cairns, which was a first — the Elite Coach Assessment hadn't been run during a Ruby North round before. I was coaching the Far North Flames and then the Ruby North Merit Team against the Queensland Under-23 First Nations team at Nissan Arena. Being assessed inside live games, not just classroom exercises, is the only way to really test coaching ability — the decisions, the adjustments, the way you manage a bench under pressure.",
+      "## What this means for CC Netball",
+      "Every coaching product on this website — the Drill Library, Video Game Analysis, the in-person programs — is built on the same frameworks that got me through this assessment. The accreditation isn't just a title. It's the standard I hold my own work to, and the standard I promise the athletes, parents and coaches who come to CC Netball.",
+      "## What's next",
+      "In 2027 I step in as Queensland Firebirds Reserve Head Coach. The accreditation is one piece of the preparation. The real work continues — on court every week, in every Drill Library video, in every athlete I coach.",
+      "## Source",
+      "Netball Queensland's Head of Talent and Development, Roselee Jencke, announced the news on the NQ website. Read the original article: https://qld.netball.com.au/news/premiership-firebird-strachan-earns-elite-coach-accreditation",
+    ],
+  },
+  {
     slug: "mahalia-cassidy-fittest-player",
     title:
       "Mahalia Cassidy: One of the fittest players in Suncorp Super Netball",
