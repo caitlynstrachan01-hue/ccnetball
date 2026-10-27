@@ -74,8 +74,10 @@ export const PRESS_ITEMS: PressItem[] = [
     source: "Gold Coast Bulletin",
     date: "26 Aug 2025",
     tag: "Coaching",
-    headline:
-      "Meet the stars of the Somerset College Vicki Wilson Cup championship-winning team",
+    headline: "Somerset College Vicki Wilson Cup squad breakdown",
+    quote:
+      "Somerset College proved why it is a powerhouse of Queensland netball as it claimed the Vicki Wilson Cup off the back of an undefeated season. We have shone a light on the squad with profiles on every player in the team.",
+    attribution: "Gold Coast Bulletin",
     href: "https://www.goldcoastbulletin.com.au/sport/meet-the-stars-of-the-somerset-college-vicki-wilson-cup-championship-winning-team/news-story/e6ad86226d9459ca9c4bc454e875de31",
     linkLabel: "Read the full article",
   },
