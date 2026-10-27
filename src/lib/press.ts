@@ -105,12 +105,12 @@ export const PRESS_ITEMS: PressItem[] = [
   {
     id: "firebirds-fb-farewell-2019",
     source: "Queensland Firebirds",
-    date: "2019",
+    date: "9 Aug 2019",
     tag: "Playing career",
     headline:
-      "Firebirds farewell Caitlyn Nevins ahead of her final home game",
+      "A special message for fans from a Firebirds favourite, Caitlyn Nevins",
     quote:
-      "Caity has just announced she will play her final game for the Firebirds in Round 14.",
+      "Caity has just announced she will play her final game for the Firebirds in Round 14. Which makes Sunday's match her final home game.",
     attribution: "Queensland Firebirds",
     href: "https://www.facebook.com/watch/?v=362498791309104",
     linkLabel: "Watch on Facebook",
