@@ -34,19 +34,19 @@ const SHOP_FEATURES = [
   {
     slug: "eat-sleep-netball-repeat-poster",
     name: "Eat Sleep Netball Repeat Poster",
-    price: 40,
+    price: 45,
     image: "/shop/eat-sleep-netball-repeat-poster/1.jpg",
   },
   {
     slug: "netball-christmas-cards-pk10",
     name: "Netball Christmas Cards (pk10)",
-    price: 35,
+    price: 40,
     image: "/shop/netball-christmas-cards-pk10/1.jpg",
   },
   {
     slug: "netball-birthday-cards-pk10",
     name: "Netball Birthday Cards (pk10)",
-    price: 35,
+    price: 40,
     image: "/shop/netball-birthday-cards-pk10/1.jpg",
   },
 ];
