@@ -286,65 +286,66 @@ export default function HomePage() {
           >
             {/* Drill Library */}
             <StaggerItem>
-              <article className="relative flex h-full flex-col gap-4 overflow-hidden rounded-2xl border border-border/70 bg-card p-8 transition hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
-                <span className="w-fit rounded-full bg-[var(--brand-coral)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                  The Art of Netball
-                </span>
-                <h3 className="font-display text-2xl font-bold">
-                  Drill Library
-                </h3>
-                <p className="text-base leading-relaxed text-muted-foreground">
+              <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-xl font-bold leading-snug">
+                    Drill Library
+                  </h3>
+                  <div className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                    $299
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   Hundreds of elite-level drills, searchable by skill, position
                   and age group. Written by Caitlyn, used in every CC Netball
                   session.
                 </p>
-                <div className="mt-auto space-y-4 pt-4">
-                  <div>
-                    <p className="font-display text-3xl font-extrabold">
-                      $299
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      AUD / year — unlimited access
-                    </p>
-                  </div>
+                <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-foreground/70">
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    Per year
+                  </span>
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    The Art of Netball
+                  </span>
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    Launching Jan 2027
+                  </span>
+                </div>
+                <div className="mt-auto pt-6">
                   <Link
                     href="/shop/drills-library"
-                    className="inline-flex w-fit items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:bg-primary"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
                   >
                     Sign up <ArrowRight className="size-3.5" />
                   </Link>
-                </div>
-                <div className="pointer-events-none absolute -right-14 top-7 rotate-[22deg] bg-gradient-to-r from-primary to-[var(--brand-raspberry-dark)] px-14 py-1.5 text-[10px] font-extrabold tracking-widest text-white shadow-lg">
-                  LAUNCHING JAN 2027
                 </div>
               </article>
             </StaggerItem>
 
             {/* Netball Trials */}
             <StaggerItem>
-              <article className="flex h-full flex-col gap-4 rounded-2xl border border-border/70 bg-card p-8 transition hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
-                <span className="w-fit rounded-full bg-amber-400 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-950">
-                  Netball Trials
-                </span>
-                <h3 className="font-display text-2xl font-bold">
-                  Make Netball Trials a Breeze
-                </h3>
-                <p className="text-base leading-relaxed text-muted-foreground">
+              <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-xl font-bold leading-snug">
+                    Netball Trials
+                  </h3>
+                  <div className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                    $2.20
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   Run netball trials end-to-end — registrations, assessments,
                   scoring and selections — all from one simple app.
                 </p>
-                <div className="mt-auto space-y-4 pt-4">
-                  <div>
-                    <p className="font-display text-3xl font-extrabold">
-                      $2.20
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      AUD per participant
-                    </p>
-                  </div>
+                <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-foreground/70">
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    Per participant
+                  </span>
+                </div>
+                <div className="mt-auto pt-6">
                   <Link
                     href="/shop/trial-app"
-                    className="inline-flex w-fit items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:bg-primary"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
                   >
                     Sign up <ArrowRight className="size-3.5" />
                   </Link>
@@ -354,30 +355,29 @@ export default function HomePage() {
 
             {/* Competition */}
             <StaggerItem>
-              <article className="flex h-full flex-col gap-4 rounded-2xl border border-border/70 bg-card p-8 transition hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
-                <span className="w-fit rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                  Competition
-                </span>
-                <h3 className="font-display text-2xl font-bold">
-                  Build a Competition
-                </h3>
-                <p className="text-base leading-relaxed text-muted-foreground">
+              <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-xl font-bold leading-snug">
+                    Competition Builder
+                  </h3>
+                  <div className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                    $19.99
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   Unlimited rules and team conflicts, made easy. The only draw
                   builder in Australia that handles locked courts, forced byes
                   and your real-world constraints on the first pass.
                 </p>
-                <div className="mt-auto space-y-4 pt-4">
-                  <div>
-                    <p className="font-display text-3xl font-extrabold">
-                      $19.99
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      AUD per competition
-                    </p>
-                  </div>
+                <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-foreground/70">
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    Per competition
+                  </span>
+                </div>
+                <div className="mt-auto pt-6">
                   <Link
                     href="/tools/competition-builder"
-                    className="inline-flex w-fit items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:bg-primary"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
                   >
                     Sign up <ArrowRight className="size-3.5" />
                   </Link>
@@ -387,30 +387,32 @@ export default function HomePage() {
 
             {/* Coach the Coaches - In person */}
             <StaggerItem>
-              <article className="flex h-full flex-col gap-4 rounded-2xl border border-border/70 bg-card p-8 transition hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
-                <span className="w-fit rounded-full bg-emerald-700 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                  In person
-                </span>
-                <h3 className="font-display text-2xl font-bold">
-                  Coach the Coaches
-                </h3>
-                <p className="text-base leading-relaxed text-muted-foreground">
+              <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-display text-xl font-bold leading-snug">
+                    Coach the Coaches
+                  </h3>
+                  <div className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                    $80
+                  </div>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   Session design, drill libraries, athlete management, and the
                   systems behind winning programs. Delivered by Caitlyn with
                   your coaching group.
                 </p>
-                <div className="mt-auto space-y-4 pt-4">
-                  <div>
-                    <p className="font-display text-3xl font-extrabold">
-                      $80
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      AUD / coach · minimum 4 coaches
-                    </p>
-                  </div>
+                <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-foreground/70">
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    In person
+                  </span>
+                  <span className="rounded-full bg-muted px-3 py-1">
+                    Min 4 coaches
+                  </span>
+                </div>
+                <div className="mt-auto pt-6">
                   <Link
                     href="/contact"
-                    className="inline-flex w-fit items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition hover:bg-primary"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
                   >
                     Enquire <ArrowRight className="size-3.5" />
                   </Link>
