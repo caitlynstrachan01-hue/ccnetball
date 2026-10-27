@@ -20,7 +20,9 @@ const dateFormat = new Intl.DateTimeFormat("en-AU", {
 });
 
 export default function BlogPage() {
-  const posts = getPublishedPosts();
+  const posts = getPublishedPosts().sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
   return (
     <>
       <section className="border-b border-border/60 bg-card">
