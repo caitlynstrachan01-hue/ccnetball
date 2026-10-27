@@ -35,6 +35,15 @@ export const PRESS_ITEMS: PressItem[] = [
     linkLabel: "See the post on Facebook",
   },
   {
+    id: "international-netball-festival-ig",
+    source: "@internationalnetballfestival (Instagram)",
+    date: "29 Jul 2026",
+    tag: "Appearance",
+    headline: "Caitlyn featured at the International Netball Festival",
+    href: "https://www.instagram.com/p/DbZkRckjOu9/",
+    linkLabel: "See the post on Instagram",
+  },
+  {
     id: "gold-coast-bulletin-somerset-vicki-wilson",
     source: "Gold Coast Bulletin",
     date: "26 Aug 2025",
@@ -162,15 +171,6 @@ export const PRESS_ITEMS: PressItem[] = [
       "Caitlyn Nevins seeking happy ending with Queensland Firebirds after tough decision to leave Melbourne Vixens",
     href: "https://www.smh.com.au/sport/netball/caitlyn-nevins-seeking-happy-ending-with-queensland-firebirds-after-tough-decision-to-leave-melbourne-vixens-20150507-ggvzw4.html",
     linkLabel: "Read the full article",
-  },
-  {
-    id: "international-netball-festival-ig",
-    source: "@internationalnetballfestival (Instagram)",
-    date: "29 Jul",
-    tag: "Appearance",
-    headline: "Caitlyn featured at the International Netball Festival",
-    href: "https://www.instagram.com/p/DbZkRckjOu9/",
-    linkLabel: "See the post on Instagram",
   },
 ];
 
