@@ -68,6 +68,7 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2 text-sm text-white/70">
             <li><Link href="/about" className="hover:text-primary">About Caitlyn</Link></li>
             <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
+            <li><Link href="/press" className="hover:text-primary">Press</Link></li>
             <li><Link href="/contact" className="hover:text-primary">Contact</Link></li>
             <li><Link href="/privacy" className="hover:text-primary">Privacy</Link></li>
             <li><Link href="/terms" className="hover:text-primary">Terms</Link></li>
