@@ -35,6 +35,19 @@ export const PRESS_ITEMS: PressItem[] = [
     linkLabel: "See the post on Facebook",
   },
   {
+    id: "ace-netball-academy-wrap-2026",
+    source: "ACE Netball Club",
+    date: "4 Aug 2026",
+    tag: "Coaching",
+    headline:
+      "ACE Netball Club wraps up its first ACE Academy with Caitlyn on court",
+    quote:
+      "Over the past few weeks, our athletes have been challenged, encouraged and inspired, learning what it truly takes to be an athlete both on and off the court. From nutrition education and strength & conditioning sessions to on-court sessions with Caitlyn, they have gained valuable knowledge and skills to support their development.",
+    attribution: "ACE Netball Club",
+    href: "https://www.facebook.com/ACENetballClubOfficial/posts/congratulations-to-all-of-our-athletes-on-completing-the-very-first-ace-academy/1594527125941373/",
+    linkLabel: "See the post on Facebook",
+  },
+  {
     id: "international-netball-festival-ig",
     source: "@internationalnetballfestival (Instagram)",
     date: "29 Jul 2026",
