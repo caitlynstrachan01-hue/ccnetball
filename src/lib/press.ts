@@ -25,6 +25,16 @@ export const PRESS_ITEMS: PressItem[] = [
     linkLabel: "Read the full article",
   },
   {
+    id: "far-north-flames-elite-coach-2026",
+    source: "Far North Flames Netball",
+    date: "31 Aug 2026",
+    tag: "Coaching",
+    headline:
+      "Far North Flames host Caitlyn for her Elite Coach Accreditation",
+    href: "https://www.facebook.com/farnorthflames/posts/elite-coaching-excellence-at-the-flames-far-north-flames-was-absolutely-thrilled/122198708288627000/",
+    linkLabel: "See the post on Facebook",
+  },
+  {
     id: "gold-coast-bulletin-somerset-vicki-wilson",
     source: "Gold Coast Bulletin",
     date: "26 Aug 2025",
@@ -41,7 +51,7 @@ export const PRESS_ITEMS: PressItem[] = [
     tag: "Community",
     headline: "Caitlyn visits Saints Netball Club to coach the Under-10s",
     quote:
-      "Former Firebirds, Vixens and Australian player Caitlyn Nevins getting our Saints 10 girls firing for the first week of finals.",
+      "Former Firebirds, Vixens and Australian player Caitlyn Strachan getting our Saints 10 girls firing for the first week of finals.",
     attribution: "Saints Netball Club (METRO)",
     href: "https://www.facebook.com/saintsnetballcoorparoo/posts/former-firebirds-vixens-and-australian-player-caitlyn-nevins-getting-our-saints-/1388517906712746/",
     linkLabel: "See the post on Facebook",
