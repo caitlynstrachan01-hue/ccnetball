@@ -379,6 +379,34 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "rise-of-reilley-batcheldor",
+    title:
+      "Reilley Batcheldor: How a Future Diamond Earned Her Super Netball Debut",
+    excerpt:
+      "Sunshine Coast Lightning's Reilley Batcheldor on signing her first Super Netball contract, the ACL comeback behind her rise, and the mindset that got her there.",
+    date: "2022-02-24",
+    updated: "2026-10-28",
+    readMinutes: 4,
+    category: "Athlete spotlight",
+    body: [
+      "Keep an eye on this name. Reilley Batcheldor will be a future Australian Diamond. This up-and-coming Goal Attack has signed with Sunshine Coast Lightning for the 2022 Suncorp Super Netball season.",
+      "Reilley will be mentored by fellow Australian shooters Steph Wood and Cara Koenen.",
+      "Reilley's rise has been no easy feat. She suffered an ACL injury in 2019, successfully completed her rehabilitation, and returned to court having a stellar 2021 season with QUT Netball in Netball Queensland's HART Sapphire Series.",
+      "## Q. How were you told you were offered a contract from Sunshine Coast Lightning?",
+      "Reilley: \"I received a phone call from head coach Kylee Byrne. She said she was impressed with my attitude and how I played throughout the year. I was so stoked to receive that phone call. I never expected it this soon in my career.\"",
+      "## Q. What are you looking forward to most about 2022?",
+      "Reilley: \"I'm looking forward to meeting all the players and playing with two Aussie Diamond shooters in Cara and Steph. I'll learn heaps and have so many great opportunities.\"",
+      "## Q. What advice do you have for young players aspiring to play in the Suncorp Super Netball?",
+      "Reilley: \"All the extra work you do behind the scenes is the work that counts. And every setback is an opportunity to take a step up.\"",
+      "## Q. What's your favourite quote?",
+      "Reilley: \"Hard work beats talent when talent doesn't work hard.\"",
+      "Related reading: Train the Way You Want to Play, on the habit change that turns extra work behind the scenes into high-performance selection.",
+      "Want to put in the extra work Reilley talks about? One-on-one and small group sessions with CC Netball help young shooters build the craft and the mindset to go further. Make an enquiry at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "behavioural-change-high-performance",
     title:
       "Train the Way You Want to Play: The One Habit That Got Me Selected",
