@@ -3,6 +3,13 @@ export type BlogPost = {
   title: string;
   excerpt: string;
   date: string;
+  /**
+   * ISO date of the last significant content update. Not shown in the UI —
+   * used only for sitemap `lastModified` and JSON-LD `dateModified` so Google
+   * sees that the post is actively maintained. Omit for posts never updated
+   * after publish.
+   */
+  updated?: string;
   readMinutes: number;
   category: string;
   body: string[];
@@ -117,6 +124,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "What should netball players eat after training? A simple guide to repair, refuel, rehydrate and rest, with easy post-training food ideas.",
     date: "2021-12-05",
+    updated: "2026-10-28",
     readMinutes: 4,
     category: "Performance",
     body: [
@@ -148,6 +156,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Former Diamond Caitlyn Strachan on how netball parents can support a developing athlete, what quietly hurts, and the questions to ask after a game.",
     date: "2026-05-04",
+    updated: "2026-10-28",
     readMinutes: 5,
     category: "Mindset",
     body: [
@@ -181,6 +190,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Former Diamond Caitlyn Strachan on the one habit that turned non-selection into high-performance selection, and how young netballers can apply it.",
     date: "2022-02-07",
+    updated: "2026-10-28",
     readMinutes: 4,
     category: "Mindset",
     body: [
@@ -210,6 +220,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Former Diamond Caitlyn Strachan missed school teams, state teams and did her ACL. Here's why non-selection isn't the end of your netball journey.",
     date: "2021-11-16",
+    updated: "2026-10-28",
     readMinutes: 4,
     category: "Mindset",
     body: [
@@ -238,6 +249,7 @@ export const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Sports physio Elyse Nayler explains what actually helps netball recovery: sleep, refuelling and cool-downs, plus the truth about ice baths and massage guns.",
     date: "2021-11-26",
+    updated: "2026-10-28",
     readMinutes: 5,
     category: "Performance",
     body: [

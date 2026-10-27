@@ -33,6 +33,10 @@ export async function generateMetadata({
   const post = getPostBySlug(slug);
   if (!post) return { title: "Post not found" };
   const url = `https://ccnetball.com/blog/${slug}`;
+  const publishedTime = new Date(post.date).toISOString();
+  const modifiedTime = post.updated
+    ? new Date(post.updated).toISOString()
+    : publishedTime;
   return {
     title: post.title,
     description: post.excerpt,
@@ -42,7 +46,8 @@ export async function generateMetadata({
       description: post.excerpt,
       type: "article",
       url,
-      publishedTime: new Date(post.date).toISOString(),
+      publishedTime,
+      modifiedTime,
       authors: ["Caitlyn Strachan"],
     },
   };
@@ -95,8 +100,37 @@ export default async function BlogPostPage({
     .filter((p) => p.slug !== slug && p.category === post.category)
     .slice(0, 2);
 
+  const url = `https://ccnetball.com/blog/${slug}`;
+  const publishedTime = new Date(post.date).toISOString();
+  const modifiedTime = post.updated
+    ? new Date(post.updated).toISOString()
+    : publishedTime;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: publishedTime,
+    dateModified: modifiedTime,
+    author: {
+      "@type": "Person",
+      name: "Caitlyn Strachan",
+      url: "https://ccnetball.com/about",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "CC Netball",
+      url: "https://ccnetball.com",
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className="border-b border-border/60 bg-card">
         <div className="mx-auto max-w-3xl px-6 py-16 lg:px-10 lg:py-24">
           <Reveal>
