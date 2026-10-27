@@ -506,9 +506,6 @@ export default function HomePage() {
                     <h3 className="font-display text-base font-bold leading-snug">
                       {item.name}
                     </h3>
-                    <p className="font-display text-xl font-extrabold text-primary">
-                      ${item.price}
-                    </p>
                     <span className="mt-auto inline-flex items-center gap-1 pt-2 text-sm font-semibold text-primary">
                       Shop now <ArrowRight className="size-3.5" />
                     </span>
