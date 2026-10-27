@@ -206,45 +206,88 @@ export default function HomePage() {
             className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
             staggerChildren={0.06}
           >
-            {HOMEPAGE_PROGRAMS.map((program) => (
-              <StaggerItem key={program.id}>
-                <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
-                  <div className="flex items-start justify-between gap-4">
-                    <h3 className="font-display text-xl font-bold leading-snug">
-                      {program.name}
-                    </h3>
-                    <div className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                      ${program.price}
+            {HOMEPAGE_PROGRAMS.map((program) => {
+              const navy = program.id === "video-analysis";
+              return (
+                <StaggerItem key={program.id}>
+                  <article
+                    className={`group flex h-full flex-col rounded-2xl border p-7 transition-all hover:-translate-y-1 hover:shadow-xl ${
+                      navy
+                        ? "border-white/10 bg-secondary hover:border-[color:var(--brand-coral)]/50 hover:shadow-primary/20"
+                        : "border-border/70 bg-card hover:border-primary/40 hover:shadow-primary/5"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <h3
+                        className={`font-display text-xl font-bold leading-snug ${
+                          navy ? "text-white" : ""
+                        }`}
+                      >
+                        {program.name}
+                      </h3>
+                      <div
+                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                          navy
+                            ? "bg-primary text-white"
+                            : "bg-primary/10 text-primary"
+                        }`}
+                      >
+                        ${program.price}
+                      </div>
                     </div>
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {program.short}
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-foreground/70">
-                    <span className="rounded-full bg-muted px-3 py-1">
-                      {program.durationMinutes} min
-                    </span>
-                    <span className="rounded-full bg-muted px-3 py-1">
-                      {program.capacity}
-                    </span>
-                  </div>
-                  <div className="mt-auto flex items-center justify-between gap-4 pt-6">
-                    <Link
-                      href={`/book?program=${program.id}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
+                    <p
+                      className={`mt-3 text-sm leading-relaxed ${
+                        navy ? "text-white/75" : "text-muted-foreground"
+                      }`}
                     >
-                      Book this program <ArrowRight className="size-3.5" />
-                    </Link>
-                    <Link
-                      href={`/programs#${program.id}`}
-                      className="text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+                      {program.short}
+                    </p>
+                    <div
+                      className={`mt-6 flex flex-wrap gap-2 text-xs font-medium ${
+                        navy ? "text-white/85" : "text-foreground/70"
+                      }`}
                     >
-                      Read more
-                    </Link>
-                  </div>
-                </article>
-              </StaggerItem>
-            ))}
+                      <span
+                        className={`rounded-full px-3 py-1 ${
+                          navy ? "bg-white/10" : "bg-muted"
+                        }`}
+                      >
+                        {program.durationMinutes} min
+                      </span>
+                      <span
+                        className={`rounded-full px-3 py-1 ${
+                          navy ? "bg-white/10" : "bg-muted"
+                        }`}
+                      >
+                        {program.capacity}
+                      </span>
+                    </div>
+                    <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+                      <Link
+                        href={`/book?program=${program.id}`}
+                        className={`inline-flex items-center gap-1.5 text-sm font-semibold transition group-hover:gap-2.5 ${
+                          navy
+                            ? "text-[color:var(--brand-coral)]"
+                            : "text-primary"
+                        }`}
+                      >
+                        Book this program <ArrowRight className="size-3.5" />
+                      </Link>
+                      <Link
+                        href={`/programs#${program.id}`}
+                        className={`text-xs font-semibold transition ${
+                          navy
+                            ? "text-white/60 hover:text-white"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Read more
+                      </Link>
+                    </div>
+                  </article>
+                </StaggerItem>
+              );
+            })}
           </StaggerGroup>
 
           <Reveal className="mt-12 text-center">
@@ -284,37 +327,37 @@ export default function HomePage() {
             className="mt-14 grid gap-6 md:grid-cols-2"
             staggerChildren={0.08}
           >
-            {/* Drill Library */}
+            {/* Drill Library — navy accent card */}
             <StaggerItem>
-              <article className="group flex h-full flex-col rounded-2xl border border-border/70 bg-card p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+              <article className="group flex h-full flex-col rounded-2xl border border-white/10 bg-secondary p-7 transition-all hover:-translate-y-1 hover:border-[color:var(--brand-coral)]/50 hover:shadow-xl hover:shadow-primary/20">
                 <div className="flex items-start justify-between gap-4">
-                  <h3 className="font-display text-xl font-bold leading-snug">
+                  <h3 className="font-display text-xl font-bold leading-snug text-white">
                     Drill Library
                   </h3>
-                  <div className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                  <div className="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-bold text-white">
                     $299
                   </div>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-3 text-sm leading-relaxed text-white/75">
                   Hundreds of elite-level drills, searchable by skill, position
                   and age group. Written by Caitlyn, used in every CC Netball
                   session.
                 </p>
-                <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-foreground/70">
-                  <span className="rounded-full bg-muted px-3 py-1">
+                <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium text-white/85">
+                  <span className="rounded-full bg-white/10 px-3 py-1">
                     Per year
                   </span>
-                  <span className="rounded-full bg-muted px-3 py-1">
+                  <span className="rounded-full bg-white/10 px-3 py-1">
                     The Art of Netball
                   </span>
-                  <span className="rounded-full bg-muted px-3 py-1">
+                  <span className="rounded-full bg-white/10 px-3 py-1">
                     Launching Jan 2027
                   </span>
                 </div>
                 <div className="mt-auto pt-6">
                   <Link
                     href="/shop/drills-library"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[color:var(--brand-coral)] transition group-hover:gap-2.5"
                   >
                     Sign up <ArrowRight className="size-3.5" />
                   </Link>
