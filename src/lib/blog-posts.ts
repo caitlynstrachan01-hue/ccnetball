@@ -285,6 +285,38 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "netball-feedback-players-and-coaches",
+    title:
+      "Feedback Is Feedback — How Netball Players and Coaches Can Use It to Grow",
+    excerpt:
+      "Former Diamond Caitlyn Strachan on why feedback is an opportunity, what coaches owe players when giving it, and why it should go both ways.",
+    date: "2025-05-10",
+    readMinutes: 4,
+    category: "Mindset",
+    body: [
+      "We tend to sort feedback into two boxes: positive and negative. In my opinion, that's where a lot of players go wrong.",
+      "Feedback is feedback. It isn't good or bad. It's information, and it's one of the most valuable things a coach can give you.",
+      "## Feedback means your coach is invested",
+      "Here's something every young player should hear: when a coach gives you feedback, it means they see something in you. They're investing time and attention in you because they see potential for growth and change.",
+      "The player to worry about isn't the one getting feedback. It's the one who isn't.",
+      "## The coach's responsibility: care, and the how",
+      "That doesn't let coaches off the hook. If feedback is an opportunity for the player, then delivering it well is a responsibility for the coach.",
+      "That means two things. First, a caring tone. Players take feedback on board far more readily when they know their coach is in their corner.",
+      "Second, and just as important, the how. Telling a player \"that's not working\" only gets them halfway. Great feedback shows them how to fix it. Instead of \"your passes keep getting intercepted\", try \"your passes are going to the body. Aim out in front so she can run onto it.\" One leaves the player guessing. The other gives them something to do on the very next pass.",
+      "## How players can make the most of it",
+      "- Listen to understand, not to defend. Let your coach finish before you respond.\n- Ask for the how if you don't get it. \"What could I try instead?\" is one of the best questions a player can ask.\n- Try it straight away. Feedback only turns into improvement when you put it into action.\n- Don't take it personally. Feedback is about what you did, not who you are.",
+      "## Feedback goes both ways",
+      "This is the part that often gets missed. Feedback shouldn't only flow from coach to player. Players should feel able to give their coaches feedback too, whether it's about a drill, a game plan or how a message landed.",
+      "And coaches need to be willing to hear it and critically reflect on it. The best coaches I've worked with were always asking how they could do better, and that openness helped them serve their team better.",
+      "When feedback flows both ways, trust grows. And trust is what turns a group of players into a team.",
+      "## A note for parents",
+      "If your child comes home upset about something their coach said, help them see it for what it is: a sign their coach believes in them and wants to help them get better. That one shift in perspective can change how they approach every training session.",
+      "Want specific, practical feedback on your child's game? Our Video Game Analysis program breaks down their match footage with clear steps on how to improve. Find out more at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "behavioural-change-high-performance",
     title:
       "Train the Way You Want to Play: The One Habit That Got Me Selected",
