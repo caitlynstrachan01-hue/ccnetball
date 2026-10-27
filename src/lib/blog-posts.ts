@@ -347,6 +347,38 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "keeping-injured-netball-players-involved",
+    title:
+      "Injured, Not Benched — How to Keep Injured Netballers Involved and Learning",
+    excerpt:
+      "Former Diamond Caitlyn Strachan on keeping injured netballers engaged: modified training, an assistant coach role and staying connected to the team.",
+    date: "2024-04-24",
+    readMinutes: 5,
+    category: "Coaching",
+    body: [
+      "Injury is part of sport. Almost every player deals with it at some stage, and I know it firsthand after rupturing my ACL at 20. What makes the biggest difference isn't only the rehab. It's whether the athlete still feels part of the team.",
+      "An injured player sitting on the sideline scrolling their phone is a missed opportunity. There's always something we can help an injured athlete develop while they're at training.",
+      "## Modify, don't exclude",
+      "An injury to one part of the body doesn't have to stop a player working on everything else. Within the limits set by their physio or doctor, look for ways to keep them handling the ball:",
+      "- Stationary passing. If they can stand but not move, they can still work on passing technique, accuracy and release.\n- Seated passing. If they can't stand, sit them on a chair and keep the ball moving. It keeps their hand-eye coordination ticking over and keeps their hands sharp for when they return.\n- Ball skills at their level. Catching drills, passing to a target or working with a partner all keep them connected to the ball.",
+      "Always check what's been cleared by their medical team first. The goal is to keep them involved, not to slow their recovery.",
+      "## Give them a role: the unofficial assistant coach",
+      "One of the best things you can do for an injured player is give them a job. Make them your unofficial assistant coach.",
+      "Ask them to watch a particular matchup, track a simple stat like centre pass receives or turnovers, or share one thing they noticed with the team at a break. It keeps them engaged and gives them a real reason to be there.",
+      "## A different point of view",
+      "Seeing the game from the sideline is a learning opportunity in its own right. Off the court, players start to notice things they'd never see in the middle of play: how space opens up, where a defender is giving away a lead, why a structure works or doesn't.",
+      "Many players come back from injury with a better understanding of the game than when they left.",
+      "## A chance to lead",
+      "An assistant coach role also gives the injured athlete the opportunity to share their views with their teammates and take on a leadership role. For a young player, that can build confidence and communication skills that last well beyond their recovery.",
+      "## Check in, and keep the team connected",
+      "Injury can be isolating. The training sessions, the games, the friendships: suddenly an athlete can feel like they're on the outside looking in.",
+      "Check in on your injured athletes regularly, not just about their rehab but about how they're going. And keep the team connection strong. Include them in warm-ups where it's safe, in team talks, in celebrations and on game day. When they're ready to return, they should feel like they never really left.",
+      "Want to build stronger team culture and engagement in your program? Find out more about CC Netball's coach development workshops at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "diamonds-win-2023-netball-world-cup",
     title:
       "World Champions Again — Why the Diamonds Are Still the Benchmark of World Netball",
