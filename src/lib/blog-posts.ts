@@ -437,6 +437,37 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
   },
   {
+    slug: "craft-of-a-goal-keeper",
+    title:
+      "Tara Hinchliffe: The Bookend Goal Keeper Who Leads On and Off the Court",
+    excerpt:
+      "Super Netball defender Tara Hinchliffe on playing goal keeper, her move to Sunshine Coast Lightning, coming back from an ACL and the mindset behind her consistency.",
+    date: "2022-01-23",
+    updated: "2026-10-28",
+    readMinutes: 5,
+    category: "Position",
+    body: [
+      "Tara Hinchliffe is an experienced defender in the Suncorp Super Netball competition, set to make her debut with the Sunshine Coast Lightning after four years with the Queensland Firebirds.",
+      "What stands out about Tara is her consistency. She's been a dependable performer in every team she's represented, and she brings real value both on court and off it as a leader within the group.",
+      "She's a flexible defender who can hold her own at goal defence or goal keeper, though she's most often seen as the bookend at the back of the circle, shutting the court down behind her teammates.",
+      "Tara has also demonstrated great resilience and the power of a positive mindset in her rehabilitation following an ACL reconstruction during the 2021 season.",
+      "## Q. What do you love most about playing Goal Keeper?",
+      "Tara: \"I love the feeling that you have all the time in the world as the ball comes down court towards you. I can anticipate where the attackers will move, and trying to outsmart them is a massive challenge. There is no better feeling than coming out of the circle for a fly and taking a speccy intercept.\"",
+      "## Q. Have you always played in the defence end?",
+      "Tara: \"No, I started playing netball as a GA/GS with my sister Maddie and loved that at the time. Eventually, at around 12 years old, I grew taller (and Maddie was a better shooter than me) so I swapped down to the defence end and have never looked back.\"",
+      "## Q. Your mindset through your ACL injury has been inspiring. How did you remain positive throughout the rehab process?",
+      "Tara: \"I was fortunate to have a lot of perspective at the time. I had been lucky to be playing in the Suncorp Super Netball for four years without any major injuries. COVID was a big concern and I had also watched my sister Maddie miss the whole season with a broken foot that required surgery. I was also surrounded by so much love and support, and knew I would be ok as soon as it happened.\"",
+      "## Q. What are you looking forward to most about the 2022 Suncorp Super Netball season?",
+      "Tara: \"I'm really looking forward to seeing what life with the Sunny Coast Lightning is all about. There has also been so much young talent being signed across the league so I can't wait to see what these new players can do.\"",
+      "## Q. What is the best thing about being a professional netball player?",
+      "Tara: \"My favourite thing is being able to be out in the community and have a positive influence on little netballers growing up. It doesn't feel like long ago that I was the netty nerd looking up to the elite players at the time. Also being able to play a sport that I love as a job is such a privilege.\"",
+      "Related reading: Train the Way You Want to Play, on the mindset shift behind the sort of consistency Tara brings to every team she joins.",
+      "Want to build the discipline and craft of a defender? One-on-one and small group sessions with CC Netball sharpen the footwork, body positioning and anticipation that elite goal keepers rely on. Make an enquiry at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "recovery-nutrition-101",
     title: "Recovery Nutrition for Netball: The 4 Rs Every Player Should Know",
     excerpt:
