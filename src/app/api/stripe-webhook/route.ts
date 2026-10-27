@@ -153,6 +153,42 @@ export async function POST(request: Request) {
           break;
         }
 
+        // Trial registrations (one-off payment).
+        if (
+          session.mode === "payment" &&
+          session.metadata?.trial_registration === "true"
+        ) {
+          const participantId = session.metadata.participant_id;
+          if (!participantId) break;
+
+          const { data: participant } = await supabase
+            .from("trial_participants")
+            .select("id, status")
+            .eq("id", participantId)
+            .maybeSingle();
+
+          if (!participant) {
+            console.error("Trial participant not found:", participantId);
+            break;
+          }
+          if (participant.status === "paid") break; // idempotent
+
+          const paymentIntentId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent?.id || null;
+
+          await supabase
+            .from("trial_participants")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              stripe_payment_intent: paymentIntentId,
+            })
+            .eq("id", participantId);
+          break;
+        }
+
         // Digital subscription flow (unchanged).
         if (session.mode !== "subscription") break;
 
