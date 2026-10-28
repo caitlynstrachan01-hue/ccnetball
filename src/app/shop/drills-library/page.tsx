@@ -60,18 +60,7 @@ export default function DrillsLibraryPage() {
 
           <Reveal delay={0.25}>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <div className="rounded-2xl bg-card px-6 py-4 shadow-md">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-                  Monthly subscription
-                </p>
-                <p className="mt-1 font-display text-3xl font-extrabold text-foreground md:text-4xl">
-                  $49
-                  <span className="ml-1 text-base font-semibold text-muted-foreground">
-                    / month AUD
-                  </span>
-                </p>
-              </div>
-              <SubscribeButton label="Subscribe — $49 / month" />
+              <SubscribeButton label="Subscribe" />
               <Link
                 href="/login?next=/account"
                 className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card px-6 py-4 text-sm font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
@@ -111,10 +100,10 @@ export default function DrillsLibraryPage() {
                 Ready to train?
               </p>
               <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                Unlock the full library for $49 / month
+                Unlock the full library
               </h3>
               <div className="mt-6 flex justify-center">
-                <SubscribeButton label="Subscribe — $49 / month" />
+                <SubscribeButton label="Subscribe" />
               </div>
             </div>
           </Reveal>

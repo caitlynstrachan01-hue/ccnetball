@@ -341,9 +341,6 @@ export default function HomePage() {
                   <h3 className="font-display text-xl font-bold leading-snug text-white">
                     Drill Library
                   </h3>
-                  <div className="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-bold text-white">
-                    $299
-                  </div>
                 </div>
                 <p className="mt-3 text-sm leading-relaxed text-white/75">
                   Hundreds of elite-level drills, searchable by skill, position

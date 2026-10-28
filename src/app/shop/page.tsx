@@ -117,7 +117,7 @@ export default async function ShopPage() {
                           <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary/15">
                             <Icon className="size-6" />
                           </div>
-                          {product.price && (
+                          {product.price && product.slug !== "drills-library" && (
                             <p className="text-right font-display text-sm font-bold text-primary">
                               {product.price.replace(" AUD", "")}
                             </p>
