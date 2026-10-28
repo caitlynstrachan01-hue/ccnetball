@@ -17,6 +17,42 @@ export type BlogPost = {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "netball-court-time-explained",
+    title:
+      "Court Time in Netball — What Parents Should Expect at Every Level",
+    excerpt:
+      "How court time works in netball, from shared time in NetSetGo and club netball to earning your spot in higher grades. A guide for netball parents.",
+    date: "2026-11-26T05:00:00Z",
+    readMinutes: 4,
+    category: "Mindset",
+    body: [
+      "One of the most common questions I hear from netball parents is about court time. Why isn't my child getting more? Why did they sit out the last quarter? Why are they always playing the same position?",
+      "The honest answer is that it depends on the level. Court time works very differently in NetSetGo, club netball and higher grades, and understanding that can save a lot of frustration for players and parents alike.",
+      "## NetSetGo: everyone plays, everyone rotates",
+      "At NetSetGo level, court time is shared, and players rotate through the positions. Every player should get the chance to wear a range of bibs, from goal shooter to goal keeper.",
+      "That's deliberate. Playing different positions gives young players a far better understanding of the whole game. A shooter who has played in defence understands what defenders are trying to do to her. A centre who has played in the circle knows exactly where her shooters want the ball.",
+      "It also avoids early specialisation. At this age, the goal isn't to find a child's \"best\" position. It's to build a love of the game and a broad base of skills they'll draw on for years.",
+      "## Club netball: still shared, with one exception",
+      "In club netball, court time is still very much shared. Players will start to settle into a few preferred positions, but everyone should get a fair go on court across the season.",
+      "The only real exception may be finals. When a premiership is on the line, some coaches choose to lean more heavily on certain combinations. If you're unsure how your club approaches this, it's worth asking the coach at the start of the season, not in the middle of a finals series.",
+      "## Higher grades: court time is earnt",
+      "Once players move into higher grades, such as representative, school first teams and premier league, court time is no longer guaranteed. It's earnt.",
+      "Coaches are selecting the seven players who give the team the best chance on the day, and that decision is built on a lot more than the last game. They'll consider:",
+      "- Training attendance and effort. The players who show up and work hard every session earn trust.\n- Unit combinations. Netball is played in connected units. A defender who links well with her goal keeper, or a wing attack who reads her shooters, can be worth more than raw individual talent.\n- Individual skill. Strong fundamentals under pressure still matter.\n- Attitude and coachability. How a player takes feedback and responds to it counts.",
+      "In my opinion, that's a good thing. Earning your court time teaches young athletes that opportunities come from consistent work, and that's a lesson that reaches far beyond netball.",
+      "## A note for coaches: set the stance early",
+      "Clarity prevents conflict. At the start of every season, coaches should share their approach to court time with their players and, for younger teams, with the parent group too. Will court time be shared evenly? Will positions rotate? Does anything change for finals? Put it on the table before the first game.",
+      "And if your coach hasn't shared their approach, it's completely reasonable to ask what the guidelines around court time are.",
+      "I also encourage every coach to track court time, attendance and performance across the season. Questions about court time will come up when you least expect them. Being able to answer them with information and facts, rather than memory or feel, gives everyone clarity and keeps the conversation fair.",
+      "## How parents can help",
+      "- Know what stage your child is at. Expectations around court time should match the level they're playing.\n- Encourage them to ask the coach. \"What can I work on to earn more court time?\" is a mature, powerful question for an older player to ask.\n- Keep the focus on development. Time on the bench can still be time spent learning, watching the game and supporting teammates.",
+      "## Build the skills that earn court time",
+      "Want to help your child build the skills that earn court time? Enquire about a session with Caitlyn at ccnetball.com.",
+      "Written by Caitlyn Strachan",
+      "Caitlyn Strachan is a former Australian Diamond, triple ANZ Championship premiership player and founder of CC Netball.",
+    ],
+  },
+  {
     slug: "netball-off-season-parents-guide",
     title:
       "The Netball Off-Season — A Parent's Guide to Helping Your Child Rest, Reset and Plan for 2027",
