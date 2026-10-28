@@ -22,7 +22,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "Court Time in Netball — What Parents Should Expect at Every Level",
     excerpt:
       "How court time works in netball, from shared time in NetSetGo and club netball to earning your spot in higher grades. A guide for netball parents.",
-    date: "2026-11-26T05:00:00Z",
+    date: "2027-02-02T05:00:00Z",
     readMinutes: 4,
     category: "Mindset",
     body: [
