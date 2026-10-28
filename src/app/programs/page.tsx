@@ -40,8 +40,8 @@ const FAQS: { q: string; a: string }[] = [
     a: "Yes absolutely — my preference is for parents to be present and watch quietly from the sideline.",
   },
   {
-    q: "Where are sessions held?",
-    a: "I travel to various locations throughout Australia for in-person coaching, with team training delivered at your home court. Online Mentoring is available anywhere in Australia if you'd prefer live sessions from home.",
+    q: "Where are sessions held, and do you travel?",
+    a: "Sessions are most commonly held in South East Queensland. Feel free to send through an enquiry about a particular location.",
   },
 ];
 
