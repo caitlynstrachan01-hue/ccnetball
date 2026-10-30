@@ -41,7 +41,7 @@ const POSTAGE_RATES: Record<
   PostageCategory,
   { standardCents: number; expressCents: number }
 > = {
-  poster: { standardCents: 430, expressCents: 1810 },
+  poster: { standardCents: 1430, expressCents: 1810 },
   card: { standardCents: 480, expressCents: 1020 },
 };
 
