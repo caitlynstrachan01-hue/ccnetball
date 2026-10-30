@@ -31,11 +31,11 @@ export type PostageOption = {
 
 /**
  * Postage rates depend on what's in the cart.
- * - Posters (wall chart + prints) ship in a tube: higher rate.
- * - Card packs ship as a letter: lower rate.
- * - Mixed cart: the poster rate applies (the tube drives the cost).
+ * - Posters (wall chart + prints) ship in a tube.
+ * - Card packs ship as a letter.
+ * - Mixed cart (both): a separate combined rate.
  */
-export type PostageCategory = "poster" | "card";
+export type PostageCategory = "poster" | "card" | "mixed";
 
 const POSTAGE_RATES: Record<
   PostageCategory,
@@ -43,6 +43,7 @@ const POSTAGE_RATES: Record<
 > = {
   poster: { standardCents: 1430, expressCents: 1810 },
   card: { standardCents: 480, expressCents: 1020 },
+  mixed: { standardCents: 1730, expressCents: 2210 },
 };
 
 const POSTAGE_TURNAROUND: Record<"standard" | "express", string> = {
@@ -50,16 +51,17 @@ const POSTAGE_TURNAROUND: Record<"standard" | "express", string> = {
   express: "2-4 business days (longer for rural and regional).",
 };
 
-export function getPostageCategory(slug: string): PostageCategory {
+export function getPostageCategory(slug: string): "poster" | "card" {
   return isGreetingCardProduct(slug) ? "card" : "poster";
 }
 
 export function getCartPostageCategory(
   items: Array<{ slug: string }>,
 ): PostageCategory {
-  return items.some((i) => getPostageCategory(i.slug) === "poster")
-    ? "poster"
-    : "card";
+  const hasPoster = items.some((i) => getPostageCategory(i.slug) === "poster");
+  const hasCard = items.some((i) => getPostageCategory(i.slug) === "card");
+  if (hasPoster && hasCard) return "mixed";
+  return hasPoster ? "poster" : "card";
 }
 
 export function getPostageOptions(
