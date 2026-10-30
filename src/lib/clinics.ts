@@ -7,7 +7,7 @@ export type ClinicId =
   | "innisfail-u9-u11"
   | "innisfail-u12-u14"
   | "tableland-u9-u11"
-  | "tableland-u12-u15"
+  | "tableland-u12-u16"
   | "cairns-u9-u11"
   | "cairns-u12-u14"
   | "ballina-u10-u12"
@@ -34,9 +34,9 @@ export const CLINICS: Record<ClinicId, Clinic> = {
     label: "Tableland Netball Clinic — U9-U11 (Fri 6 Nov)",
     calSlug: "tableland-netball-clinic-u9-u11",
   },
-  "tableland-u12-u15": {
-    label: "Tableland Netball Clinic — U12-U15 (Fri 6 Nov)",
-    calSlug: "tableland-netball-clinic-u12-u15",
+  "tableland-u12-u16": {
+    label: "Tableland Netball Clinic — U12-U16 (Fri 6 Nov)",
+    calSlug: "tableland-netball-clinic-u12-u16",
   },
   "cairns-u9-u11": {
     label: "Cairns Netball Clinic — U9-U11 (Mon 9 Nov)",
@@ -68,7 +68,7 @@ export const CLINIC_ORDER: ClinicId[] = [
   "innisfail-u9-u11",
   "innisfail-u12-u14",
   "tableland-u9-u11",
-  "tableland-u12-u15",
+  "tableland-u12-u16",
   "cairns-u9-u11",
   "cairns-u12-u14",
   "ballina-u10-u12",
