@@ -5,6 +5,8 @@ import { GreetingCardMockup } from "@/components/greeting-card-mockup";
 import {
   type PhysicalProduct,
   formatPriceCents,
+  formatReleaseDateShort,
+  getReleaseDate,
   isGreetingCardProduct,
   isWallChartProduct,
   stockMessage,
@@ -34,6 +36,7 @@ export function PhysicalProductsGrid({
         const photo = product.photos[0] ?? null;
         const isCard = isGreetingCardProduct(product.slug);
         const isWallChart = isWallChartProduct(product.slug);
+        const releaseDate = getReleaseDate(product.slug);
         return (
           <Reveal key={product.id} delay={0.05 + i * 0.04}>
             <Link
@@ -87,6 +90,11 @@ export function PhysicalProductsGrid({
                 {soldOut && (
                   <span className="absolute right-3 top-3 rounded-full bg-foreground px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-background">
                     Sold out
+                  </span>
+                )}
+                {!soldOut && releaseDate && (
+                  <span className="absolute right-3 top-3 rounded-full bg-[var(--brand-raspberry)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">
+                    From {formatReleaseDateShort(releaseDate)}
                   </span>
                 )}
               </div>

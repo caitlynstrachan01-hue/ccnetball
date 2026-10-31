@@ -9,6 +9,8 @@ import { WaitlistForm } from "./waitlist-form";
 import {
   type PhysicalProduct,
   formatPriceCents,
+  formatReleaseDate,
+  getReleaseDate,
   isGreetingCardProduct,
   isWallChartProduct,
   stockMessage,
@@ -25,6 +27,7 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
   const photo = product.photos[activePhoto] ?? null;
   const isCard = isGreetingCardProduct(product.slug);
   const isWallChart = isWallChartProduct(product.slug);
+  const releaseDate = getReleaseDate(product.slug);
 
   function handleAddToCart() {
     addItem({
@@ -141,6 +144,12 @@ export function PhysicalProductDetail({ product }: { product: PhysicalProduct })
               >
                 {stockInfo.message}
               </p>
+            )}
+
+            {releaseDate && (
+              <div className="mt-5 rounded-xl border border-[var(--brand-raspberry)]/30 bg-[var(--brand-raspberry)]/5 p-4 text-sm font-semibold text-[var(--brand-raspberry)]">
+                Available for distribution from {formatReleaseDate(releaseDate)}.
+              </div>
             )}
 
             <div className="mt-8 space-y-6">

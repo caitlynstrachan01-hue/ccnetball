@@ -98,6 +98,38 @@ export function isGreetingCardProduct(slug: string): boolean {
   return /-cards-pk\d+$/.test(slug);
 }
 
+const RELEASE_DATES: Record<string, string> = {
+  "abc-netball-wall-chart": "2026-11-04",
+  "eat-sleep-netball-repeat-poster": "2026-11-04",
+};
+
+export function getReleaseDate(slug: string): Date | null {
+  const dateStr = RELEASE_DATES[slug];
+  if (!dateStr) return null;
+  const d = new Date(`${dateStr}T00:00:00+10:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  if (Date.now() >= d.getTime()) return null;
+  return d;
+}
+
+export function formatReleaseDate(date: Date): string {
+  return date.toLocaleDateString("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Australia/Brisbane",
+  });
+}
+
+export function formatReleaseDateShort(date: Date): string {
+  return date.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    timeZone: "Australia/Brisbane",
+  });
+}
+
 export function stockMessage(stock: number): {
   message: string | null;
   tone: "available" | "low" | "sold-out";
