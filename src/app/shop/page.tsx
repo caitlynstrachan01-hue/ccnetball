@@ -10,6 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Reveal } from "@/components/motion";
+import { CoachingProgramsGrid } from "@/components/coaching-programs-grid";
 import { PhysicalProductsGrid } from "@/components/physical-products-grid";
 import { listActivePhysicalProducts } from "@/lib/shop-physical.server";
 import { SHOP_PRODUCTS, type ShopProduct } from "@/lib/shop-content";
@@ -151,6 +152,21 @@ export default async function ShopPage() {
                 })}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* COACHING PROGRAMS */}
+      <section className="border-t border-border/60 py-14 lg:py-16">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <Reveal>
+            <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+              Shop netball <span className="gradient-text">programs</span>.
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">Coming soon…</p>
+          </Reveal>
+          <div className="mt-6">
+            <CoachingProgramsGrid />
           </div>
         </div>
       </section>
