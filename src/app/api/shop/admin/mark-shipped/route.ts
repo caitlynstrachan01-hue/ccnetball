@@ -41,11 +41,11 @@ export async function POST(request: Request) {
   if (fetchError || !order) {
     return NextResponse.json({ error: "Order not found." }, { status: 404 });
   }
-  if (order.status !== "paid") {
+  if (order.status !== "paid" && order.status !== "pending") {
     return NextResponse.json(
       {
         error:
-          "Only paid orders can be marked as shipped. (Current status: " +
+          "This order can't be marked as shipped. (Current status: " +
           order.status +
           ")",
       },

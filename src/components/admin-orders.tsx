@@ -37,10 +37,15 @@ function formatDate(iso: string | null): string {
 }
 
 export function AdminOrders({ orders }: { orders: AdminShopOrder[] }) {
-  const paid = orders.filter((o) => o.status === "paid");
+  const toShip = orders.filter(
+    (o) => o.status === "paid" || o.status === "pending",
+  );
   const fulfilled = orders.filter((o) => o.status === "fulfilled");
   const other = orders.filter(
-    (o) => o.status !== "paid" && o.status !== "fulfilled",
+    (o) =>
+      o.status !== "paid" &&
+      o.status !== "pending" &&
+      o.status !== "fulfilled",
   );
 
   return (
@@ -50,16 +55,16 @@ export function AdminOrders({ orders }: { orders: AdminShopOrder[] }) {
           <Package className="size-5 text-primary" />
           To ship
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
-            {paid.length}
+            {toShip.length}
           </span>
         </h2>
-        {paid.length === 0 ? (
+        {toShip.length === 0 ? (
           <p className="mt-3 rounded-xl border border-border/70 bg-card p-6 text-sm text-muted-foreground">
             No orders waiting to ship right now.
           </p>
         ) : (
           <ul className="mt-4 space-y-4">
-            {paid.map((order) => (
+            {toShip.map((order) => (
               <OrderRow key={order.id} order={order} canShip />
             ))}
           </ul>
@@ -317,17 +322,24 @@ function OrderRow({
 
 function StatusChip({ status }: { status: AdminShopOrder["status"] }) {
   const styles: Record<AdminShopOrder["status"], string> = {
-    pending: "bg-muted text-muted-foreground",
+    pending: "bg-amber-100 text-amber-800",
     paid: "bg-amber-100 text-amber-800",
     fulfilled: "bg-green-100 text-green-800",
     cancelled: "bg-red-100 text-red-800",
     refunded: "bg-blue-100 text-blue-800",
   };
+  const labels: Record<AdminShopOrder["status"], string> = {
+    pending: "To ship",
+    paid: "To ship",
+    fulfilled: "Shipped",
+    cancelled: "Cancelled",
+    refunded: "Refunded",
+  };
   return (
     <span
       className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${styles[status]}`}
     >
-      {status === "paid" ? "To ship" : status}
+      {labels[status]}
     </span>
   );
 }
