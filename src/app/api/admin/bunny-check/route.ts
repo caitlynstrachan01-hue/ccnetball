@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { bunnyConfig, bunnyEmbedUrl } from "@/lib/bunny.server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { getLibraryAccess } from "@/lib/drills-store.server";
 import { BUNNY_PREFIX } from "@/lib/drills-store";
 
 /**
- * Admin-only diagnostics for video playback. Reports whether Bunny accepts
+ * Admin-only diagnostics: the Supabase service-role key, and video playback. Reports whether Bunny accepts
  * the site's signed player links — never returns the keys themselves.
  */
 export async function GET() {
@@ -45,7 +46,21 @@ export async function GET() {
     }
   }
 
+  // The private Supabase key the shop and payments need.
+  let serviceRoleKey = "missing";
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const { error } = await createAdminClient()
+        .from("shop_orders")
+        .select("id", { count: "exact", head: true });
+      serviceRoleKey = error ? `rejected (${error.message})` : "works";
+    } catch (e) {
+      serviceRoleKey = `error (${e instanceof Error ? e.message : "unknown"})`;
+    }
+  }
+
   return NextResponse.json({
+    serviceRoleKey,
     libraryId: cfg?.libraryId ?? "missing",
     apiKey: keyInfo(cfg?.apiKey),
     tokenKey: keyInfo(cfg?.tokenKey),
