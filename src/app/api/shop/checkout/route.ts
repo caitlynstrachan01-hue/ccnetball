@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import {
   formatPriceCents,
   getPostageOptions,
@@ -137,11 +137,9 @@ export async function POST(request: Request) {
   );
   const totalCents = subtotalCents + postage.priceCents;
 
-  // Order inserts happen through the anon client (allowed by RLS to insert
-  // pending orders only). Service role is only needed to attach the Stripe
-  // session_id afterwards; if it's not configured we skip that step —
-  // the webhook can still find the order via its order_id metadata.
-  const supabase = await createClient();
+  // Orders hold customers' names, emails and addresses, so shop_orders is
+  // locked by RLS (admins only) and the server writes with the service role.
+  const supabase = createAdminClient();
 
   const orderNumber = generateOrderNumber();
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { formatPriceCents } from "@/lib/shop-physical";
 import { ClearCartOnMount } from "@/components/cart/clear-cart-on-mount";
 
@@ -22,12 +22,18 @@ export default async function SuccessPage({
   let email: string | null = null;
 
   if (session_id) {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("shop_orders")
-      .select("order_number, total_cents, customer_email")
-      .eq("stripe_session_id", session_id)
-      .maybeSingle();
+    // shop_orders is admin-only under RLS; look the order up server-side by
+    // its (unguessable) Stripe session id.
+    const { data } = await Promise.resolve()
+      .then(() =>
+        createAdminClient()
+          .from("shop_orders")
+          .select("order_number, total_cents, customer_email")
+          .eq("stripe_session_id", session_id)
+          .maybeSingle(),
+      )
+      // Without the service-role key, still show the thank-you page.
+      .catch(() => ({ data: null }));
     if (data) {
       orderNumber = data.order_number;
       totalCents = data.total_cents;

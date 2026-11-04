@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import {
   sendShopOrderCustomerConfirmation,
   sendShopOrderNotification,
@@ -34,11 +34,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Bad signature." }, { status: 400 });
   }
 
-  // Entitlements (subscription flow) still needs the service-role key.
-  // Shop orders live on a table with RLS disabled and explicit grants to
-  // anon, so the anon client is enough for them.
+  // Entitlements and shop orders are both locked by RLS, so the webhook
+  // writes with the service role.
   const supabase = createAdminClient();
-  const shopDb = await createClient();
+  const shopDb = supabase;
 
   try {
     switch (event.type) {
