@@ -111,6 +111,8 @@ export function AdminOrders({ orders }: { orders: AdminShopOrder[] }) {
   );
 }
 
+type Resolution = "refunded" | "cancelled" | "collected-in-person";
+
 function OrderRow({
   order,
   canShip = false,
@@ -122,6 +124,8 @@ function OrderRow({
   const [tracking, setTracking] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resolving, setResolving] = useState<Resolution | null>(null);
+  const [resolveError, setResolveError] = useState<string | null>(null);
   const router = useRouter();
 
   async function submit(e: React.FormEvent) {
@@ -150,8 +154,32 @@ function OrderRow({
     }
   }
 
+  async function markAs(resolution: Resolution, prompt: string) {
+    if (!window.confirm(prompt)) return;
+    setResolving(resolution);
+    setResolveError(null);
+    try {
+      const res = await fetch("/api/shop/admin/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id, resolution }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not update.");
+      router.refresh();
+    } catch (err) {
+      setResolveError(
+        err instanceof Error ? err.message : "Something went wrong.",
+      );
+      setResolving(null);
+    }
+  }
+
   const postageLabel =
     order.postageType === "express" ? "Express post" : "Standard post";
+  const collectedInPerson =
+    order.status === "fulfilled" &&
+    order.trackingNumber === "COLLECTED IN PERSON";
 
   return (
     <li className="overflow-hidden rounded-2xl border border-border/70 bg-card">
@@ -175,7 +203,7 @@ function OrderRow({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <StatusChip status={order.status} />
+          <StatusChip order={order} />
           {open ? (
             <ChevronDown className="size-5 text-muted-foreground" />
           ) : (
@@ -258,23 +286,32 @@ function OrderRow({
 
           {order.status === "fulfilled" && order.trackingNumber && (
             <div className="mt-5 rounded-xl bg-primary/5 p-4 text-sm">
-              <p className="flex items-center gap-2 font-semibold text-primary">
-                <CheckCircle2 className="size-4" />
-                Shipped {formatDate(order.shippedAt)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Tracking:{" "}
-                <a
-                  href={`https://auspost.com.au/mypost/track/#/details/${encodeURIComponent(
-                    order.trackingNumber,
-                  )}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="font-semibold text-primary hover:underline"
-                >
-                  {order.trackingNumber}
-                </a>
-              </p>
+              {collectedInPerson ? (
+                <p className="flex items-center gap-2 font-semibold text-primary">
+                  <CheckCircle2 className="size-4" />
+                  Collected in person {formatDate(order.shippedAt)}
+                </p>
+              ) : (
+                <>
+                  <p className="flex items-center gap-2 font-semibold text-primary">
+                    <CheckCircle2 className="size-4" />
+                    Shipped {formatDate(order.shippedAt)}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Tracking:{" "}
+                    <a
+                      href={`https://auspost.com.au/mypost/track/#/details/${encodeURIComponent(
+                        order.trackingNumber,
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="font-semibold text-primary hover:underline"
+                    >
+                      {order.trackingNumber}
+                    </a>
+                  </p>
+                </>
+              )}
             </div>
           )}
 
@@ -314,13 +351,88 @@ function OrderRow({
               </p>
             </form>
           )}
+
+          {canShip && (
+            <div className="mt-4 rounded-xl border border-dashed border-border bg-muted/30 p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Didn&apos;t ship? Mark it differently
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={resolving !== null}
+                  onClick={() =>
+                    markAs(
+                      "collected-in-person",
+                      `Mark ${order.orderNumber} as collected in person? No email will be sent.`,
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
+                >
+                  {resolving === "collected-in-person" && (
+                    <Loader2 className="size-3 animate-spin" />
+                  )}
+                  Collected in person
+                </button>
+                <button
+                  type="button"
+                  disabled={resolving !== null}
+                  onClick={() =>
+                    markAs(
+                      "refunded",
+                      `Mark ${order.orderNumber} as refunded? This just updates the record — the refund itself must be done in Stripe.`,
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
+                >
+                  {resolving === "refunded" && (
+                    <Loader2 className="size-3 animate-spin" />
+                  )}
+                  Refunded
+                </button>
+                <button
+                  type="button"
+                  disabled={resolving !== null}
+                  onClick={() =>
+                    markAs(
+                      "cancelled",
+                      `Mark ${order.orderNumber} as cancelled? No email will be sent.`,
+                    )
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
+                >
+                  {resolving === "cancelled" && (
+                    <Loader2 className="size-3 animate-spin" />
+                  )}
+                  Cancelled
+                </button>
+              </div>
+              {resolveError && (
+                <p className="mt-2 text-xs text-destructive">{resolveError}</p>
+              )}
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                No customer email is sent for these — they just move the order
+                out of &ldquo;To ship&rdquo;.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </li>
   );
 }
 
-function StatusChip({ status }: { status: AdminShopOrder["status"] }) {
+function StatusChip({ order }: { order: AdminShopOrder }) {
+  const isCollected =
+    order.status === "fulfilled" &&
+    order.trackingNumber === "COLLECTED IN PERSON";
+  if (isCollected) {
+    return (
+      <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-800">
+        Collected
+      </span>
+    );
+  }
   const styles: Record<AdminShopOrder["status"], string> = {
     pending: "bg-amber-100 text-amber-800",
     paid: "bg-amber-100 text-amber-800",
@@ -337,9 +449,9 @@ function StatusChip({ status }: { status: AdminShopOrder["status"] }) {
   };
   return (
     <span
-      className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${styles[status]}`}
+      className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${styles[order.status]}`}
     >
-      {labels[status]}
+      {labels[order.status]}
     </span>
   );
 }
