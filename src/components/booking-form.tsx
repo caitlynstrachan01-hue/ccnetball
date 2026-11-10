@@ -8,7 +8,12 @@ import {
   PROGRAM_PAYMENTS,
   type ProgramId,
 } from "@/lib/stripe-links";
-import { CLINICS, CLINIC_ORDER, isClinicId, type ClinicId } from "@/lib/clinics";
+import {
+  CLINICS,
+  VISIBLE_CLINIC_ORDER,
+  isClinicId,
+  type ClinicId,
+} from "@/lib/clinics";
 import { PROGRAMS } from "@/lib/site-content";
 
 const HIDDEN_PROGRAM_IDS = new Set(
@@ -174,7 +179,7 @@ export function BookingForm() {
             },
             {
               label: "Clinics",
-              options: CLINIC_ORDER.map((id) => ({
+              options: VISIBLE_CLINIC_ORDER.map((id) => ({
                 value: id,
                 label: CLINICS[id].label,
               })),

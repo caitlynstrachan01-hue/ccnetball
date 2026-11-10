@@ -19,32 +19,40 @@ export type Clinic = {
   label: string;
   /** Cal.com event-type slug — used to deep-link back to the calendar. */
   calSlug: string;
+  /** True when the clinic has finished and should not show on the booking form. */
+  hidden?: boolean;
 };
 
 export const CLINICS: Record<ClinicId, Clinic> = {
   "innisfail-u9-u11": {
     label: "Innisfail Netball Clinic — U9-U11 (Thu 5 Nov · 3:45-5pm)",
     calSlug: "innisfail-netball-clinic-u9-u11",
+    hidden: true,
   },
   "innisfail-u12-u14": {
     label: "Innisfail Netball Clinic — U12-U14 (Thu 5 Nov · 5-6:15pm)",
     calSlug: "innisfail-netball-clinic-u12-u14",
+    hidden: true,
   },
   "tableland-u9-u11": {
     label: "Tableland Netball Clinic — U9-U11 (Fri 6 Nov)",
     calSlug: "tableland-netball-clinic-u9-u11",
+    hidden: true,
   },
   "tableland-u12-u16": {
     label: "Tableland Netball Clinic — U12-U16 (Fri 6 Nov)",
     calSlug: "tableland-netball-clinic-u12-u16",
+    hidden: true,
   },
   "cairns-u9-u11": {
     label: "Cairns Netball Clinic — U9-U11 (Mon 9 Nov)",
     calSlug: "cairns-netball-clinic-u9-u11",
+    hidden: true,
   },
   "cairns-u12-u14": {
     label: "Cairns Netball Clinic — U12-U14 (Mon 9 Nov)",
     calSlug: "cairns-netball-clinic-u12-u14",
+    hidden: true,
   },
   "ballina-u10-u12": {
     label: "Ballina School Holiday Clinic — U10-U12",
@@ -80,3 +88,8 @@ export const CLINIC_ORDER: ClinicId[] = [
 export function isClinicId(value: string): value is ClinicId {
   return (CLINIC_ORDER as readonly string[]).includes(value);
 }
+
+/** Clinics still open for booking — excludes clinics that have finished. */
+export const VISIBLE_CLINIC_ORDER: ClinicId[] = CLINIC_ORDER.filter(
+  (id) => !CLINICS[id].hidden,
+);
