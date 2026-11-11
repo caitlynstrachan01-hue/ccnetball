@@ -260,6 +260,8 @@ async function upsertEntitlement(
   const payload = {
     user_id: userId,
     product_slug: productSlug,
+    // Drills Library membership (netsetgo / junior-senior / all-access).
+    tier: subscription.metadata?.tier ?? null,
     status: isActive ? "active" : subscription.status,
     expires_at: periodEnd,
     stripe_customer_id: (subscription.customer as string) ?? null,

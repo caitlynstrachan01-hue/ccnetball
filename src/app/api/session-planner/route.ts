@@ -9,6 +9,7 @@ import {
   getLibraryAccess,
   loadDrillCategories,
 } from "@/lib/drills-store.server";
+import { filterCategoriesByAge } from "@/lib/memberships";
 import { createAdminClient } from "@/lib/supabase/server";
 import {
   PROGRESS_OPTIONS,
@@ -309,7 +310,8 @@ async function askClaude(
 }
 
 export async function POST(request: Request) {
-  const { supabase, user, hasAccess } = await getLibraryAccess();
+  const { supabase, user, hasAccess, isAdmin, ageGroups } =
+    await getLibraryAccess();
   if (!user) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   if (!hasAccess)
     return NextResponse.json(
@@ -320,8 +322,13 @@ export async function POST(request: Request) {
   const req = parseRequest(await request.json().catch(() => null));
   if (!req)
     return NextResponse.json({ error: "Please pick an age group and session structure." }, { status: 400 });
+  if (!ageGroups.includes(req.ageGroup))
+    return NextResponse.json(
+      { error: "That age group isn't part of your membership." },
+      { status: 403 },
+    );
 
-  const [categories, { data: previousRows }] = await Promise.all([
+  const [allCategories, { data: previousRows }] = await Promise.all([
     loadDrillCategories(),
     supabase
       .from("session_plans")
@@ -338,6 +345,10 @@ export async function POST(request: Request) {
     ? (previous.find((p) => p.id === req.previousPlanId) ?? null)
     : null;
 
+  // Members only get drills from their own membership.
+  const categories = isAdmin
+    ? allCategories
+    : filterCategoriesByAge(allCategories, ageGroups);
   const catalog = buildCatalog(categories, req.ageGroup);
 
   let plan: SessionPlan | null = null;

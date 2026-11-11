@@ -8,6 +8,7 @@ import {
   loadDrillCategories,
 } from "@/lib/drills-store.server";
 import type { SavedPlan } from "@/lib/session-planner";
+import { filterCategoriesByAge } from "@/lib/memberships";
 
 export const metadata = {
   title: "Session Planner — Drills Library",
@@ -17,7 +18,7 @@ export const metadata = {
 };
 
 export default async function PlannerPage() {
-  const { supabase, user, hasAccess, deviceRevoked } =
+  const { supabase, user, hasAccess, deviceRevoked, isAdmin, ageGroups } =
     await getLibraryAccess();
   if (!user) redirect("/login?next=/library/planner");
   if (deviceRevoked) redirect("/signed-out");
@@ -62,7 +63,10 @@ export default async function PlannerPage() {
       <section className="py-10 lg:py-14 print:py-0">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           <SessionPlanner
-            categories={categories}
+            categories={
+              isAdmin ? categories : filterCategoriesByAge(categories, ageGroups)
+            }
+            ageGroups={ageGroups}
             initialPlans={(plans ?? []) as SavedPlan[]}
           />
         </div>

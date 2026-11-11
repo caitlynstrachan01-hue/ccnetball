@@ -9,9 +9,15 @@ import { DRILLS_LIBRARY_CHECKOUT_OPEN } from "@/lib/stripe-config";
 type Props = {
   className?: string;
   label?: string;
+  /** Which Drills Library membership to buy. */
+  membership: string;
 };
 
-export function SubscribeButton({ className, label = "Subscribe" }: Props) {
+export function SubscribeButton({
+  className,
+  label = "Subscribe",
+  membership,
+}: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +38,8 @@ export function SubscribeButton({ className, label = "Subscribe" }: Props) {
     try {
       const res = await fetch("/api/checkout/drills-library", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ membership }),
       });
       const json = await res.json();
       if (json.redirect) {

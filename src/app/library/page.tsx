@@ -8,6 +8,11 @@ import {
   loadDrillCategories,
   loadLibraryResources,
 } from "@/lib/drills-store.server";
+import {
+  filterCategoriesByAge,
+  getMembership,
+  MEMBERSHIPS,
+} from "@/lib/memberships";
 
 export const metadata = {
   title: "Netball Drill Library",
@@ -19,13 +24,22 @@ export const metadata = {
 export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ drill?: string }>;
+  searchParams: Promise<{ drill?: string; view?: string }>;
 }) {
-  const { user, isAdmin, hasSubscription, hasAccess, deviceRevoked } =
-    await getLibraryAccess();
+  const {
+    user,
+    isAdmin,
+    hasSubscription,
+    hasAccess,
+    deviceRevoked,
+    memberships,
+    ageGroups,
+  } = await getLibraryAccess();
   if (!user) redirect("/login?next=/library");
   if (deviceRevoked) redirect("/signed-out");
-  const { drill } = await searchParams;
+  const { drill, view } = await searchParams;
+  // Admins can preview the library as each membership sees it.
+  const previewAs = isAdmin ? getMembership(view) : undefined;
 
   if (!hasAccess) {
     return (
@@ -42,8 +56,9 @@ export default async function LibraryPage({
               A subscription is needed to open the library.
             </h1>
             <p className="mt-4 text-base text-muted-foreground">
-              The Netball Drills Library is a members-only area. Subscribe for
-              $49 / month to unlock every focus area.
+              The Netball Drills Library is a members-only area. Choose a
+              NetSetGo, Junior &amp; Senior or All access membership to unlock
+              it.
             </p>
             <Link
               href="/shop/drills-library"
@@ -57,10 +72,19 @@ export default async function LibraryPage({
     );
   }
 
-  const [categories, resources] = await Promise.all([
+  const [allCategories, resources] = await Promise.all([
     loadDrillCategories(),
     loadLibraryResources(),
   ]);
+  const categories = previewAs
+    ? filterCategoriesByAge(allCategories, [...previewAs.ageGroups])
+    : isAdmin
+      ? allCategories
+      : filterCategoriesByAge(allCategories, ageGroups);
+  const membershipNames = memberships
+    .map((m) => getMembership(m)?.name)
+    .filter(Boolean)
+    .join(" + ");
 
   return (
     <>
@@ -91,6 +115,37 @@ export default async function LibraryPage({
                 </div>
               )}
             </div>
+            {!isAdmin && membershipNames && (
+              <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                Your membership: {membershipNames}
+              </p>
+            )}
+            {isAdmin && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                <span className="font-semibold text-muted-foreground">
+                  View as:
+                </span>
+                {[
+                  { id: "", name: "Admin (everything)" },
+                  ...MEMBERSHIPS,
+                ].map((m) => {
+                  const on = (previewAs?.id ?? "") === m.id;
+                  return (
+                    <Link
+                      key={m.id || "admin"}
+                      href={m.id ? `/library?view=${m.id}` : "/library"}
+                      className={
+                        on
+                          ? "rounded-full bg-foreground px-3 py-1.5 font-semibold text-background"
+                          : "rounded-full border border-border bg-background px-3 py-1.5 font-semibold text-foreground/80 transition hover:border-primary/40"
+                      }
+                    >
+                      {m.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
             <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
               Pick a focus area, tap a drill, and the &quot;up next&quot; list
               stays inside the same area so you can move through a whole
@@ -109,6 +164,7 @@ export default async function LibraryPage({
       <section className="py-10 lg:py-14 print:py-0">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           <DrillsLibraryPreview
+            key={previewAs?.id ?? "own"}
             categories={categories}
             initialDrill={drill}
             resources={resources}

@@ -3,6 +3,7 @@ import { ArrowLeft, Check, PlayCircle, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { getProductBySlug } from "@/lib/shop-content";
+import { MEMBERSHIPS } from "@/lib/memberships";
 
 export const metadata = {
   title: "Netball Drills Library — The Netball Shop",
@@ -60,7 +61,12 @@ export default function DrillsLibraryPage() {
 
           <Reveal delay={0.25}>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <SubscribeButton label="Subscribe" />
+              <a
+                href="#memberships"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02]"
+              >
+                Choose your membership
+              </a>
               <Link
                 href="/login?next=/account"
                 className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card px-6 py-4 text-sm font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted"
@@ -95,16 +101,48 @@ export default function DrillsLibraryPage() {
           </Reveal>
 
           <Reveal delay={0.1} className="mt-10">
-            <div className="rounded-2xl bg-card p-6 text-center shadow-md md:p-8">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            <div id="memberships" className="scroll-mt-24">
+              <p className="text-center text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 Ready to train?
               </p>
-              <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                Unlock the full library
+              <h3 className="mt-2 text-center font-display text-2xl font-bold tracking-tight md:text-3xl">
+                Choose your membership
               </h3>
-              <div className="mt-6 flex justify-center">
-                <SubscribeButton label="Subscribe" />
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {MEMBERSHIPS.map((m) => (
+                  <div
+                    key={m.id}
+                    className={
+                      m.id === "all-access"
+                        ? "flex flex-col rounded-2xl border-2 border-primary bg-card p-6 shadow-md"
+                        : "flex flex-col rounded-2xl border border-border/70 bg-card p-6 shadow-sm"
+                    }
+                  >
+                    {m.id === "all-access" && (
+                      <span className="mb-3 self-start rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                        Everything
+                      </span>
+                    )}
+                    <h4 className="font-display text-xl font-bold tracking-tight">
+                      {m.name}
+                    </h4>
+                    <p className="mt-2 flex-1 text-sm text-muted-foreground">
+                      {m.short}
+                    </p>
+                    <div className="mt-6">
+                      <SubscribeButton
+                        membership={m.id}
+                        label={`Join ${m.name}`}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
+              <p className="mt-4 text-center text-xs text-muted-foreground">
+                Every membership includes the session planner, using the
+                drills in your membership.
+              </p>
             </div>
           </Reveal>
         </div>

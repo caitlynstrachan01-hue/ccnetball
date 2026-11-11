@@ -114,10 +114,16 @@ function withNormalisedBlocks(p: SavedPlan): SavedPlan {
 export function SessionPlanner({
   categories,
   initialPlans,
+  ageGroups: allowedAges,
 }: {
   categories: DrillCategory[];
   initialPlans: SavedPlan[];
+  /** Age groups the coach's membership covers. */
+  ageGroups?: AgeGroupId[];
 }) {
+  const ageChoices = AGE_GROUPS.filter(
+    (a) => !allowedAges || allowedAges.includes(a.id),
+  );
   const [plans, setPlans] = useState<SavedPlan[]>(() =>
     initialPlans.map(withNormalisedBlocks),
   );
@@ -125,9 +131,11 @@ export function SessionPlanner({
 
   // Form state
   const last = initialPlans[0];
-  const [ageGroup, setAgeGroup] = useState<AgeGroupId | "">(
-    (last?.age_group as AgeGroupId) ?? "",
-  );
+  const [ageGroup, setAgeGroup] = useState<AgeGroupId | "">(() => {
+    const lastAge = last?.age_group as AgeGroupId | undefined;
+    if (lastAge && ageChoices.some((a) => a.id === lastAge)) return lastAge;
+    return ageChoices.length === 1 ? ageChoices[0].id : "";
+  });
   const [squad, setSquad] = useState("");
   const [brief, setBrief] = useState("");
   const [lengthChoice, setLengthChoice] = useState<number | "other">(
@@ -268,7 +276,8 @@ export function SessionPlanner({
 
   function planNextFrom(plan: SavedPlan) {
     setPreviousPlanId(plan.id);
-    if (plan.age_group) setAgeGroup(plan.age_group as AgeGroupId);
+    if (plan.age_group && ageChoices.some((a) => a.id === plan.age_group))
+      setAgeGroup(plan.age_group as AgeGroupId);
     setProgress(null);
     setViewingId(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -321,7 +330,7 @@ export function SessionPlanner({
           <div className="rounded-3xl border border-border/70 bg-card p-6 md:p-8 print:hidden">
             <Step n={1} title="Who are you coaching?">
               <div className="flex flex-wrap gap-2">
-                {AGE_GROUPS.map((a) => (
+                {ageChoices.map((a) => (
                   <Chip
                     key={a.id}
                     on={ageGroup === a.id}

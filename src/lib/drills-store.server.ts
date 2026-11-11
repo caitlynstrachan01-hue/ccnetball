@@ -1,4 +1,10 @@
-import type { DrillCategory } from "@/lib/drills-library-content";
+import type { AgeGroupId, DrillCategory } from "@/lib/drills-library-content";
+import {
+  ALL_AGE_GROUPS,
+  getMembership,
+  membershipAgeGroups,
+  type MembershipId,
+} from "@/lib/memberships";
 import { bunnyEmbedUrl } from "@/lib/bunny.server";
 import { checkDevice } from "@/lib/device-limit.server";
 import {
@@ -111,6 +117,8 @@ export async function getLibraryAccess() {
       hasSubscription: false,
       deviceRevoked: false,
       hasAccess: false,
+      memberships: [] as MembershipId[],
+      ageGroups: [] as AgeGroupId[],
     };
 
   const { data: profile } = await supabase
@@ -120,16 +128,26 @@ export async function getLibraryAccess() {
     .maybeSingle();
   const isAdmin = profile?.is_admin === true;
 
-  const { data: entitlement } = await supabase
+  // A member can hold more than one membership (e.g. NetSetGo plus
+  // Junior & Senior) — their access is everything those cover.
+  const { data: entitlements } = await supabase
     .from("entitlements")
-    .select("expires_at")
+    .select("tier, expires_at")
     .eq("user_id", user.id)
     .eq("product_slug", "drills-library")
-    .eq("status", "active")
-    .maybeSingle();
-  const hasSubscription =
-    Boolean(entitlement) &&
-    (!entitlement?.expires_at || new Date(entitlement.expires_at) > new Date());
+    .eq("status", "active");
+  const current = (entitlements ?? []).filter(
+    (e) => !e.expires_at || new Date(e.expires_at) > new Date(),
+  );
+  const hasSubscription = current.length > 0;
+  const memberships = [
+    ...new Set(
+      current.map((e) => (getMembership(e.tier)?.id ?? "all-access") as MembershipId),
+    ),
+  ];
+  const memberAges = [
+    ...new Set(current.flatMap((e) => membershipAgeGroups(e.tier))),
+  ];
 
   // Members are limited to DEVICE_LIMIT devices; a device signed out because
   // they signed in elsewhere loses access here (admins are exempt).
@@ -145,6 +163,9 @@ export async function getLibraryAccess() {
     hasSubscription,
     deviceRevoked,
     hasAccess: isAdmin || (hasSubscription && !deviceRevoked),
+    memberships,
+    /** Age groups whose drills this viewer can see — admins see all. */
+    ageGroups: isAdmin ? ALL_AGE_GROUPS : memberAges,
   };
 }
 
