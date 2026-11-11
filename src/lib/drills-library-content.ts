@@ -254,14 +254,13 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
       { slug: "rebound-plays", title: "Rebound plays", durationMinutes: 9, level: "Intermediate", focus: "Rebounding" },
     ],
   },
-  {
-    slug: "netsetgo",
-    defaultSlot: "skill",
-    defaultAgeGroups: ["netsetgo"],
-    name: "NetSetGo",
-    short: "Fun, simple drills for our youngest players (U6–U10).",
-    drills: [],
-  },
+];
+
+/**
+ * Categories taken off the library for now. Move one back into
+ * DRILL_CATEGORIES to bring it back.
+ */
+export const PARKED_CATEGORIES: DrillCategory[] = [
   {
     slug: "recovery",
     defaultSlot: "cool-down",
