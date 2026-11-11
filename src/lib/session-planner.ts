@@ -112,7 +112,7 @@ export const WARM_UP_PARTS = [
   {
     id: "plyometrics",
     label: "Plyometrics",
-    tags: ["plyometrics", "single leg"],
+    tags: ["plyometrics single", "plyometrics double"],
     count: 2,
   },
   {
@@ -124,7 +124,7 @@ export const WARM_UP_PARTS = [
   {
     id: "sprints-game",
     label: "Sprints / game",
-    tags: ["sprints", "warm-up game"],
+    tags: ["sprints/games"],
     count: 1,
   },
 ] as const;
@@ -134,11 +134,10 @@ export const SUGGESTED_TAGS: Partial<Record<SessionSlotId, string[]>> = {
   "warm-up": [
     "early movement",
     "dynamic stretching",
-    "plyometrics",
-    "single leg",
+    "plyometrics single",
+    "plyometrics double",
     "late movement",
-    "sprints",
-    "warm-up game",
+    "sprints/games",
   ],
   scrimmage: ["half court", "match play"],
   skill: ["attack", "defence", "half court", "match play"],
@@ -327,13 +326,13 @@ export function matchPlan(
         if (part.id === "plyometrics") {
           drills.push(
             ...take(
-              best(pool.filter((c) => hasTag(c, "single leg"))),
+              best(pool.filter((c) => hasTag(c, "plyometrics single"))),
               "Plyometrics (single leg)",
             ),
           );
           drills.push(
             ...take(
-              best(pool.filter((c) => hasTag(c, "plyometrics"))),
+              best(pool.filter((c) => hasTag(c, "plyometrics double"))),
               "Plyometrics",
             ),
           );

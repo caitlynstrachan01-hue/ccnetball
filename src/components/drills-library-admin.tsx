@@ -11,7 +11,6 @@ import {
   Dumbbell,
   Hash,
   Image as ImageIcon,
-  FileText,
   Film,
   Layers,
   PlayCircle,
@@ -304,14 +303,6 @@ export function DrillsLibraryAdmin({
     event.target.value = "";
   }
 
-  function handlePdfPick(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    setPendingPdfs((prev) => ({ ...prev, [drillKey]: file }));
-    setSaveState({ status: "idle" });
-  }
-
   function handleImagePick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -330,15 +321,6 @@ export function DrillsLibraryAdmin({
       return next;
     });
     updateDrill({ imagePath: undefined, imageUrl: undefined });
-  }
-
-  function handlePdfRemove() {
-    setPendingPdfs((prev) => {
-      const next = { ...prev };
-      delete next[drillKey];
-      return next;
-    });
-    updateDrill({ pdfPath: undefined });
   }
 
   async function handleSave() {
@@ -1189,64 +1171,13 @@ export function DrillsLibraryAdmin({
                 onRemove={(i) => removeListItem("makeItEasier", i)}
               />
 
-              {/* Skill sheet PDF */}
-              <div className="mt-8">
-                <p className="text-sm font-bold text-foreground">
-                  Skill sheet (PDF){" "}
-                  <span className="font-normal text-muted-foreground">
-                    (optional)
-                  </span>
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Members get a &quot;Download skill sheet&quot; button for this
-                  drill.
-                </p>
-                {(pendingPdf || drill.pdfPath) && (
-                  <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 py-3">
-                    <span className="flex min-w-0 items-center gap-2 text-sm">
-                      <FileText className="size-4 shrink-0 text-primary" />
-                      <span className="truncate">
-                        {pendingPdf
-                          ? pendingPdf.name
-                          : (drill.pdfPath
-                              ?.split("/")
-                              .pop()
-                              ?.replace(/^[a-z0-9]+-/, "") ?? "Skill sheet")}
-                      </span>
-                      {pendingPdf && (
-                        <span className="shrink-0 text-xs font-semibold text-rose-700">
-                          Not saved yet
-                        </span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handlePdfRemove}
-                      className="shrink-0 text-xs font-semibold text-muted-foreground transition hover:text-red-600"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-                <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-full border border-border/70 bg-card px-4 py-2 text-xs font-semibold text-foreground/90 transition hover:border-primary/40 hover:bg-muted">
-                  <Upload className="size-3.5" />
-                  {pendingPdf || drill.pdfPath ? "Replace PDF" : "Upload PDF"}
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    className="sr-only"
-                    onChange={handlePdfPick}
-                  />
-                </label>
-              </div>
-
               {/* Tags */}
               <div className="mt-8">
                 <p className="text-sm font-bold text-foreground">Tags</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   Type a tag and press Enter. Tags tell the session planner
                   where a drill fits — e.g. warm-up drills need their part
-                  (early movement, plyometrics…), and match play drills
+                  (early movement, plyometrics single…), and match play drills
                   &quot;half court&quot; or &quot;match play&quot;.
                 </p>
                 {drill.tags.length > 0 && (
