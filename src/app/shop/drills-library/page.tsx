@@ -4,6 +4,7 @@ import { Reveal } from "@/components/motion";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { getProductBySlug } from "@/lib/shop-content";
 import { MEMBERSHIPS } from "@/lib/memberships";
+import { DRILLS_LIBRARY_CHECKOUT_OPEN } from "@/lib/stripe-config";
 
 export const metadata = {
   title: "Netball Drills Library — The Netball Shop",
@@ -126,12 +127,15 @@ export default function DrillsLibraryPage() {
                     <h4 className="font-display text-xl font-bold tracking-tight">
                       {m.name}
                     </h4>
-                    <p className="mt-1 font-display text-3xl font-extrabold tracking-tight">
-                      ${m.priceAud}
-                      <span className="ml-1 text-sm font-semibold text-muted-foreground">
-                        AUD
-                      </span>
-                    </p>
+                    {/* Prices stay hidden until the library launches. */}
+                    {DRILLS_LIBRARY_CHECKOUT_OPEN && (
+                      <p className="mt-1 font-display text-3xl font-extrabold tracking-tight">
+                        ${m.priceAud}
+                        <span className="ml-1 text-sm font-semibold text-muted-foreground">
+                          AUD / year
+                        </span>
+                      </p>
+                    )}
                     <p className="mt-2 flex-1 text-sm text-muted-foreground">
                       {m.short}
                     </p>

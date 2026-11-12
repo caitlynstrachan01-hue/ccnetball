@@ -25,6 +25,7 @@ export type Grant = {
 /**
  * Drills Library memberships. A drill ticked for several age groups shows in
  * every membership that covers one of them. Stored in entitlements.tier.
+ * Prices are AUD per year.
  */
 export const MEMBERSHIPS = [
   {
