@@ -1,8 +1,10 @@
 import type { AgeGroupId, DrillCategory } from "@/lib/drills-library-content";
 import {
-  ALL_AGE_GROUPS,
+  FULL_ACCESS,
   getMembership,
-  membershipAgeGroups,
+  grantAgeGroups,
+  membershipGrant,
+  type Grant,
   type MembershipId,
 } from "@/lib/memberships";
 import { bunnyEmbedUrl } from "@/lib/bunny.server";
@@ -119,6 +121,7 @@ export async function getLibraryAccess() {
       hasAccess: false,
       memberships: [] as MembershipId[],
       ageGroups: [] as AgeGroupId[],
+      grants: [] as Grant[],
     };
 
   const { data: profile } = await supabase
@@ -145,9 +148,7 @@ export async function getLibraryAccess() {
       current.map((e) => (getMembership(e.tier)?.id ?? "all-access") as MembershipId),
     ),
   ];
-  const memberAges = [
-    ...new Set(current.flatMap((e) => membershipAgeGroups(e.tier))),
-  ];
+  const memberGrants = current.map((e) => membershipGrant(e.tier));
 
   // Members are limited to DEVICE_LIMIT devices; a device signed out because
   // they signed in elsewhere loses access here (admins are exempt).
@@ -164,8 +165,10 @@ export async function getLibraryAccess() {
     deviceRevoked,
     hasAccess: isAdmin || (hasSubscription && !deviceRevoked),
     memberships,
-    /** Age groups whose drills this viewer can see — admins see all. */
-    ageGroups: isAdmin ? ALL_AGE_GROUPS : memberAges,
+    /** What this viewer's memberships open — admins see everything. */
+    grants: isAdmin ? FULL_ACCESS : memberGrants,
+    /** Age groups this viewer can plan sessions for. */
+    ageGroups: grantAgeGroups(isAdmin ? FULL_ACCESS : memberGrants),
   };
 }
 

@@ -9,7 +9,7 @@ import {
   loadLibraryResources,
 } from "@/lib/drills-store.server";
 import {
-  filterCategoriesByAge,
+  filterCategoriesForAccess,
   getMembership,
   MEMBERSHIPS,
 } from "@/lib/memberships";
@@ -33,7 +33,7 @@ export default async function LibraryPage({
     hasAccess,
     deviceRevoked,
     memberships,
-    ageGroups,
+    grants,
   } = await getLibraryAccess();
   if (!user) redirect("/login?next=/library");
   if (deviceRevoked) redirect("/signed-out");
@@ -57,8 +57,8 @@ export default async function LibraryPage({
             </h1>
             <p className="mt-4 text-base text-muted-foreground">
               The Netball Drills Library is a members-only area. Choose a
-              NetSetGo, Junior &amp; Senior or All access membership to unlock
-              it.
+              NetSetGo, Junior &amp; Senior, Centre Pass or All access
+              membership to unlock it.
             </p>
             <Link
               href="/shop/drills-library"
@@ -77,10 +77,12 @@ export default async function LibraryPage({
     loadLibraryResources(),
   ]);
   const categories = previewAs
-    ? filterCategoriesByAge(allCategories, [...previewAs.ageGroups])
+    ? filterCategoriesForAccess(allCategories, [
+        { ...previewAs.grant, ageGroups: [...previewAs.grant.ageGroups] },
+      ])
     : isAdmin
       ? allCategories
-      : filterCategoriesByAge(allCategories, ageGroups);
+      : filterCategoriesForAccess(allCategories, grants);
   const membershipNames = memberships
     .map((m) => getMembership(m)?.name)
     .filter(Boolean)

@@ -83,7 +83,7 @@ export default function DrillsLibraryPage() {
 
       {/* FEATURES */}
       <section className="border-t border-border/60 bg-muted/40 py-16">
-        <div className="mx-auto max-w-4xl px-6 lg:px-10">
+        <div className="mx-auto max-w-6xl px-6 lg:px-10">
           <Reveal>
             <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
               What&apos;s included
@@ -108,7 +108,7 @@ export default function DrillsLibraryPage() {
               <h3 className="mt-2 text-center font-display text-2xl font-bold tracking-tight md:text-3xl">
                 Choose your membership
               </h3>
-              <div className="mt-8 grid gap-4 md:grid-cols-3">
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {MEMBERSHIPS.map((m) => (
                   <div
                     key={m.id}
@@ -126,6 +126,12 @@ export default function DrillsLibraryPage() {
                     <h4 className="font-display text-xl font-bold tracking-tight">
                       {m.name}
                     </h4>
+                    <p className="mt-1 font-display text-3xl font-extrabold tracking-tight">
+                      ${m.priceAud}
+                      <span className="ml-1 text-sm font-semibold text-muted-foreground">
+                        AUD
+                      </span>
+                    </p>
                     <p className="mt-2 flex-1 text-sm text-muted-foreground">
                       {m.short}
                     </p>

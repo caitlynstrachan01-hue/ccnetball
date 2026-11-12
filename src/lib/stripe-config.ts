@@ -12,11 +12,12 @@ export const STRIPE_PRICE_IDS = {
  * prices are created in Stripe — a membership with no price can't be bought.
  */
 export const MEMBERSHIP_PRICE_IDS: Record<
-  "netsetgo" | "junior-senior" | "all-access",
+  "netsetgo" | "junior-senior" | "centre-pass" | "all-access",
   string | null
 > = {
   netsetgo: null,
   "junior-senior": null,
+  "centre-pass": null,
   "all-access": null,
 };
 

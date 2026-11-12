@@ -9,7 +9,7 @@ import {
   getLibraryAccess,
   loadDrillCategories,
 } from "@/lib/drills-store.server";
-import { filterCategoriesByAge } from "@/lib/memberships";
+import { filterCategoriesForAccess } from "@/lib/memberships";
 import { createAdminClient } from "@/lib/supabase/server";
 import {
   PROGRESS_OPTIONS,
@@ -310,7 +310,7 @@ async function askClaude(
 }
 
 export async function POST(request: Request) {
-  const { supabase, user, hasAccess, isAdmin, ageGroups } =
+  const { supabase, user, hasAccess, isAdmin, ageGroups, grants } =
     await getLibraryAccess();
   if (!user) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   if (!hasAccess)
@@ -348,7 +348,7 @@ export async function POST(request: Request) {
   // Members only get drills from their own membership.
   const categories = isAdmin
     ? allCategories
-    : filterCategoriesByAge(allCategories, ageGroups);
+    : filterCategoriesForAccess(allCategories, grants);
   const catalog = buildCatalog(categories, req.ageGroup);
 
   let plan: SessionPlan | null = null;
