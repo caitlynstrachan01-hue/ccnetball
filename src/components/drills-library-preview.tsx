@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronRight,
   FileDown,
@@ -10,6 +10,7 @@ import {
   Layers,
   Lock,
   PlayCircle,
+  Star,
   Target as TargetIcon,
 } from "lucide-react";
 import {
@@ -21,11 +22,26 @@ import {
 } from "@/lib/drills-library-content";
 import { isEmbedUrl, type LibraryResource } from "@/lib/drills-store";
 
+/** The member's own folder of starred drills, shown as the first tab. */
+const FAVOURITES_SLUG = "favourites";
+
+function recordActivity(type: string, drillId: string) {
+  return fetch("/api/library/activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, drillId }),
+    keepalive: true,
+  });
+}
+
 export function DrillsLibraryPreview({
   categories: allCategories = DRILL_CATEGORIES,
   initialDrill,
+  initialFavourites,
   resources = [],
 }: {
+  /** Drill ids the member has starred — omit to hide favourites. */
+  initialFavourites?: string[];
   /** General downloads shown until the member clicks into a drill. */
   resources?: LibraryResource[];
   categories?: DrillCategory[];
@@ -35,21 +51,58 @@ export function DrillsLibraryPreview({
   const [ageFilter, setAgeFilter] = useState<AgeGroupId | "all">("all");
 
   // Drills with no age groups set yet show for every age group.
-  const categories = useMemo(
-    () =>
-      allCategories
-        .map((c) => ({
-          ...c,
-          drills: c.drills.filter(
-            (d) =>
-              ageFilter === "all" ||
-              !d.ageGroups?.length ||
-              d.ageGroups.includes(ageFilter),
-          ),
-        }))
-        .filter((c) => c.drills.length > 0),
-    [allCategories, ageFilter],
+  const favouritesOn = initialFavourites !== undefined;
+  const [favourites, setFavourites] = useState<Set<string>>(
+    () => new Set(initialFavourites ?? []),
   );
+
+  const categories = useMemo(() => {
+    const filtered = allCategories
+      .map((c) => ({
+        ...c,
+        drills: c.drills.filter(
+          (d) =>
+            ageFilter === "all" ||
+            !d.ageGroups?.length ||
+            d.ageGroups.includes(ageFilter),
+        ),
+      }))
+      .filter((c) => c.drills.length > 0);
+    // Starred drills gathered from every category. Their slugs carry the
+    // home category so two drills can't clash.
+    const starred = filtered.flatMap((c) =>
+      c.drills
+        .filter((d) => d.id && favourites.has(d.id))
+        .map((d) => ({ ...d, slug: `${c.slug}/${d.slug}` })),
+    );
+    if (!starred.length) return filtered;
+    const folder: DrillCategory = {
+      slug: FAVOURITES_SLUG,
+      name: "My favourites",
+      short: "The drills you've starred. Tap the star on any drill to add it here.",
+      defaultSlot: "skill",
+      drills: starred,
+    };
+    return [folder, ...filtered];
+  }, [allCategories, ageFilter, favourites]);
+
+  async function toggleFavourite(drillId: string) {
+    const on = !favourites.has(drillId);
+    const update = (add: boolean) =>
+      setFavourites((prev) => {
+        const next = new Set(prev);
+        if (add) next.add(drillId);
+        else next.delete(drillId);
+        return next;
+      });
+    update(on);
+    try {
+      const res = await recordActivity(on ? "favourite" : "unfavourite", drillId);
+      if (!res.ok) throw new Error();
+    } catch {
+      update(!on); // Put it back if the save failed.
+    }
+  }
 
   const [initialCat, initialSlug] = (initialDrill ?? "").split("/");
   // The first screen shows Resources; clicking into a drill hides them.
@@ -58,17 +111,43 @@ export function DrillsLibraryPreview({
     setDrillSlug(slug);
     setBrowsed(true);
   };
+  // Open on the first real category, not the favourites folder.
+  const firstCategory = categories.find((c) => c.slug !== FAVOURITES_SLUG);
   const [categorySlug, setCategorySlug] = useState<string>(
-    initialCat || categories[0]?.slug,
+    initialCat || firstCategory?.slug || "",
   );
   const [drillSlug, setDrillSlug] = useState<string | undefined>(
-    initialSlug || categories[0]?.drills[0]?.slug,
+    initialSlug || firstCategory?.drills[0]?.slug,
   );
 
   const category =
     categories.find((c) => c.slug === categorySlug) ?? categories[0];
   const activeDrill: Drill | undefined =
     category?.drills.find((d) => d.slug === drillSlug) ?? category?.drills[0];
+
+  // One view per opening of a drill, counted when the member presses play.
+  const viewedRef = useRef<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const activeId = activeDrill?.id;
+  const countView = useCallback(() => {
+    if (!activeId || viewedRef.current === activeId) return;
+    viewedRef.current = activeId;
+    recordActivity("view", activeId).catch(() => {});
+  }, [activeId]);
+  useEffect(() => {
+    viewedRef.current = null;
+  }, [activeId]);
+  // Bunny's player is an iframe: clicking into it (to press play) moves
+  // focus off the page, which is the signal we can see from here.
+  useEffect(() => {
+    const onBlur = () =>
+      setTimeout(() => {
+        if (iframeRef.current && document.activeElement === iframeRef.current)
+          countView();
+      }, 0);
+    window.addEventListener("blur", onBlur);
+    return () => window.removeEventListener("blur", onBlur);
+  }, [countView]);
 
   const ageFilterBar = (
     <div className="mb-6 flex flex-wrap items-center gap-2">
@@ -134,6 +213,7 @@ export function DrillsLibraryPreview({
             {isEmbedUrl(activeDrill.videoUrl) ? (
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
                 <iframe
+                  ref={iframeRef}
                   key={activeDrill.videoUrl}
                   src={activeDrill.videoUrl}
                   title={activeDrill.title}
@@ -150,6 +230,7 @@ export function DrillsLibraryPreview({
                 controls
                 playsInline
                 preload="metadata"
+                onPlay={countView}
                 className="aspect-video w-full rounded-2xl bg-black object-contain"
               />
             ) : (
@@ -192,9 +273,32 @@ export function DrillsLibraryPreview({
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 {category.name}
               </p>
-              <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                {activeDrill.title}
-              </h3>
+              <div className="mt-2 flex items-start justify-between gap-3">
+                <h3 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+                  {activeDrill.title}
+                </h3>
+                {favouritesOn && activeDrill.id && (
+                  <button
+                    type="button"
+                    onClick={() => toggleFavourite(activeDrill.id!)}
+                    aria-pressed={favourites.has(activeDrill.id)}
+                    className={
+                      favourites.has(activeDrill.id)
+                        ? "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-100 px-3.5 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-200"
+                        : "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-2 text-xs font-semibold text-foreground/80 transition hover:border-amber-400 hover:text-amber-700"
+                    }
+                  >
+                    <Star
+                      className={
+                        favourites.has(activeDrill.id)
+                          ? "size-4 fill-amber-500 text-amber-500"
+                          : "size-4"
+                      }
+                    />
+                    {favourites.has(activeDrill.id) ? "Favourite" : "Add to favourites"}
+                  </button>
+                )}
+              </div>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 {activeDrill.durationMinutes > 0 && (
                   <span className="inline-flex items-center gap-1.5">
@@ -394,6 +498,15 @@ export function DrillsLibraryPreview({
                       : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-4 py-2 text-xs font-semibold text-foreground/80 transition hover:border-primary/40 hover:bg-muted"
                   }
                 >
+                  {cat.slug === FAVOURITES_SLUG && (
+                    <Star
+                      className={
+                        active
+                          ? "size-3.5 fill-white"
+                          : "size-3.5 fill-amber-500 text-amber-500"
+                      }
+                    />
+                  )}
                   {cat.name}
                   <span
                     className={
@@ -451,6 +564,9 @@ export function DrillsLibraryPreview({
                       <span className="absolute left-2 top-2 rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
                         #{i + 1}
                       </span>
+                      {drill.id && favourites.has(drill.id) && (
+                        <Star className="absolute bottom-2 right-2 size-4 fill-amber-300 text-amber-300 drop-shadow" />
+                      )}
                     </div>
                     <div className="mt-3 flex-1">
                       <p className="text-sm font-bold leading-snug text-foreground">

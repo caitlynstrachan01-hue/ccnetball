@@ -6,6 +6,7 @@ import { DrillsLibraryPreview } from "@/components/drills-library-preview";
 import {
   getLibraryAccess,
   loadDrillCategories,
+  loadFavouriteDrillIds,
   loadLibraryResources,
 } from "@/lib/drills-store.server";
 import {
@@ -27,6 +28,7 @@ export default async function LibraryPage({
   searchParams: Promise<{ drill?: string; view?: string }>;
 }) {
   const {
+    supabase,
     user,
     isAdmin,
     hasSubscription,
@@ -72,9 +74,10 @@ export default async function LibraryPage({
     );
   }
 
-  const [allCategories, resources] = await Promise.all([
+  const [allCategories, resources, favourites] = await Promise.all([
     loadDrillCategories(),
     loadLibraryResources(),
+    loadFavouriteDrillIds(supabase, user.id),
   ]);
   const categories = previewAs
     ? filterCategoriesForAccess(allCategories, [
@@ -168,6 +171,7 @@ export default async function LibraryPage({
           <DrillsLibraryPreview
             key={previewAs?.id ?? "own"}
             categories={categories}
+            initialFavourites={favourites}
             initialDrill={drill}
             resources={resources}
           />

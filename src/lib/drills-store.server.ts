@@ -223,3 +223,16 @@ export async function loadLibraryResources(): Promise<LibraryResource[]> {
     return [];
   }
 }
+
+/** Drill ids a member has starred. Empty if the table isn't set up yet. */
+export async function loadFavouriteDrillIds(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("drill_favourites")
+    .select("drill_id")
+    .eq("user_id", userId);
+  if (error) return [];
+  return (data ?? []).map((r) => r.drill_id as string);
+}

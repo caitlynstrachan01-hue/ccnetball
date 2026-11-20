@@ -20,6 +20,7 @@ export function isEmbedUrl(url: string | undefined) {
 
 /** A row from the public.drills table. */
 export type DrillRow = {
+  id?: string;
   category_slug: string;
   slug: string;
   title: string;
@@ -48,7 +49,7 @@ export type DrillRow = {
 };
 
 export const DRILL_ROW_COLUMNS =
-  "category_slug, slug, title, description, make_it_easier, make_it_harder, variations, video_path, duration_minutes, level, focus, sort_order, published, equipment, group_size, tags, age_groups, age_notes, session_slot, hidden";
+  "id, category_slug, slug, title, description, make_it_easier, make_it_harder, variations, video_path, duration_minutes, level, focus, sort_order, published, equipment, group_size, tags, age_groups, age_notes, session_slot, hidden";
 
 /** Columns added by migration 0004 — loaded separately so older databases still work. */
 export const DRILL_ROW_COLUMNS_WITH_PDF = `${DRILL_ROW_COLUMNS}, pdf_path`;
@@ -103,6 +104,7 @@ function applyRow(
   }
   return {
     ...base,
+    id: row.id,
     saved: true,
     // Before migration 0008 the list position doubled as the drill number.
     number: row.drill_number ?? row.sort_order + 1,

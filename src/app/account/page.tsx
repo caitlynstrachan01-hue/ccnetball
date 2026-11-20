@@ -122,6 +122,13 @@ export default async function AccountPage() {
                 <ArrowRight className="size-4" />
               </Link>
               <Link
+                href="/admin/drill-insights"
+                className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
+              >
+                Drill popularity
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
                 href="/tools/competition-builder"
                 className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
               >
