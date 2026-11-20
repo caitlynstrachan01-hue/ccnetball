@@ -71,7 +71,7 @@ function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
     ...d,
     description: d.description ?? "",
     equipment: d.equipment ?? "",
-    groupSize: d.groupSize ?? "",
+    groupSize: d.groupSize ?? (d.saved ? "" : (cat.defaultGroupSize ?? "")),
     coachingPoints: d.coachingPoints?.length ? d.coachingPoints : [""],
     instructions: d.instructions?.length ? d.instructions : [""],
     makeItEasier: d.makeItEasier?.length ? d.makeItEasier : [""],
@@ -541,7 +541,7 @@ export function DrillsLibraryAdmin({
       {
         slug,
         title: "New drill",
-        durationMinutes: 0,
+        durationMinutes: category.defaultDurationMinutes ?? 0,
         focus: "",
         custom: true,
         number: Math.max(0, ...drills.map((d) => d.number ?? 0)) + 1,

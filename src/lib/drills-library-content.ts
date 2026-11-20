@@ -81,6 +81,10 @@ export type DrillCategory = {
   defaultSlot: SessionSlotId;
   /** Age groups ticked automatically on new drills added to this category. */
   defaultAgeGroups?: AgeGroupId[];
+  /** Time filled in automatically on new drills (Caitlyn can change it). */
+  defaultDurationMinutes?: number;
+  /** Group size filled in automatically on new drills (Caitlyn can change it). */
+  defaultGroupSize?: string;
 };
 
 // Demo data — replace with your full library, ordered as you prefer.
@@ -124,15 +128,17 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "footwork",
     defaultSlot: "ball-footwork",
+    defaultDurationMinutes: 5,
+    defaultGroupSize: "2-3",
     name: "Footwork",
     short: "The foundation everything else is built on.",
     displayCount: "19",
     drills: [
-      { slug: "landing-technique", title: "Landing technique", durationMinutes: 8, level: "Beginner", focus: "Landings" },
-      { slug: "change-of-direction", title: "Change of direction", durationMinutes: 10, level: "Intermediate", focus: "Agility" },
-      { slug: "pivot-and-turn", title: "Pivot and turn", durationMinutes: 7, level: "Beginner", focus: "Footwork" },
-      { slug: "split-step-timing", title: "Split step timing", durationMinutes: 9, level: "Intermediate", focus: "Reactivity" },
-      { slug: "sprint-mechanics", title: "Sprint mechanics", durationMinutes: 10, level: "Intermediate", focus: "Speed" },
+      { slug: "landing-technique", title: "Landing technique", durationMinutes: 5, level: "Beginner", focus: "Landings" },
+      { slug: "change-of-direction", title: "Change of direction", durationMinutes: 5, level: "Intermediate", focus: "Agility" },
+      { slug: "pivot-and-turn", title: "Pivot and turn", durationMinutes: 5, level: "Beginner", focus: "Footwork" },
+      { slug: "split-step-timing", title: "Split step timing", durationMinutes: 5, level: "Intermediate", focus: "Reactivity" },
+      { slug: "sprint-mechanics", title: "Sprint mechanics", durationMinutes: 5, level: "Intermediate", focus: "Speed" },
     ],
   },
   {
