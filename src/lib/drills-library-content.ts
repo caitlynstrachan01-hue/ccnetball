@@ -87,6 +87,8 @@ export type DrillCategory = {
   defaultDurationMinutes?: number;
   /** Group size filled in automatically on new drills (Caitlyn can change it). */
   defaultGroupSize?: string;
+  /** Tags added automatically to new drills in this category. */
+  defaultTags?: string[];
 };
 
 // Demo data — replace with your full library, ordered as you prefer.
@@ -114,6 +116,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "ball-work",
     defaultSlot: "ball-footwork",
+    defaultTags: ["ball work"],
     defaultDurationMinutes: 5,
     name: "Ball Work",
     short: "Dynamic drills, position-specific work, and a team or half-court finisher.",
@@ -147,6 +150,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "attacking-drills",
     defaultSlot: "skill",
+    defaultTags: ["attack"],
     name: "Attacking Drills",
     short: "Leads, re-offers, and pressure attacks.",
     displayCount: "20",
@@ -184,6 +188,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "defending-drills",
     defaultSlot: "skill",
+    defaultTags: ["defence"],
     name: "Defending Drills",
     short: "One-on-one work through to reading the intercept.",
     displayCount: "20",
@@ -231,6 +236,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "team-drills",
     defaultSlot: "team-drill",
+    defaultTags: ["team drill"],
     defaultDurationMinutes: 5,
     defaultGroupSize: "Entire team",
     name: "Team Drills",
@@ -254,6 +260,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
   {
     slug: "shooting",
     defaultSlot: "skill",
+    defaultTags: ["shooting"],
     name: "Shooting",
     short: "From base technique through to contested shots.",
     displayCount: "15",

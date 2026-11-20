@@ -77,7 +77,7 @@ function toEditable(d: Drill, cat: DrillCategory): EditableDrill {
     makeItEasier: d.makeItEasier?.length ? d.makeItEasier : [""],
     makeItHarder: d.makeItHarder?.length ? d.makeItHarder : [""],
     variations: d.variations?.length ? d.variations : [""],
-    tags: d.tags ?? [],
+    tags: d.tags ?? (d.saved ? [] : (cat.defaultTags ?? [])),
     ageGroups: d.ageGroups ?? (d.saved ? [] : (cat.defaultAgeGroups ?? [])),
     ageNotes: d.ageNotes ?? {},
     sessionSlot: d.sessionSlot ?? cat.defaultSlot,
@@ -275,12 +275,23 @@ export function DrillsLibraryAdmin({
   function toggleAgeGroup(id: AgeGroupId) {
     if (!drill) return;
     const has = drill.ageGroups.includes(id);
+    // Ticking NetSetGo also tags the drill "NetSetGo" (and unticking removes it).
+    const isNsgTag = (t: string) => t.toLowerCase() === "netsetgo";
+    const tags =
+      id !== "netsetgo"
+        ? drill.tags
+        : has
+          ? drill.tags.filter((t) => !isNsgTag(t))
+          : drill.tags.some(isNsgTag)
+            ? drill.tags
+            : [...drill.tags, "NetSetGo"];
     updateDrill({
       ageGroups: has
         ? drill.ageGroups.filter((a) => a !== id)
         : AGE_GROUPS.map((a) => a.id).filter(
             (a) => a === id || drill.ageGroups.includes(a),
           ),
+      tags,
     });
   }
 
