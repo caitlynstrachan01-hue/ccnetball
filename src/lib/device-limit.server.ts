@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/server";
 
 /** Cookie holding this browser's device id (set by the middleware). */
 export const DEVICE_COOKIE = "ccn_device";
@@ -34,11 +35,19 @@ export async function checkDevice(
   userId: string,
   { fresh = false }: { fresh?: boolean } = {},
 ): Promise<"ok" | "revoked"> {
+  // Members can only read their device list; writes go through the server's
+  // service role so nobody can un-revoke a signed-out device themselves.
+  let db: SupabaseClient = supabase;
+  try {
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) db = createAdminClient();
+  } catch {
+    db = supabase;
+  }
   try {
     const deviceId = (await cookies()).get(DEVICE_COOKIE)?.value;
     if (!deviceId) return "ok";
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("member_devices")
       .select("id, device_id, last_seen_at, revoked_at")
       .eq("user_id", userId)
@@ -51,14 +60,14 @@ export async function checkDevice(
     if (current && !fresh) {
       if (current.revoked_at) return "revoked";
       if (Date.now() - new Date(current.last_seen_at).getTime() > TOUCH_AFTER_MS) {
-        await supabase.from("member_devices").update({ last_seen_at: now }).eq("id", current.id);
+        await db.from("member_devices").update({ last_seen_at: now }).eq("id", current.id);
       }
       return "ok";
     }
 
     // New device, or a fresh sign-in on a known one: make it active.
     const h = await headers();
-    const { error: upsertError } = await supabase.from("member_devices").upsert(
+    const { error: upsertError } = await db.from("member_devices").upsert(
       {
         user_id: userId,
         device_id: deviceId,
@@ -75,7 +84,7 @@ export async function checkDevice(
     const others = devices.filter((d) => d.device_id !== deviceId && !d.revoked_at);
     const excess = others.slice(DEVICE_LIMIT - 1);
     if (excess.length) {
-      await supabase
+      await db
         .from("member_devices")
         .update({ revoked_at: now })
         .in("id", excess.map((d) => d.id));

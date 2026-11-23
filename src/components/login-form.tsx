@@ -1,5 +1,6 @@
 "use client";
 
+import { safeNextPath } from "@/lib/safe-redirect";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, KeyRound, Lock, Mail, Send } from "lucide-react";
@@ -10,7 +11,7 @@ type Mode = "password" | "magic" | "reset";
 export function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const nextPath = searchParams.get("next") || "/account";
+  const nextPath = safeNextPath(searchParams.get("next"));
 
   const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");

@@ -5,6 +5,24 @@ const nextConfig: NextConfig = {
     // Allow our higher-quality preset alongside the default 75
     qualities: [75, 90, 95],
   },
+  poweredByHeader: false,
+  async headers() {
+    // Safe defaults that don't affect Bunny videos, Stripe or analytics.
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Nobody can show this site inside their own page (click-jacking).
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(self \"https://checkout.stripe.com\")" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // Old Wix booking service pages
