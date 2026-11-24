@@ -205,6 +205,7 @@ export const DRILL_CATEGORIES: DrillCategory[] = [
     defaultSlot: "skill",
     name: "Circle Defence",
     short: "Defending the circle — positioning, rebounding and pressure on the shot.",
+    defaultTags: ["defence"],
     drills: [],
   },
   {
