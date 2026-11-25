@@ -77,6 +77,11 @@ type Folder = {
   drills: Drill[];
 };
 
+type DragState = {
+  startPointer: Point;
+  snapshot: Item;
+};
+
 // ---- Constants ------------------------------------------------------------
 
 const POSITIONS: Position[] = ["GS", "GA", "WA", "C", "WD", "GD", "GK"];
@@ -87,6 +92,10 @@ const PALETTE_FILL: Record<Palette, string> = {
   purple: "#7E22CE",
   orange: "#EA580C",
 };
+
+const COURT_BG = "#FFFFFF";
+const COURT_LINE = "#334155";
+const SELECT_HIGHLIGHT = "#E91E63";
 
 const INK_COLORS = [
   { key: "black", value: "#111111", name: "Black" },
@@ -291,8 +300,6 @@ function clientToSvg(
   return { x: t.x, y: t.y };
 }
 
-// Smoothed path from a set of points using quadratic Bézier curves through
-// the midpoints — keeps the drawn shape without the jagged corners.
 function smoothedPath(points: Point[]): string {
   if (points.length === 0) return "";
   if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
@@ -311,6 +318,14 @@ function smoothedPath(points: Point[]): string {
   return d;
 }
 
+function translateItem(item: Item, dx: number, dy: number): Item {
+  if (item.kind === "token") return { ...item, x: item.x + dx, y: item.y + dy };
+  return {
+    ...item,
+    points: item.points.map((p) => ({ x: p.x + dx, y: p.y + dy })),
+  };
+}
+
 // ---- Component ------------------------------------------------------------
 
 export function CourtPlannerApp() {
@@ -321,8 +336,9 @@ export function CourtPlannerApp() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [saveOpen, setSaveOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [dragId, setDragId] = useState<string | null>(null);
+  const [drag, setDrag] = useState<DragState | null>(null);
   const [lineDraft, setLineDraft] = useState<LineItem | null>(null);
   const [penDraft, setPenDraft] = useState<PenItem | null>(null);
   const [orientation, setOrientation] = useState<Orientation>("portrait");
@@ -362,8 +378,6 @@ export function CourtPlannerApp() {
     }
   }, [orientation]);
 
-  // Any new action captures the current state onto the undo stack and clears
-  // the redo stack — matches standard undo/redo behaviour.
   const pushHistory = useCallback((snapshot: Item[]) => {
     setHistory((h) => [...h, snapshot]);
     setRedoStack([]);
@@ -375,6 +389,7 @@ export function CourtPlannerApp() {
       const prev = h[h.length - 1];
       setRedoStack((r) => [...r, items]);
       setItems(prev);
+      setSelectedId(null);
       return h.slice(0, -1);
     });
   }, [items]);
@@ -385,6 +400,7 @@ export function CourtPlannerApp() {
       const next = r[r.length - 1];
       setHistory((h) => [...h, items]);
       setItems(next);
+      setSelectedId(null);
       return r.slice(0, -1);
     });
   }, [items]);
@@ -394,7 +410,29 @@ export function CourtPlannerApp() {
     if (!window.confirm("Clear everything on the court?")) return;
     pushHistory(items);
     setItems([]);
+    setSelectedId(null);
   }, [items, pushHistory]);
+
+  const handleDeleteSelected = useCallback(() => {
+    if (!selectedId) return;
+    pushHistory(items);
+    setItems((prev) => prev.filter((i) => i.id !== selectedId));
+    setSelectedId(null);
+  }, [selectedId, items, pushHistory]);
+
+  // Delete / Backspace while an item is selected (and no input focused)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const el = document.activeElement as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) return;
+      if (!selectedId) return;
+      e.preventDefault();
+      handleDeleteSelected();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedId, handleDeleteSelected]);
 
   // ---- Pointer -------------------------------------------------------------
   const handlePointerDown = useCallback(
@@ -407,8 +445,8 @@ export function CourtPlannerApp() {
         orientation,
       );
       const target = e.target as Element;
-      const tokenEl = target.closest("[data-token-id]");
-      const tokenId = tokenEl?.getAttribute("data-token-id") ?? null;
+      const itemEl = target.closest("[data-item-id]");
+      const itemId = itemEl?.getAttribute("data-item-id") ?? null;
 
       if (mode.kind === "place") {
         pushHistory(items);
@@ -452,11 +490,18 @@ export function CourtPlannerApp() {
         return;
       }
 
-      if (tokenId) {
-        svgRef.current.setPointerCapture(e.pointerId);
-        pushHistory(items);
-        setDragId(tokenId);
+      // select mode — start dragging the tapped item, or clear selection
+      if (itemId) {
+        const item = items.find((i) => i.id === itemId);
+        if (item) {
+          svgRef.current.setPointerCapture(e.pointerId);
+          pushHistory(items);
+          setSelectedId(itemId);
+          setDrag({ startPointer: { x, y }, snapshot: item });
+          return;
+        }
       }
+      setSelectedId(null);
     },
     [
       mode,
@@ -474,18 +519,19 @@ export function CourtPlannerApp() {
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!svgRef.current) return;
-      if (!dragId && !lineDraft && !penDraft) return;
+      if (!drag && !lineDraft && !penDraft) return;
       const { x, y } = clientToSvg(
         svgRef.current,
         e.clientX,
         e.clientY,
         orientation,
       );
-      if (dragId) {
+      if (drag) {
+        const dx = x - drag.startPointer.x;
+        const dy = y - drag.startPointer.y;
+        const updated = translateItem(drag.snapshot, dx, dy);
         setItems((prev) =>
-          prev.map((it) =>
-            it.id === dragId && it.kind === "token" ? { ...it, x, y } : it,
-          ),
+          prev.map((it) => (it.id === drag.snapshot.id ? updated : it)),
         );
       } else if (lineDraft) {
         setLineDraft({ ...lineDraft, points: [...lineDraft.points, { x, y }] });
@@ -493,7 +539,7 @@ export function CourtPlannerApp() {
         setPenDraft({ ...penDraft, points: [...penDraft.points, { x, y }] });
       }
     },
-    [dragId, lineDraft, penDraft, orientation],
+    [drag, lineDraft, penDraft, orientation],
   );
 
   const handlePointerUp = useCallback(
@@ -508,8 +554,6 @@ export function CourtPlannerApp() {
         const dx = last.x - first.x;
         const dy = last.y - first.y;
         if (Math.hypot(dx, dy) > 10) {
-          // For straight lines, only keep start + end. Curved keeps the drag
-          // path so the shape follows the drawn motion.
           const trimmed =
             lineDraft.shape === "straight" ? [first, last] : pts;
           pushHistory(items);
@@ -524,7 +568,7 @@ export function CourtPlannerApp() {
         }
         setPenDraft(null);
       }
-      setDragId(null);
+      setDrag(null);
     },
     [lineDraft, penDraft, items, pushHistory],
   );
@@ -574,6 +618,7 @@ export function CourtPlannerApp() {
     (drill: Drill) => {
       pushHistory(items);
       setItems(drill.items);
+      setSelectedId(null);
       setLoadOpen(false);
     },
     [items, pushHistory],
@@ -663,8 +708,9 @@ export function CourtPlannerApp() {
     if (mode.kind === "line")
       return `Press and drag to draw a ${lineShape} line${lineArrow ? " with arrow" : ""}${lineDotted ? ", dotted" : ""}`;
     if (mode.kind === "pen") return "Press and drag to draw freely";
-    return "Drag players to move them, or pick a tool";
-  }, [mode, lineShape, lineArrow, lineDotted]);
+    if (selectedId) return "Drag the selected item to move it, or tap Delete";
+    return "Tap a player or line to move it, or pick a tool";
+  }, [mode, lineShape, lineArrow, lineDotted, selectedId]);
 
   const canUndo = history.length > 0;
   const canRedo = redoStack.length > 0;
@@ -681,9 +727,12 @@ export function CourtPlannerApp() {
         : { kind: "place", label, palette },
     );
 
+  // Toolbar layout — side (vertical) when court is up/down, bottom
+  // (vertical scroll, condensed) when court is sideways.
+  const toolbarOnSide = orientation === "portrait";
+
   return (
     <div className="flex h-dvh min-h-dvh w-full flex-col bg-[#0F1012] text-white">
-      {/* Top bar */}
       <header className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/40 px-4 py-2">
         <Link
           href="/shop"
@@ -699,15 +748,23 @@ export function CourtPlannerApp() {
         </span>
       </header>
 
-      {/* Mode hint */}
-      <div className="border-b border-white/10 bg-white/5 px-4 py-1.5 text-center text-[11px] font-medium text-white/70 sm:text-xs">
+      <div className="border-b border-white/10 bg-white/5 px-4 py-1 text-center text-[11px] font-medium text-white/70">
         {modeLabel}
       </div>
 
-      <div className="flex flex-1 flex-col-reverse overflow-hidden md:flex-row">
-        {/* Toolbar */}
-        <aside className="flex max-h-[50dvh] shrink-0 overflow-y-auto border-t border-white/10 bg-black/40 p-3 md:max-h-none md:w-[250px] md:border-r md:border-t-0">
-          <div className="flex w-full flex-col gap-3">
+      <div
+        className={`flex flex-1 overflow-hidden ${
+          toolbarOnSide ? "flex-col-reverse md:flex-row" : "flex-col-reverse"
+        }`}
+      >
+        <aside
+          className={`flex shrink-0 overflow-y-auto border-white/10 bg-black/40 p-2 ${
+            toolbarOnSide
+              ? "max-h-[55dvh] border-t md:max-h-none md:w-[195px] md:border-r md:border-t-0"
+              : "max-h-[40dvh] border-t"
+          }`}
+        >
+          <div className="flex w-full flex-col gap-2">
             <ToolbarGroup label="Players">
               <TokenButton
                 label="A"
@@ -753,63 +810,57 @@ export function CourtPlannerApp() {
               ))}
             </ToolbarGroup>
 
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-                Court
-              </p>
-              <div className="grid grid-cols-2 gap-1.5">
-                <ToolButton
-                  label="Side"
-                  icon={<RectangleHorizontal className="size-4" />}
-                  active={orientation === "landscape"}
-                  onClick={() => setOrientation("landscape")}
-                />
-                <ToolButton
-                  label="Up/down"
-                  icon={<RectangleVertical className="size-4" />}
-                  active={orientation === "portrait"}
-                  onClick={() => setOrientation("portrait")}
-                />
-              </div>
+            <SectionLabel>Court</SectionLabel>
+            <div className="grid grid-cols-2 gap-1">
+              <ToolButton
+                label="Side"
+                icon={<RectangleHorizontal className="size-3.5" />}
+                active={orientation === "landscape"}
+                onClick={() => setOrientation("landscape")}
+              />
+              <ToolButton
+                label="Up/down"
+                icon={<RectangleVertical className="size-3.5" />}
+                active={orientation === "portrait"}
+                onClick={() => setOrientation("portrait")}
+              />
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-                Drawing
-              </p>
+            <SectionLabel>Drawing</SectionLabel>
+            <div className="grid grid-cols-3 gap-1">
               <ToolButton
                 label="Move"
-                icon={<MousePointer2 className="size-4" />}
+                icon={<MousePointer2 className="size-3.5" />}
                 active={mode.kind === "select"}
                 onClick={() => setMode({ kind: "select" })}
+                compact
               />
               <ToolButton
                 label="Pen"
-                icon={<Pencil className="size-4" />}
+                icon={<Pencil className="size-3.5" />}
                 active={mode.kind === "pen"}
                 onClick={() =>
                   setMode((m) =>
                     m.kind === "pen" ? { kind: "select" } : { kind: "pen" },
                   )
                 }
+                compact
               />
               <ToolButton
                 label="Line"
-                icon={<Spline className="size-4" />}
+                icon={<Spline className="size-3.5" />}
                 active={mode.kind === "line"}
                 onClick={() =>
                   setMode((m) =>
                     m.kind === "line" ? { kind: "select" } : { kind: "line" },
                   )
                 }
+                compact
               />
             </div>
 
             {mode.kind === "line" && (
-              <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-                  Line options
-                </p>
+              <div className="flex flex-col gap-1.5 rounded-md border border-white/10 bg-white/[0.03] p-2">
                 <SegmentedToggle
                   label="Shape"
                   options={[
@@ -841,19 +892,17 @@ export function CourtPlannerApp() {
             )}
 
             {(mode.kind === "pen" || mode.kind === "line") && (
-              <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+              <div className="flex flex-col gap-1.5 rounded-md border border-white/10 bg-white/[0.03] p-2">
                 <div className="flex flex-col gap-1">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-                    Thickness
-                  </p>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <SectionLabel compact>Thickness</SectionLabel>
+                  <div className="grid grid-cols-3 gap-1">
                     {THICKNESSES.map((t) => (
                       <button
                         key={t.key}
                         type="button"
                         onClick={() => setInkThickness(t.value)}
                         aria-pressed={inkThickness === t.value}
-                        className={`flex h-9 items-center justify-center rounded-md border transition ${
+                        className={`flex h-7 items-center justify-center rounded border transition ${
                           inkThickness === t.value
                             ? "border-white bg-white/10"
                             : "border-white/10 hover:border-white/30"
@@ -870,10 +919,8 @@ export function CourtPlannerApp() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-                    Colour
-                  </p>
-                  <div className="grid grid-cols-5 gap-1.5">
+                  <SectionLabel compact>Colour</SectionLabel>
+                  <div className="grid grid-cols-5 gap-1">
                     {INK_COLORS.map((c) => (
                       <button
                         key={c.key}
@@ -894,54 +941,68 @@ export function CourtPlannerApp() {
               </div>
             )}
 
-            <div className="flex flex-col gap-1.5 border-t border-white/10 pt-3">
-              <div className="grid grid-cols-2 gap-1.5">
+            <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-2">
+              <div className="grid grid-cols-2 gap-1">
                 <ToolButton
                   label="Undo"
-                  icon={<Undo2 className="size-4" />}
+                  icon={<Undo2 className="size-3.5" />}
                   onClick={handleUndo}
                   disabled={!canUndo}
+                  compact
                 />
                 <ToolButton
                   label="Redo"
-                  icon={<Redo2 className="size-4" />}
+                  icon={<Redo2 className="size-3.5" />}
                   onClick={handleRedo}
                   disabled={!canRedo}
+                  compact
                 />
               </div>
               <ToolButton
+                label="Delete selected"
+                icon={<X className="size-3.5" />}
+                onClick={handleDeleteSelected}
+                disabled={!selectedId}
+                compact
+              />
+              <ToolButton
                 label="Clear all"
-                icon={<Trash2 className="size-4" />}
+                icon={<Trash2 className="size-3.5" />}
                 onClick={handleClearAll}
                 tone="danger"
                 disabled={items.length === 0}
+                compact
               />
             </div>
 
-            <div className="flex flex-col gap-1.5 border-t border-white/10 pt-3">
+            <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-2">
               <ToolButton
                 label="Save"
-                icon={<Save className="size-4" />}
+                icon={<Save className="size-3.5" />}
                 onClick={() => setSaveOpen(true)}
                 tone="primary"
                 disabled={items.length === 0}
+                compact
               />
-              <ToolButton
-                label={`Open (${folders.reduce((n, f) => n + f.drills.length, 0)})`}
-                icon={<FolderOpen className="size-4" />}
-                onClick={() => setLoadOpen(true)}
-              />
-              <ToolButton
-                label="Export PNG"
-                icon={<Download className="size-4" />}
-                onClick={handleExport}
-                disabled={items.length === 0}
-              />
+              <div className="grid grid-cols-2 gap-1">
+                <ToolButton
+                  label="Open"
+                  icon={<FolderOpen className="size-3.5" />}
+                  onClick={() => setLoadOpen(true)}
+                  compact
+                />
+                <ToolButton
+                  label="Export"
+                  icon={<Download className="size-3.5" />}
+                  onClick={handleExport}
+                  disabled={items.length === 0}
+                  compact
+                />
+              </div>
             </div>
           </div>
         </aside>
 
-        {/* Court */}
         <main className="relative flex flex-1 items-center justify-center overflow-hidden p-3">
           <svg
             ref={svgRef}
@@ -989,15 +1050,13 @@ export function CourtPlannerApp() {
                   : undefined
               }
             >
-              {/* Court background */}
-              <rect x={0} y={0} width={VB_W} height={VB_H} fill="#6FA87C" />
-              {/* Thirds */}
+              <rect x={0} y={0} width={VB_W} height={VB_H} fill={COURT_BG} />
               <line
                 x1={VB_W / 3}
                 y1={0}
                 x2={VB_W / 3}
                 y2={VB_H}
-                stroke="white"
+                stroke={COURT_LINE}
                 strokeWidth={3}
               />
               <line
@@ -1005,57 +1064,48 @@ export function CourtPlannerApp() {
                 y1={0}
                 x2={(2 * VB_W) / 3}
                 y2={VB_H}
-                stroke="white"
+                stroke={COURT_LINE}
                 strokeWidth={3}
               />
-              {/* Border */}
               <rect
                 x={0}
                 y={0}
                 width={VB_W}
                 height={VB_H}
                 fill="none"
-                stroke="white"
+                stroke={COURT_LINE}
                 strokeWidth={4}
               />
-              {/* Centre circle */}
               <circle
                 cx={VB_W / 2}
                 cy={VB_H / 2}
                 r={18}
                 fill="none"
-                stroke="white"
+                stroke={COURT_LINE}
                 strokeWidth={3}
               />
-              {/* Goal semicircles */}
               <path
                 d={`M 0 ${VB_H / 2 - GOAL_RADIUS} A ${GOAL_RADIUS} ${GOAL_RADIUS} 0 0 1 0 ${VB_H / 2 + GOAL_RADIUS}`}
                 fill="none"
-                stroke="white"
+                stroke={COURT_LINE}
                 strokeWidth={3}
               />
               <path
                 d={`M ${VB_W} ${VB_H / 2 - GOAL_RADIUS} A ${GOAL_RADIUS} ${GOAL_RADIUS} 0 0 0 ${VB_W} ${VB_H / 2 + GOAL_RADIUS}`}
                 fill="none"
-                stroke="white"
+                stroke={COURT_LINE}
                 strokeWidth={3}
               />
-              {/* Goal posts */}
-              <circle cx={0} cy={VB_H / 2} r={7} fill="white" />
-              <circle cx={VB_W} cy={VB_H / 2} r={7} fill="white" />
+              <circle cx={0} cy={VB_H / 2} r={7} fill={COURT_LINE} />
+              <circle cx={VB_W} cy={VB_H / 2} r={7} fill={COURT_LINE} />
 
-              {/* Pen strokes */}
               {items
                 .filter((it): it is PenItem => it.kind === "pen")
                 .map((p) => (
-                  <polyline
+                  <PenRender
                     key={p.id}
-                    points={p.points.map((pt) => `${pt.x},${pt.y}`).join(" ")}
-                    fill="none"
-                    stroke={p.color}
-                    strokeWidth={p.thickness}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    item={p}
+                    selected={selectedId === p.id}
                   />
                 ))}
               {penDraft && (
@@ -1072,26 +1122,39 @@ export function CourtPlannerApp() {
                 />
               )}
 
-              {/* Lines */}
               {items
                 .filter((it): it is LineItem => it.kind === "line")
                 .map((l) => (
-                  <LineItemSvg key={l.id} item={l} />
+                  <LineRender
+                    key={l.id}
+                    item={l}
+                    selected={selectedId === l.id}
+                  />
                 ))}
-              {lineDraft && <LineItemSvg item={lineDraft} opacity={0.7} />}
+              {lineDraft && <LineRender item={lineDraft} preview />}
 
-              {/* Tokens */}
               {items
                 .filter((it): it is TokenItem => it.kind === "token")
                 .map((t) => (
-                  <g key={t.id} data-token-id={t.id}>
+                  <g key={t.id} data-item-id={t.id}>
+                    {selectedId === t.id && (
+                      <circle
+                        cx={t.x}
+                        cy={t.y}
+                        r={34}
+                        fill="none"
+                        stroke={SELECT_HIGHLIGHT}
+                        strokeWidth={3}
+                        strokeDasharray="4 3"
+                      />
+                    )}
                     <circle
                       cx={t.x}
                       cy={t.y}
                       r={28}
                       fill={PALETTE_FILL[t.palette]}
-                      stroke="white"
-                      strokeWidth={3}
+                      stroke={COURT_LINE}
+                      strokeWidth={2.5}
                     />
                     <text
                       x={t.x}
@@ -1141,56 +1204,132 @@ export function CourtPlannerApp() {
   );
 }
 
-// ---- Line renderer -------------------------------------------------------
+// ---- Renderers for lines / pens -----------------------------------------
 
-function LineItemSvg({
+function LineRender({
   item,
-  opacity,
+  selected,
+  preview,
 }: {
   item: LineItem;
-  opacity?: number;
+  selected?: boolean;
+  preview?: boolean;
 }) {
   const first = item.points[0];
   const last = item.points[item.points.length - 1];
   const dasharray = item.dotted
     ? `${item.thickness * 2},${item.thickness * 2}`
     : undefined;
-  const markerKey = INK_COLORS.find((c) => c.value === item.color)?.key ?? "black";
+  const markerKey =
+    INK_COLORS.find((c) => c.value === item.color)?.key ?? "black";
   const markerEnd = item.arrow ? `url(#arrowhead-${markerKey})` : undefined;
+  const straight = item.shape === "straight" || item.points.length < 3;
+  const pathD = straight
+    ? `M ${first.x} ${first.y} L ${last.x} ${last.y}`
+    : smoothedPath(item.points);
+  const hitWidth = Math.max(20, item.thickness * 4);
 
-  if (item.shape === "straight" || item.points.length < 3) {
-    return (
-      <line
-        x1={first.x}
-        y1={first.y}
-        x2={last.x}
-        y2={last.y}
+  return (
+    <g data-item-id={preview ? undefined : item.id}>
+      {selected && (
+        <path
+          d={pathD}
+          fill="none"
+          stroke={SELECT_HIGHLIGHT}
+          strokeWidth={item.thickness + 8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={0.35}
+        />
+      )}
+      <path
+        d={pathD}
+        fill="none"
         stroke={item.color}
         strokeWidth={item.thickness}
         strokeLinecap="round"
+        strokeLinejoin="round"
         strokeDasharray={dasharray}
         markerEnd={markerEnd}
-        opacity={opacity}
+        opacity={preview ? 0.7 : 1}
       />
-    );
-  }
+      {!preview && (
+        <path
+          d={pathD}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={hitWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pointerEvents="stroke"
+        />
+      )}
+    </g>
+  );
+}
 
+function PenRender({
+  item,
+  selected,
+}: {
+  item: PenItem;
+  selected?: boolean;
+}) {
+  const pts = item.points.map((pt) => `${pt.x},${pt.y}`).join(" ");
+  const hitWidth = Math.max(20, item.thickness * 4);
   return (
-    <path
-      d={smoothedPath(item.points)}
-      fill="none"
-      stroke={item.color}
-      strokeWidth={item.thickness}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeDasharray={dasharray}
-      markerEnd={markerEnd}
-      opacity={opacity}
-    />
+    <g data-item-id={item.id}>
+      {selected && (
+        <polyline
+          points={pts}
+          fill="none"
+          stroke={SELECT_HIGHLIGHT}
+          strokeWidth={item.thickness + 8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={0.35}
+        />
+      )}
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={item.color}
+        strokeWidth={item.thickness}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <polyline
+        points={pts}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={hitWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        pointerEvents="stroke"
+      />
+    </g>
   );
 }
 
 // ---- Toolbar bits --------------------------------------------------------
+
+function SectionLabel({
+  children,
+  compact,
+}: {
+  children: React.ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <p
+      className={`font-bold uppercase tracking-[0.16em] text-white/50 ${
+        compact ? "text-[9px]" : "text-[10px]"
+      }`}
+    >
+      {children}
+    </p>
+  );
+}
 
 function ToolbarGroup({
   label,
@@ -1202,20 +1341,18 @@ function ToolbarGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1.5">
         {dot && (
           <span
-            className="size-2.5 rounded-full"
+            className="size-2 rounded-full"
             style={{ background: dot }}
             aria-hidden
           />
         )}
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-          {label}
-        </p>
+        <SectionLabel>{label}</SectionLabel>
       </div>
-      <div className="grid grid-cols-4 gap-1.5">{children}</div>
+      <div className="grid grid-cols-4 gap-1">{children}</div>
     </div>
   );
 }
@@ -1236,7 +1373,7 @@ function TokenButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex aspect-square items-center justify-center rounded-lg border text-[11px] font-bold transition ${
+      className={`flex aspect-square items-center justify-center rounded-md border text-[10px] font-bold transition ${
         active ? "ring-2 ring-white" : "border-white/10 hover:border-white/40"
       }`}
       style={{ background: PALETTE_FILL[palette], color: "white" }}
@@ -1253,6 +1390,7 @@ function ToolButton({
   active,
   disabled,
   tone,
+  compact,
 }: {
   label: string;
   icon: React.ReactNode;
@@ -1260,9 +1398,10 @@ function ToolButton({
   active?: boolean;
   disabled?: boolean;
   tone?: "primary" | "danger";
+  compact?: boolean;
 }) {
-  const base =
-    "inline-flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:opacity-40 disabled:pointer-events-none";
+  const sizing = compact ? "px-2 py-1 text-[11px] gap-1" : "px-2.5 py-1.5 text-[11px] gap-1.5";
+  const base = `inline-flex w-full items-center justify-center rounded-md border font-semibold transition disabled:opacity-40 disabled:pointer-events-none ${sizing}`;
   const normal = active
     ? "border-white bg-white text-black"
     : "border-white/15 bg-white/5 text-white hover:border-white/40";
@@ -1280,7 +1419,7 @@ function ToolButton({
       className={`${base} ${toneCls}`}
     >
       {icon}
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 }
@@ -1298,17 +1437,15 @@ function SegmentedToggle({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
-        {label}
-      </p>
-      <div className="grid grid-cols-2 gap-1.5">
+      <SectionLabel compact>{label}</SectionLabel>
+      <div className="grid grid-cols-2 gap-1">
         {options.map((o) => (
           <button
             key={o.value}
             type="button"
             onClick={() => onChange(o.value)}
             aria-pressed={value === o.value}
-            className={`rounded-md border px-2 py-1.5 text-[11px] font-semibold transition ${
+            className={`rounded border px-1.5 py-1 text-[10px] font-semibold transition ${
               value === o.value
                 ? "border-white bg-white text-black"
                 : "border-white/15 bg-white/5 text-white hover:border-white/40"
