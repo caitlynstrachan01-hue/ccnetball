@@ -141,10 +141,11 @@ export default async function ShopPage() {
                           ))}
                         </div>
                         <Link
-                          href={`/shop/${product.slug}`}
+                          href={product.href ?? `/shop/${product.slug}`}
                           className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
                         >
-                          See details <ArrowRight className="size-3.5" />
+                          {product.href ? "Launch app" : "See details"}{" "}
+                          <ArrowRight className="size-3.5" />
                         </Link>
                       </article>
                     </Reveal>

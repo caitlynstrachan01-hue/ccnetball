@@ -27,9 +27,38 @@ export type ShopProduct = {
     | "play-circle";
   /** Temporarily hide from the shop grid. Detail page URL still works. */
   hidden?: boolean;
+  /** Override the tile link — if set, the tile links here instead of /shop/<slug>. */
+  href?: string;
 };
 
 export const SHOP_PRODUCTS: ShopProduct[] = [
+  {
+    slug: "court-planner",
+    name: "Netball Court Planner",
+    short:
+      "Draw drills and set plays on an interactive netball court — perfect for sideline coaching on an iPad.",
+    description:
+      "An interactive netball court for iPad or any browser. Place players (attack, defence, thrower) or full position line-ups in purple and orange, draw lead runs and passes, and sketch freely with the pen. Save plays to named folders — up to five — and pull them up again at the sideline. No paper, no mess, just tap and coach.",
+    features: [
+      "Interactive netball court tuned for iPad",
+      "Attack / defender / thrower tokens plus full position line-ups",
+      "Lead-run and pass arrows, plus a free-drawing pen",
+      "Undo, clear-all and drag-to-move players",
+      "Save plays to up to 5 named folders",
+      "Works courtside in any web browser",
+    ],
+    price: "$9.99 AUD / year",
+    pricingNote:
+      "Annual subscription — one payment, full access on any device.",
+    highlights: [
+      "iPad Ready",
+      "Drill Builder",
+      "Save to Folders",
+      "No Paper Needed",
+    ],
+    icon: "target",
+    href: "/court-planner",
+  },
   {
     slug: "drills-library",
     name: "Netball Drills Library",
