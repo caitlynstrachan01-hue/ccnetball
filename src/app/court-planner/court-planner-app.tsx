@@ -283,7 +283,7 @@ export function CourtPlannerApp() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [arrowDraft, setArrowDraft] = useState<ArrowItem | null>(null);
   const [penDraft, setPenDraft] = useState<PenItem | null>(null);
-  const [orientation, setOrientation] = useState<Orientation>("landscape");
+  const [orientation, setOrientation] = useState<Orientation>("portrait");
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const hydrated = useRef(false);
