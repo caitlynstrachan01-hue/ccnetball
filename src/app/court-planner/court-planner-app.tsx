@@ -4,12 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  Download,
   FolderOpen,
   MousePointer2,
   Pencil,
   RectangleHorizontal,
   RectangleVertical,
+  Redo2,
   Save,
+  Spline,
   Trash2,
   Undo2,
   X,
@@ -20,7 +23,10 @@ import {
 type Position = "GS" | "GA" | "WA" | "C" | "WD" | "GD" | "GK";
 type Palette = "green" | "red" | "purple" | "orange";
 type TokenLabel = "A" | "D" | "T" | Position;
-type ArrowVariant = "lead" | "pass";
+type LineShape = "straight" | "curved";
+type Orientation = "landscape" | "portrait";
+
+type Point = { x: number; y: number };
 
 type TokenItem = {
   id: string;
@@ -31,28 +37,31 @@ type TokenItem = {
   y: number;
 };
 
-type ArrowItem = {
+type LineItem = {
   id: string;
-  kind: "arrow";
-  variant: ArrowVariant;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+  kind: "line";
+  shape: LineShape;
+  arrow: boolean;
+  dotted: boolean;
+  color: string;
+  thickness: number;
+  points: Point[];
 };
 
 type PenItem = {
   id: string;
   kind: "pen";
-  points: Array<{ x: number; y: number }>;
+  color: string;
+  thickness: number;
+  points: Point[];
 };
 
-type Item = TokenItem | ArrowItem | PenItem;
+type Item = TokenItem | LineItem | PenItem;
 
 type Mode =
   | { kind: "select" }
   | { kind: "place"; label: TokenLabel; palette: Palette }
-  | { kind: "arrow"; variant: ArrowVariant }
+  | { kind: "line" }
   | { kind: "pen" };
 
 type Drill = {
@@ -78,23 +87,28 @@ const PALETTE_FILL: Record<Palette, string> = {
   purple: "#7E22CE",
   orange: "#EA580C",
 };
-const PALETTE_LABEL: Record<Palette, string> = {
-  green: "Green",
-  red: "Red",
-  purple: "Purple",
-  orange: "Orange",
-};
-const ARROW_COLOR = "#2563EB";
-const PEN_COLOR = "#111111";
 
-type Orientation = "landscape" | "portrait";
+const INK_COLORS = [
+  { key: "black", value: "#111111", name: "Black" },
+  { key: "blue", value: "#2563EB", name: "Blue" },
+  { key: "red", value: "#DC2626", name: "Red" },
+  { key: "green", value: "#16A34A", name: "Green" },
+  { key: "yellow", value: "#CA8A04", name: "Yellow" },
+] as const;
+const INK_COLOR_VALUES: Set<string> = new Set(INK_COLORS.map((c) => c.value));
+
+const THICKNESSES = [
+  { key: "thin", value: 3, name: "Thin" },
+  { key: "medium", value: 5, name: "Medium" },
+  { key: "thick", value: 9, name: "Thick" },
+] as const;
+const THICKNESS_VALUES: Set<number> = new Set(THICKNESSES.map((t) => t.value));
 
 const STORAGE_KEY = "cc-court-planner-v1";
 const ORIENTATION_KEY = "cc-court-planner-orientation";
 const MAX_FOLDERS = 5;
 const MAX_DRILLS_PER_FOLDER = 30;
 const MAX_NAME_LEN = 60;
-const HISTORY_LIMIT = 50;
 
 const VB_W = 1000;
 const VB_H = 500;
@@ -126,9 +140,33 @@ function isTokenLabel(v: unknown): v is TokenLabel {
 }
 
 function isPalette(v: unknown): v is Palette {
-  return (
-    typeof v === "string" && (PALETTES as readonly string[]).includes(v)
-  );
+  return typeof v === "string" && (PALETTES as readonly string[]).includes(v);
+}
+
+function pointsValid(raw: unknown): Point[] | null {
+  if (!Array.isArray(raw)) return null;
+  const out: Point[] = [];
+  for (const p of raw) {
+    if (
+      p &&
+      typeof p === "object" &&
+      typeof (p as Point).x === "number" &&
+      typeof (p as Point).y === "number"
+    ) {
+      out.push({ x: (p as Point).x, y: (p as Point).y });
+    }
+  }
+  return out;
+}
+
+function clampColor(value: unknown): string {
+  if (typeof value === "string" && INK_COLOR_VALUES.has(value)) return value;
+  return INK_COLORS[0].value;
+}
+
+function clampThickness(value: unknown): number {
+  if (typeof value === "number" && THICKNESS_VALUES.has(value)) return value;
+  return THICKNESSES[1].value;
 }
 
 function validateFolders(raw: unknown): Folder[] {
@@ -175,43 +213,29 @@ function validateFolders(raw: unknown): Folder[] {
             x: it.x,
             y: it.y,
           });
-        } else if (
-          it.kind === "arrow" &&
-          typeof it.id === "string" &&
-          (it.variant === "lead" || it.variant === "pass") &&
-          typeof it.x1 === "number" &&
-          typeof it.y1 === "number" &&
-          typeof it.x2 === "number" &&
-          typeof it.y2 === "number"
-        ) {
+        } else if (it.kind === "line" && typeof it.id === "string") {
+          const pts = pointsValid(it.points);
+          if (!pts || pts.length < 2) continue;
           items.push({
             id: it.id,
-            kind: "arrow",
-            variant: it.variant,
-            x1: it.x1,
-            y1: it.y1,
-            x2: it.x2,
-            y2: it.y2,
+            kind: "line",
+            shape: it.shape === "curved" ? "curved" : "straight",
+            arrow: it.arrow !== false,
+            dotted: it.dotted === true,
+            color: clampColor(it.color),
+            thickness: clampThickness(it.thickness),
+            points: pts,
           });
-        } else if (
-          it.kind === "pen" &&
-          typeof it.id === "string" &&
-          Array.isArray(it.points)
-        ) {
-          const points: Array<{ x: number; y: number }> = [];
-          for (const p of it.points) {
-            if (
-              p &&
-              typeof p === "object" &&
-              typeof p.x === "number" &&
-              typeof p.y === "number"
-            ) {
-              points.push({ x: p.x, y: p.y });
-            }
-          }
-          if (points.length >= 2) {
-            items.push({ id: it.id, kind: "pen", points });
-          }
+        } else if (it.kind === "pen" && typeof it.id === "string") {
+          const pts = pointsValid(it.points);
+          if (!pts || pts.length < 2) continue;
+          items.push({
+            id: it.id,
+            kind: "pen",
+            color: clampColor(it.color),
+            thickness: clampThickness(it.thickness),
+            points: pts,
+          });
         }
       }
       drills.push({
@@ -254,36 +278,63 @@ function clientToSvg(
   clientX: number,
   clientY: number,
   orientation: Orientation,
-): { x: number; y: number } {
+): Point {
   const pt = svg.createSVGPoint();
   pt.x = clientX;
   pt.y = clientY;
   const ctm = svg.getScreenCTM();
   if (!ctm) return { x: 0, y: 0 };
   const t = pt.matrixTransform(ctm.inverse());
-  // Items are always stored in canonical landscape coordinates (0..VB_W ×
-  // 0..VB_H). In portrait mode the drawn content is rotated 90° CW via
-  // `translate(VB_H, 0) rotate(90)`, so invert that here.
   if (orientation === "portrait") {
     return { x: t.y, y: VB_H - t.x };
   }
   return { x: t.x, y: t.y };
 }
 
-// ---- Main component ------------------------------------------------------
+// Smoothed path from a set of points using quadratic Bézier curves through
+// the midpoints — keeps the drawn shape without the jagged corners.
+function smoothedPath(points: Point[]): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  if (points.length === 2)
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length - 1; i++) {
+    const mid = {
+      x: (points[i].x + points[i + 1].x) / 2,
+      y: (points[i].y + points[i + 1].y) / 2,
+    };
+    d += ` Q ${points[i].x} ${points[i].y} ${mid.x} ${mid.y}`;
+  }
+  const last = points[points.length - 1];
+  d += ` L ${last.x} ${last.y}`;
+  return d;
+}
+
+// ---- Component ------------------------------------------------------------
 
 export function CourtPlannerApp() {
   const [items, setItems] = useState<Item[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "select" });
   const [history, setHistory] = useState<Item[][]>([]);
+  const [redoStack, setRedoStack] = useState<Item[][]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [saveOpen, setSaveOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
 
   const [dragId, setDragId] = useState<string | null>(null);
-  const [arrowDraft, setArrowDraft] = useState<ArrowItem | null>(null);
+  const [lineDraft, setLineDraft] = useState<LineItem | null>(null);
   const [penDraft, setPenDraft] = useState<PenItem | null>(null);
   const [orientation, setOrientation] = useState<Orientation>("portrait");
+
+  // Ink / line options (shared across both drawing tools)
+  const [inkColor, setInkColor] = useState<string>(INK_COLORS[0].value);
+  const [inkThickness, setInkThickness] = useState<number>(
+    THICKNESSES[1].value,
+  );
+  const [lineShape, setLineShape] = useState<LineShape>("straight");
+  const [lineArrow, setLineArrow] = useState<boolean>(true);
+  const [lineDotted, setLineDotted] = useState<boolean>(false);
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const hydrated = useRef(false);
@@ -311,22 +362,32 @@ export function CourtPlannerApp() {
     }
   }, [orientation]);
 
+  // Any new action captures the current state onto the undo stack and clears
+  // the redo stack — matches standard undo/redo behaviour.
   const pushHistory = useCallback((snapshot: Item[]) => {
-    setHistory((h) => {
-      const next = [...h, snapshot];
-      if (next.length > HISTORY_LIMIT) next.shift();
-      return next;
-    });
+    setHistory((h) => [...h, snapshot]);
+    setRedoStack([]);
   }, []);
 
   const handleUndo = useCallback(() => {
     setHistory((h) => {
       if (h.length === 0) return h;
       const prev = h[h.length - 1];
+      setRedoStack((r) => [...r, items]);
       setItems(prev);
       return h.slice(0, -1);
     });
-  }, []);
+  }, [items]);
+
+  const handleRedo = useCallback(() => {
+    setRedoStack((r) => {
+      if (r.length === 0) return r;
+      const next = r[r.length - 1];
+      setHistory((h) => [...h, items]);
+      setItems(next);
+      return r.slice(0, -1);
+    });
+  }, [items]);
 
   const handleClearAll = useCallback(() => {
     if (items.length === 0) return;
@@ -335,7 +396,7 @@ export function CourtPlannerApp() {
     setItems([]);
   }, [items, pushHistory]);
 
-  // Pointer handling --------------------------------------------------------
+  // ---- Pointer -------------------------------------------------------------
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!svgRef.current) return;
@@ -364,23 +425,30 @@ export function CourtPlannerApp() {
         return;
       }
 
-      if (mode.kind === "arrow") {
+      if (mode.kind === "line") {
         svgRef.current.setPointerCapture(e.pointerId);
-        setArrowDraft({
+        setLineDraft({
           id: genId(),
-          kind: "arrow",
-          variant: mode.variant,
-          x1: x,
-          y1: y,
-          x2: x,
-          y2: y,
+          kind: "line",
+          shape: lineShape,
+          arrow: lineArrow,
+          dotted: lineDotted,
+          color: inkColor,
+          thickness: inkThickness,
+          points: [{ x, y }],
         });
         return;
       }
 
       if (mode.kind === "pen") {
         svgRef.current.setPointerCapture(e.pointerId);
-        setPenDraft({ id: genId(), kind: "pen", points: [{ x, y }] });
+        setPenDraft({
+          id: genId(),
+          kind: "pen",
+          color: inkColor,
+          thickness: inkThickness,
+          points: [{ x, y }],
+        });
         return;
       }
 
@@ -390,13 +458,23 @@ export function CourtPlannerApp() {
         setDragId(tokenId);
       }
     },
-    [mode, items, pushHistory, orientation],
+    [
+      mode,
+      items,
+      pushHistory,
+      orientation,
+      inkColor,
+      inkThickness,
+      lineShape,
+      lineArrow,
+      lineDotted,
+    ],
   );
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!svgRef.current) return;
-      if (!dragId && !arrowDraft && !penDraft) return;
+      if (!dragId && !lineDraft && !penDraft) return;
       const { x, y } = clientToSvg(
         svgRef.current,
         e.clientX,
@@ -409,13 +487,13 @@ export function CourtPlannerApp() {
             it.id === dragId && it.kind === "token" ? { ...it, x, y } : it,
           ),
         );
-      } else if (arrowDraft) {
-        setArrowDraft({ ...arrowDraft, x2: x, y2: y });
+      } else if (lineDraft) {
+        setLineDraft({ ...lineDraft, points: [...lineDraft.points, { x, y }] });
       } else if (penDraft) {
         setPenDraft({ ...penDraft, points: [...penDraft.points, { x, y }] });
       }
     },
-    [dragId, arrowDraft, penDraft, orientation],
+    [dragId, lineDraft, penDraft, orientation],
   );
 
   const handlePointerUp = useCallback(
@@ -423,14 +501,21 @@ export function CourtPlannerApp() {
       if (svgRef.current?.hasPointerCapture(e.pointerId)) {
         svgRef.current.releasePointerCapture(e.pointerId);
       }
-      if (arrowDraft) {
-        const dx = arrowDraft.x2 - arrowDraft.x1;
-        const dy = arrowDraft.y2 - arrowDraft.y1;
+      if (lineDraft) {
+        const pts = lineDraft.points;
+        const first = pts[0];
+        const last = pts[pts.length - 1];
+        const dx = last.x - first.x;
+        const dy = last.y - first.y;
         if (Math.hypot(dx, dy) > 10) {
+          // For straight lines, only keep start + end. Curved keeps the drag
+          // path so the shape follows the drawn motion.
+          const trimmed =
+            lineDraft.shape === "straight" ? [first, last] : pts;
           pushHistory(items);
-          setItems((prev) => [...prev, arrowDraft]);
+          setItems((prev) => [...prev, { ...lineDraft, points: trimmed }]);
         }
-        setArrowDraft(null);
+        setLineDraft(null);
       }
       if (penDraft) {
         if (penDraft.points.length >= 2) {
@@ -441,10 +526,10 @@ export function CourtPlannerApp() {
       }
       setDragId(null);
     },
-    [arrowDraft, penDraft, items, pushHistory],
+    [lineDraft, penDraft, items, pushHistory],
   );
 
-  // Folder ops --------------------------------------------------------------
+  // ---- Folder ops ---------------------------------------------------------
   const persistFolders = useCallback((next: Folder[]) => {
     setFolders(next);
     saveFolders(next);
@@ -514,19 +599,75 @@ export function CourtPlannerApp() {
     [folders, persistFolders],
   );
 
-  // Helpers -----------------------------------------------------------------
+  // ---- Export PNG ----------------------------------------------------------
+  const handleExport = useCallback(() => {
+    const svgEl = svgRef.current;
+    if (!svgEl) return;
+    const bbox = svgEl.viewBox.baseVal;
+    const vw = bbox.width;
+    const vh = bbox.height;
+
+    const clone = svgEl.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    clone.setAttribute("width", String(vw));
+    clone.setAttribute("height", String(vh));
+    const xml = new XMLSerializer().serializeToString(clone);
+    const svgText = `<?xml version="1.0" encoding="UTF-8"?>\n${xml}`;
+    const svgBlob = new Blob([svgText], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      const scale = 3;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(vw * scale);
+      canvas.height = Math.round(vh * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(svgUrl);
+        return;
+      }
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(svgUrl);
+        if (!blob) return;
+        const downloadUrl = URL.createObjectURL(blob);
+        const stamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .slice(0, 19);
+        const link = document.createElement("a");
+        link.download = `cc-court-drill-${stamp}.png`;
+        link.href = downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      }, "image/png");
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(svgUrl);
+      window.alert("Couldn't export this drill — try again.");
+    };
+    img.src = svgUrl;
+  }, []);
+
+  // ---- UI helpers ----------------------------------------------------------
   const modeLabel = useMemo(() => {
     if (mode.kind === "place")
-      return `Tap the court to place a ${PALETTE_LABEL[mode.palette].toLowerCase()} ${mode.label}`;
-    if (mode.kind === "arrow")
-      return mode.variant === "lead"
-        ? "Press and drag to draw a lead arrow"
-        : "Press and drag to draw a pass (dashed)";
+      return `Tap the court to place ${mode.label}`;
+    if (mode.kind === "line")
+      return `Press and drag to draw a ${lineShape} line${lineArrow ? " with arrow" : ""}${lineDotted ? ", dotted" : ""}`;
     if (mode.kind === "pen") return "Press and drag to draw freely";
     return "Drag players to move them, or pick a tool";
-  }, [mode]);
+  }, [mode, lineShape, lineArrow, lineDotted]);
 
   const canUndo = history.length > 0;
+  const canRedo = redoStack.length > 0;
 
   const placeActive = (label: TokenLabel, palette: Palette) =>
     mode.kind === "place" &&
@@ -565,7 +706,7 @@ export function CourtPlannerApp() {
 
       <div className="flex flex-1 flex-col-reverse overflow-hidden md:flex-row">
         {/* Toolbar */}
-        <aside className="flex max-h-[45dvh] shrink-0 overflow-y-auto border-t border-white/10 bg-black/40 p-3 md:max-h-none md:w-[240px] md:border-r md:border-t-0">
+        <aside className="flex max-h-[50dvh] shrink-0 overflow-y-auto border-t border-white/10 bg-black/40 p-3 md:max-h-none md:w-[250px] md:border-r md:border-t-0">
           <div className="flex w-full flex-col gap-3">
             <ToolbarGroup label="Players">
               <TokenButton
@@ -588,7 +729,7 @@ export function CourtPlannerApp() {
               />
             </ToolbarGroup>
 
-            <ToolbarGroup label="Positions (purple)" dot={PALETTE_FILL.purple}>
+            <ToolbarGroup label="Team A" dot={PALETTE_FILL.purple}>
               {POSITIONS.map((pos) => (
                 <TokenButton
                   key={`p-${pos}`}
@@ -600,7 +741,7 @@ export function CourtPlannerApp() {
               ))}
             </ToolbarGroup>
 
-            <ToolbarGroup label="Positions (orange)" dot={PALETTE_FILL.orange}>
+            <ToolbarGroup label="Team B" dot={PALETTE_FILL.orange}>
               {POSITIONS.map((pos) => (
                 <TokenButton
                   key={`o-${pos}`}
@@ -653,69 +794,121 @@ export function CourtPlannerApp() {
                 }
               />
               <ToolButton
-                label="Lead (arrow)"
-                icon={
-                  <svg
-                    viewBox="0 0 24 10"
-                    className="h-2.5 w-6"
-                    aria-hidden
-                  >
-                    <line
-                      x1={1}
-                      y1={5}
-                      x2={18}
-                      y2={5}
-                      stroke={ARROW_COLOR}
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                    />
-                    <path d="M 17 1 L 23 5 L 17 9" fill={ARROW_COLOR} />
-                  </svg>
-                }
-                active={mode.kind === "arrow" && mode.variant === "lead"}
+                label="Line"
+                icon={<Spline className="size-4" />}
+                active={mode.kind === "line"}
                 onClick={() =>
                   setMode((m) =>
-                    m.kind === "arrow" && m.variant === "lead"
-                      ? { kind: "select" }
-                      : { kind: "arrow", variant: "lead" },
-                  )
-                }
-              />
-              <ToolButton
-                label="Pass (dashed)"
-                icon={
-                  <svg viewBox="0 0 24 10" className="h-2.5 w-6" aria-hidden>
-                    <line
-                      x1={1}
-                      y1={5}
-                      x2={18}
-                      y2={5}
-                      stroke={ARROW_COLOR}
-                      strokeWidth={2}
-                      strokeDasharray="3,2"
-                      strokeLinecap="round"
-                    />
-                    <path d="M 17 1 L 23 5 L 17 9" fill={ARROW_COLOR} />
-                  </svg>
-                }
-                active={mode.kind === "arrow" && mode.variant === "pass"}
-                onClick={() =>
-                  setMode((m) =>
-                    m.kind === "arrow" && m.variant === "pass"
-                      ? { kind: "select" }
-                      : { kind: "arrow", variant: "pass" },
+                    m.kind === "line" ? { kind: "select" } : { kind: "line" },
                   )
                 }
               />
             </div>
 
+            {mode.kind === "line" && (
+              <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                  Line options
+                </p>
+                <SegmentedToggle
+                  label="Shape"
+                  options={[
+                    { value: "straight", label: "Straight" },
+                    { value: "curved", label: "Curved" },
+                  ]}
+                  value={lineShape}
+                  onChange={(v) => setLineShape(v as LineShape)}
+                />
+                <SegmentedToggle
+                  label="End"
+                  options={[
+                    { value: "yes", label: "Arrow" },
+                    { value: "no", label: "No arrow" },
+                  ]}
+                  value={lineArrow ? "yes" : "no"}
+                  onChange={(v) => setLineArrow(v === "yes")}
+                />
+                <SegmentedToggle
+                  label="Style"
+                  options={[
+                    { value: "solid", label: "Solid" },
+                    { value: "dotted", label: "Dotted" },
+                  ]}
+                  value={lineDotted ? "dotted" : "solid"}
+                  onChange={(v) => setLineDotted(v === "dotted")}
+                />
+              </div>
+            )}
+
+            {(mode.kind === "pen" || mode.kind === "line") && (
+              <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+                <div className="flex flex-col gap-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                    Thickness
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {THICKNESSES.map((t) => (
+                      <button
+                        key={t.key}
+                        type="button"
+                        onClick={() => setInkThickness(t.value)}
+                        aria-pressed={inkThickness === t.value}
+                        className={`flex h-9 items-center justify-center rounded-md border transition ${
+                          inkThickness === t.value
+                            ? "border-white bg-white/10"
+                            : "border-white/10 hover:border-white/30"
+                        }`}
+                      >
+                        <span
+                          aria-hidden
+                          className="block w-5 rounded-full bg-white"
+                          style={{ height: Math.max(2, t.value - 1) }}
+                        />
+                        <span className="sr-only">{t.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                    Colour
+                  </p>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {INK_COLORS.map((c) => (
+                      <button
+                        key={c.key}
+                        type="button"
+                        onClick={() => setInkColor(c.value)}
+                        aria-label={c.name}
+                        aria-pressed={inkColor === c.value}
+                        className={`relative flex aspect-square items-center justify-center rounded-full border-2 transition ${
+                          inkColor === c.value
+                            ? "border-white"
+                            : "border-white/10 hover:border-white/40"
+                        }`}
+                        style={{ background: c.value }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-1.5 border-t border-white/10 pt-3">
-              <ToolButton
-                label="Undo"
-                icon={<Undo2 className="size-4" />}
-                onClick={handleUndo}
-                disabled={!canUndo}
-              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <ToolButton
+                  label="Undo"
+                  icon={<Undo2 className="size-4" />}
+                  onClick={handleUndo}
+                  disabled={!canUndo}
+                />
+                <ToolButton
+                  label="Redo"
+                  icon={<Redo2 className="size-4" />}
+                  onClick={handleRedo}
+                  disabled={!canRedo}
+                />
+              </div>
               <ToolButton
                 label="Clear all"
                 icon={<Trash2 className="size-4" />}
@@ -737,6 +930,12 @@ export function CourtPlannerApp() {
                 label={`Open (${folders.reduce((n, f) => n + f.drills.length, 0)})`}
                 icon={<FolderOpen className="size-4" />}
                 onClick={() => setLoadOpen(true)}
+              />
+              <ToolButton
+                label="Export PNG"
+                icon={<Download className="size-4" />}
+                onClick={handleExport}
+                disabled={items.length === 0}
               />
             </div>
           </div>
@@ -760,24 +959,27 @@ export function CourtPlannerApp() {
             style={{
               cursor:
                 mode.kind === "place" ||
-                mode.kind === "arrow" ||
+                mode.kind === "line" ||
                 mode.kind === "pen"
                   ? "crosshair"
                   : "default",
             }}
           >
             <defs>
-              <marker
-                id="arrowhead"
-                viewBox="0 0 10 10"
-                refX="8"
-                refY="5"
-                markerWidth="5"
-                markerHeight="5"
-                orient="auto-start-reverse"
-              >
-                <path d="M 0 0 L 10 5 L 0 10 z" fill={ARROW_COLOR} />
-              </marker>
+              {INK_COLORS.map((c) => (
+                <marker
+                  key={`ah-${c.key}`}
+                  id={`arrowhead-${c.key}`}
+                  viewBox="0 0 10 10"
+                  refX="8"
+                  refY="5"
+                  markerWidth="5"
+                  markerHeight="5"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill={c.value} />
+                </marker>
+              ))}
             </defs>
 
             <g
@@ -787,157 +989,128 @@ export function CourtPlannerApp() {
                   : undefined
               }
             >
-            {/* Court background */}
-            <rect x={0} y={0} width={VB_W} height={VB_H} fill="#6FA87C" />
+              {/* Court background */}
+              <rect x={0} y={0} width={VB_W} height={VB_H} fill="#6FA87C" />
+              {/* Thirds */}
+              <line
+                x1={VB_W / 3}
+                y1={0}
+                x2={VB_W / 3}
+                y2={VB_H}
+                stroke="white"
+                strokeWidth={3}
+              />
+              <line
+                x1={(2 * VB_W) / 3}
+                y1={0}
+                x2={(2 * VB_W) / 3}
+                y2={VB_H}
+                stroke="white"
+                strokeWidth={3}
+              />
+              {/* Border */}
+              <rect
+                x={0}
+                y={0}
+                width={VB_W}
+                height={VB_H}
+                fill="none"
+                stroke="white"
+                strokeWidth={4}
+              />
+              {/* Centre circle */}
+              <circle
+                cx={VB_W / 2}
+                cy={VB_H / 2}
+                r={18}
+                fill="none"
+                stroke="white"
+                strokeWidth={3}
+              />
+              {/* Goal semicircles */}
+              <path
+                d={`M 0 ${VB_H / 2 - GOAL_RADIUS} A ${GOAL_RADIUS} ${GOAL_RADIUS} 0 0 1 0 ${VB_H / 2 + GOAL_RADIUS}`}
+                fill="none"
+                stroke="white"
+                strokeWidth={3}
+              />
+              <path
+                d={`M ${VB_W} ${VB_H / 2 - GOAL_RADIUS} A ${GOAL_RADIUS} ${GOAL_RADIUS} 0 0 0 ${VB_W} ${VB_H / 2 + GOAL_RADIUS}`}
+                fill="none"
+                stroke="white"
+                strokeWidth={3}
+              />
+              {/* Goal posts */}
+              <circle cx={0} cy={VB_H / 2} r={7} fill="white" />
+              <circle cx={VB_W} cy={VB_H / 2} r={7} fill="white" />
 
-            {/* Thirds */}
-            <line
-              x1={VB_W / 3}
-              y1={0}
-              x2={VB_W / 3}
-              y2={VB_H}
-              stroke="white"
-              strokeWidth={3}
-            />
-            <line
-              x1={(2 * VB_W) / 3}
-              y1={0}
-              x2={(2 * VB_W) / 3}
-              y2={VB_H}
-              stroke="white"
-              strokeWidth={3}
-            />
-
-            {/* Court border */}
-            <rect
-              x={0}
-              y={0}
-              width={VB_W}
-              height={VB_H}
-              fill="none"
-              stroke="white"
-              strokeWidth={4}
-            />
-
-            {/* Centre circle */}
-            <circle
-              cx={VB_W / 2}
-              cy={VB_H / 2}
-              r={18}
-              fill="none"
-              stroke="white"
-              strokeWidth={3}
-            />
-
-            {/* Goal semicircles */}
-            <path
-              d={`M 0 ${VB_H / 2 - GOAL_RADIUS} A ${GOAL_RADIUS} ${GOAL_RADIUS} 0 0 1 0 ${VB_H / 2 + GOAL_RADIUS}`}
-              fill="none"
-              stroke="white"
-              strokeWidth={3}
-            />
-            <path
-              d={`M ${VB_W} ${VB_H / 2 - GOAL_RADIUS} A ${GOAL_RADIUS} ${GOAL_RADIUS} 0 0 0 ${VB_W} ${VB_H / 2 + GOAL_RADIUS}`}
-              fill="none"
-              stroke="white"
-              strokeWidth={3}
-            />
-
-            {/* Goal posts */}
-            <circle cx={0} cy={VB_H / 2} r={7} fill="white" />
-            <circle cx={VB_W} cy={VB_H / 2} r={7} fill="white" />
-
-            {/* Pen strokes */}
-            {items
-              .filter((it): it is PenItem => it.kind === "pen")
-              .map((p) => (
+              {/* Pen strokes */}
+              {items
+                .filter((it): it is PenItem => it.kind === "pen")
+                .map((p) => (
+                  <polyline
+                    key={p.id}
+                    points={p.points.map((pt) => `${pt.x},${pt.y}`).join(" ")}
+                    fill="none"
+                    stroke={p.color}
+                    strokeWidth={p.thickness}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                ))}
+              {penDraft && (
                 <polyline
-                  key={p.id}
-                  points={p.points.map((pt) => `${pt.x},${pt.y}`).join(" ")}
+                  points={penDraft.points
+                    .map((pt) => `${pt.x},${pt.y}`)
+                    .join(" ")}
                   fill="none"
-                  stroke={PEN_COLOR}
-                  strokeWidth={3}
+                  stroke={penDraft.color}
+                  strokeWidth={penDraft.thickness}
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  opacity={0.9}
                 />
-              ))}
-            {penDraft && (
-              <polyline
-                points={penDraft.points.map((pt) => `${pt.x},${pt.y}`).join(" ")}
-                fill="none"
-                stroke={PEN_COLOR}
-                strokeWidth={3}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity={0.8}
-              />
-            )}
+              )}
 
-            {/* Arrows */}
-            {items
-              .filter((it): it is ArrowItem => it.kind === "arrow")
-              .map((a) => (
-                <line
-                  key={a.id}
-                  x1={a.x1}
-                  y1={a.y1}
-                  x2={a.x2}
-                  y2={a.y2}
-                  stroke={ARROW_COLOR}
-                  strokeWidth={4}
-                  strokeLinecap="round"
-                  strokeDasharray={a.variant === "pass" ? "12,8" : undefined}
-                  markerEnd="url(#arrowhead)"
-                />
-              ))}
-            {arrowDraft && (
-              <line
-                x1={arrowDraft.x1}
-                y1={arrowDraft.y1}
-                x2={arrowDraft.x2}
-                y2={arrowDraft.y2}
-                stroke={ARROW_COLOR}
-                strokeWidth={4}
-                strokeLinecap="round"
-                strokeDasharray={
-                  arrowDraft.variant === "pass" ? "12,8" : undefined
-                }
-                markerEnd="url(#arrowhead)"
-                opacity={0.7}
-              />
-            )}
+              {/* Lines */}
+              {items
+                .filter((it): it is LineItem => it.kind === "line")
+                .map((l) => (
+                  <LineItemSvg key={l.id} item={l} />
+                ))}
+              {lineDraft && <LineItemSvg item={lineDraft} opacity={0.7} />}
 
-            {/* Tokens */}
-            {items
-              .filter((it): it is TokenItem => it.kind === "token")
-              .map((t) => (
-                <g key={t.id} data-token-id={t.id}>
-                  <circle
-                    cx={t.x}
-                    cy={t.y}
-                    r={28}
-                    fill={PALETTE_FILL[t.palette]}
-                    stroke="white"
-                    strokeWidth={3}
-                  />
-                  <text
-                    x={t.x}
-                    y={t.y + 7}
-                    textAnchor="middle"
-                    fontSize={20}
-                    fontWeight={800}
-                    fill="white"
-                    style={{ pointerEvents: "none" }}
-                    transform={
-                      orientation === "portrait"
-                        ? `rotate(-90 ${t.x} ${t.y + 7})`
-                        : undefined
-                    }
-                  >
-                    {t.label}
-                  </text>
-                </g>
-              ))}
+              {/* Tokens */}
+              {items
+                .filter((it): it is TokenItem => it.kind === "token")
+                .map((t) => (
+                  <g key={t.id} data-token-id={t.id}>
+                    <circle
+                      cx={t.x}
+                      cy={t.y}
+                      r={28}
+                      fill={PALETTE_FILL[t.palette]}
+                      stroke="white"
+                      strokeWidth={3}
+                    />
+                    <text
+                      x={t.x}
+                      y={t.y + 7}
+                      textAnchor="middle"
+                      fontSize={20}
+                      fontWeight={800}
+                      fill="white"
+                      style={{ pointerEvents: "none" }}
+                      transform={
+                        orientation === "portrait"
+                          ? `rotate(-90 ${t.x} ${t.y + 7})`
+                          : undefined
+                      }
+                    >
+                      {t.label}
+                    </text>
+                  </g>
+                ))}
             </g>
           </svg>
         </main>
@@ -965,6 +1138,55 @@ export function CourtPlannerApp() {
         />
       )}
     </div>
+  );
+}
+
+// ---- Line renderer -------------------------------------------------------
+
+function LineItemSvg({
+  item,
+  opacity,
+}: {
+  item: LineItem;
+  opacity?: number;
+}) {
+  const first = item.points[0];
+  const last = item.points[item.points.length - 1];
+  const dasharray = item.dotted
+    ? `${item.thickness * 2},${item.thickness * 2}`
+    : undefined;
+  const markerKey = INK_COLORS.find((c) => c.value === item.color)?.key ?? "black";
+  const markerEnd = item.arrow ? `url(#arrowhead-${markerKey})` : undefined;
+
+  if (item.shape === "straight" || item.points.length < 3) {
+    return (
+      <line
+        x1={first.x}
+        y1={first.y}
+        x2={last.x}
+        y2={last.y}
+        stroke={item.color}
+        strokeWidth={item.thickness}
+        strokeLinecap="round"
+        strokeDasharray={dasharray}
+        markerEnd={markerEnd}
+        opacity={opacity}
+      />
+    );
+  }
+
+  return (
+    <path
+      d={smoothedPath(item.points)}
+      fill="none"
+      stroke={item.color}
+      strokeWidth={item.thickness}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeDasharray={dasharray}
+      markerEnd={markerEnd}
+      opacity={opacity}
+    />
   );
 }
 
@@ -1060,6 +1282,43 @@ function ToolButton({
       {icon}
       <span>{label}</span>
     </button>
+  );
+}
+
+function SegmentedToggle({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+        {label}
+      </p>
+      <div className="grid grid-cols-2 gap-1.5">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            aria-pressed={value === o.value}
+            className={`rounded-md border px-2 py-1.5 text-[11px] font-semibold transition ${
+              value === o.value
+                ? "border-white bg-white text-black"
+                : "border-white/15 bg-white/5 text-white hover:border-white/40"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
