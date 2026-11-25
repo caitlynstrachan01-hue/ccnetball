@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  ArrowRight,
   FolderOpen,
   MousePointer2,
   Pencil,
+  RectangleHorizontal,
+  RectangleVertical,
   Save,
   Trash2,
   Undo2,
@@ -86,7 +87,10 @@ const PALETTE_LABEL: Record<Palette, string> = {
 const ARROW_COLOR = "#2563EB";
 const PEN_COLOR = "#111111";
 
+type Orientation = "landscape" | "portrait";
+
 const STORAGE_KEY = "cc-court-planner-v1";
+const ORIENTATION_KEY = "cc-court-planner-orientation";
 const MAX_FOLDERS = 5;
 const MAX_DRILLS_PER_FOLDER = 30;
 const MAX_NAME_LEN = 60;
@@ -249,14 +253,21 @@ function clientToSvg(
   svg: SVGSVGElement,
   clientX: number,
   clientY: number,
+  orientation: Orientation,
 ): { x: number; y: number } {
   const pt = svg.createSVGPoint();
   pt.x = clientX;
   pt.y = clientY;
   const ctm = svg.getScreenCTM();
   if (!ctm) return { x: 0, y: 0 };
-  const transformed = pt.matrixTransform(ctm.inverse());
-  return { x: transformed.x, y: transformed.y };
+  const t = pt.matrixTransform(ctm.inverse());
+  // Items are always stored in canonical landscape coordinates (0..VB_W ×
+  // 0..VB_H). In portrait mode the drawn content is rotated 90° CW via
+  // `translate(VB_H, 0) rotate(90)`, so invert that here.
+  if (orientation === "portrait") {
+    return { x: t.y, y: VB_H - t.x };
+  }
+  return { x: t.x, y: t.y };
 }
 
 // ---- Main component ------------------------------------------------------
@@ -272,6 +283,7 @@ export function CourtPlannerApp() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [arrowDraft, setArrowDraft] = useState<ArrowItem | null>(null);
   const [penDraft, setPenDraft] = useState<PenItem | null>(null);
+  const [orientation, setOrientation] = useState<Orientation>("landscape");
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const hydrated = useRef(false);
@@ -280,7 +292,24 @@ export function CourtPlannerApp() {
     if (hydrated.current) return;
     hydrated.current = true;
     setFolders(loadFolders());
+    try {
+      const stored = window.localStorage.getItem(ORIENTATION_KEY);
+      if (stored === "landscape" || stored === "portrait") {
+        setOrientation(stored);
+      }
+    } catch {
+      // ignore
+    }
   }, []);
+
+  useEffect(() => {
+    if (!hydrated.current) return;
+    try {
+      window.localStorage.setItem(ORIENTATION_KEY, orientation);
+    } catch {
+      // ignore
+    }
+  }, [orientation]);
 
   const pushHistory = useCallback((snapshot: Item[]) => {
     setHistory((h) => {
@@ -310,7 +339,12 @@ export function CourtPlannerApp() {
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!svgRef.current) return;
-      const { x, y } = clientToSvg(svgRef.current, e.clientX, e.clientY);
+      const { x, y } = clientToSvg(
+        svgRef.current,
+        e.clientX,
+        e.clientY,
+        orientation,
+      );
       const target = e.target as Element;
       const tokenEl = target.closest("[data-token-id]");
       const tokenId = tokenEl?.getAttribute("data-token-id") ?? null;
@@ -356,14 +390,19 @@ export function CourtPlannerApp() {
         setDragId(tokenId);
       }
     },
-    [mode, items, pushHistory],
+    [mode, items, pushHistory, orientation],
   );
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       if (!svgRef.current) return;
       if (!dragId && !arrowDraft && !penDraft) return;
-      const { x, y } = clientToSvg(svgRef.current, e.clientX, e.clientY);
+      const { x, y } = clientToSvg(
+        svgRef.current,
+        e.clientX,
+        e.clientY,
+        orientation,
+      );
       if (dragId) {
         setItems((prev) =>
           prev.map((it) =>
@@ -376,7 +415,7 @@ export function CourtPlannerApp() {
         setPenDraft({ ...penDraft, points: [...penDraft.points, { x, y }] });
       }
     },
-    [dragId, arrowDraft, penDraft],
+    [dragId, arrowDraft, penDraft, orientation],
   );
 
   const handlePointerUp = useCallback(
@@ -575,6 +614,26 @@ export function CourtPlannerApp() {
 
             <div className="flex flex-col gap-1.5">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                Court
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                <ToolButton
+                  label="Side"
+                  icon={<RectangleHorizontal className="size-4" />}
+                  active={orientation === "landscape"}
+                  onClick={() => setOrientation("landscape")}
+                />
+                <ToolButton
+                  label="Up/down"
+                  icon={<RectangleVertical className="size-4" />}
+                  active={orientation === "portrait"}
+                  onClick={() => setOrientation("portrait")}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
                 Drawing
               </p>
               <ToolButton
@@ -687,7 +746,11 @@ export function CourtPlannerApp() {
         <main className="relative flex flex-1 items-center justify-center overflow-hidden p-3">
           <svg
             ref={svgRef}
-            viewBox={`0 0 ${VB_W} ${VB_H}`}
+            viewBox={
+              orientation === "portrait"
+                ? `0 0 ${VB_H} ${VB_W}`
+                : `0 0 ${VB_W} ${VB_H}`
+            }
             preserveAspectRatio="xMidYMid meet"
             className="max-h-full max-w-full touch-none select-none"
             onPointerDown={handlePointerDown}
@@ -717,6 +780,13 @@ export function CourtPlannerApp() {
               </marker>
             </defs>
 
+            <g
+              transform={
+                orientation === "portrait"
+                  ? `translate(${VB_H}, 0) rotate(90)`
+                  : undefined
+              }
+            >
             {/* Court background */}
             <rect x={0} y={0} width={VB_W} height={VB_H} fill="#6FA87C" />
 
@@ -858,11 +928,17 @@ export function CourtPlannerApp() {
                     fontWeight={800}
                     fill="white"
                     style={{ pointerEvents: "none" }}
+                    transform={
+                      orientation === "portrait"
+                        ? `rotate(-90 ${t.x} ${t.y + 7})`
+                        : undefined
+                    }
                   >
                     {t.label}
                   </text>
                 </g>
               ))}
+            </g>
           </svg>
         </main>
       </div>
