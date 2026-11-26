@@ -142,14 +142,8 @@ export default async function ShopProductPage({
                 </div>
               </Reveal>
 
-              <Reveal delay={0.1}>
-                <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  Designed by Caitlyn Strachan · Elite accredited netball coach
-                </p>
-              </Reveal>
-
               <Reveal delay={0.15}>
-                <h1 className="mt-3 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-tight md:text-[3.5rem]">
+                <h1 className="mt-7 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-tight md:text-[3.5rem]">
                   {product.name}
                 </h1>
               </Reveal>
