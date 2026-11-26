@@ -771,6 +771,38 @@ export function CourtPlannerApp() {
                 : "mx-auto max-w-[560px] columns-3 gap-x-3"
             }`}
           >
+            <div
+              className={`flex flex-col gap-1 ${
+                toolbarOnSide
+                  ? "sticky top-0 z-10 -mx-1.5 -mt-1.5 border-b border-white/10 bg-[#0F1012]/95 px-1.5 pb-2 pt-1.5 backdrop-blur-sm"
+                  : ""
+              }`}
+            >
+              <div className="grid grid-cols-2 gap-1">
+                <ToolButton
+                  label="Undo"
+                  icon={<Undo2 className="size-3" />}
+                  onClick={handleUndo}
+                  disabled={!canUndo}
+                  compact
+                />
+                <ToolButton
+                  label="Redo"
+                  icon={<Redo2 className="size-3" />}
+                  onClick={handleRedo}
+                  disabled={!canRedo}
+                  compact
+                />
+              </div>
+              <ToolButton
+                label="Delete selected"
+                icon={<X className="size-3" />}
+                onClick={handleDeleteSelected}
+                disabled={!selectedId}
+                compact
+              />
+            </div>
+
             <ToolbarGroup label="Players">
               <TokenButton
                 label="A"
@@ -952,40 +984,6 @@ export function CourtPlannerApp() {
             )}
 
             <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-2">
-              <div className="grid grid-cols-2 gap-1">
-                <ToolButton
-                  label="Undo"
-                  icon={<Undo2 className="size-3" />}
-                  onClick={handleUndo}
-                  disabled={!canUndo}
-                  compact
-                />
-                <ToolButton
-                  label="Redo"
-                  icon={<Redo2 className="size-3" />}
-                  onClick={handleRedo}
-                  disabled={!canRedo}
-                  compact
-                />
-              </div>
-              <ToolButton
-                label="Delete selected"
-                icon={<X className="size-3" />}
-                onClick={handleDeleteSelected}
-                disabled={!selectedId}
-                compact
-              />
-              <ToolButton
-                label="Clear all"
-                icon={<Trash2 className="size-3" />}
-                onClick={handleClearAll}
-                tone="danger"
-                disabled={items.length === 0}
-                compact
-              />
-            </div>
-
-            <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-2">
               <ToolButton
                 label="Save"
                 icon={<Save className="size-3" />}
@@ -1009,6 +1007,14 @@ export function CourtPlannerApp() {
                   compact
                 />
               </div>
+              <ToolButton
+                label="Clear all"
+                icon={<Trash2 className="size-3" />}
+                onClick={handleClearAll}
+                tone="danger"
+                disabled={items.length === 0}
+                compact
+              />
             </div>
           </div>
         </aside>
