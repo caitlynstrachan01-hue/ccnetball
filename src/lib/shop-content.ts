@@ -27,8 +27,11 @@ export type ShopProduct = {
     | "play-circle";
   /** Temporarily hide from the shop grid. Detail page URL still works. */
   hidden?: boolean;
-  /** Override the tile link — if set, the tile links here instead of /shop/<slug>. */
-  href?: string;
+  /** If set, the product is live — the detail page swaps "Add to cart" for a
+   * "Launch" CTA linking here, and the "Coming Soon" badge is hidden. */
+  launchUrl?: string;
+  /** Optional preview stills shown in a gallery on the detail page. */
+  previewImages?: Array<{ src: string; alt: string; caption?: string }>;
 };
 
 export const SHOP_PRODUCTS: ShopProduct[] = [
@@ -59,7 +62,24 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Easy Undo / Redo",
     ],
     icon: "target",
-    href: "/court-planner",
+    launchUrl: "/court-planner",
+    previewImages: [
+      {
+        src: "/shop/court-planner/01-clean-canvas.jpg",
+        alt: "Netball Court - Drawing on an iPhone with a blank court ready to use",
+        caption: "Clean canvas on your phone or tablet",
+      },
+      {
+        src: "/shop/court-planner/02-cone-drill.jpg",
+        alt: "Cones, a thrower and movement arrows drawn on the court",
+        caption: "Set up cones, place a thrower, draw movement arrows",
+      },
+      {
+        src: "/shop/court-planner/03-set-play.jpg",
+        alt: "A full set play with solid lines for leads and dashed lines for passes",
+        caption: "Draw full set plays — solid for leads, dashed for passes",
+      },
+    ],
   },
   {
     slug: "drills-library",

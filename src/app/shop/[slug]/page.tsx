@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
   ClipboardList,
   Compass,
@@ -117,7 +118,7 @@ export default async function ShopProductPage({
           <Reveal delay={0.1}>
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               <Sparkles className="size-3.5" />
-              Coming Soon
+              {product.launchUrl ? "Now Live" : "Coming Soon"}
             </div>
           </Reveal>
 
@@ -134,6 +135,44 @@ export default async function ShopProductPage({
           </Reveal>
         </div>
       </section>
+
+      {/* PREVIEW GALLERY */}
+      {product.previewImages && product.previewImages.length > 0 && (
+        <section className="border-b border-border/60 py-14 lg:py-16">
+          <div className="mx-auto max-w-6xl px-6 lg:px-10">
+            <Reveal>
+              <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+                See it in action
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Straight from Caitlyn&apos;s own iPhone.
+              </p>
+            </Reveal>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {product.previewImages.map((img, i) => (
+                <Reveal key={img.src} delay={0.05 + i * 0.06}>
+                  <figure className="group overflow-hidden rounded-2xl border border-border/70 bg-card shadow-lg shadow-primary/5 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
+                    <div className="relative aspect-[9/16] overflow-hidden bg-[#0F1012]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.src}
+                        alt={img.alt}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      />
+                    </div>
+                    {img.caption && (
+                      <figcaption className="px-4 py-3 text-sm font-semibold text-foreground/80">
+                        {img.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* DETAIL */}
       <section className="py-16">
@@ -228,6 +267,20 @@ export default async function ShopProductPage({
 
               {product.slug === "competition-builder" ? (
                 <CompetitionBuilderBuyButton />
+              ) : product.launchUrl ? (
+                <>
+                  <Link
+                    href={product.launchUrl}
+                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01]"
+                  >
+                    Launch {product.name}
+                    <ArrowRight className="size-5" />
+                  </Link>
+                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                    Opens in the same tab. Works in any browser on your phone
+                    or tablet.
+                  </p>
+                </>
               ) : (
                 <>
                   <button
@@ -241,15 +294,14 @@ export default async function ShopProductPage({
                   <p className="mt-3 text-center text-xs text-muted-foreground">
                     Checkout goes live at launch.
                   </p>
+                  <Link
+                    href="/contact"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-foreground/15 bg-background px-7 py-3.5 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:bg-muted"
+                  >
+                    Notify me at launch
+                  </Link>
                 </>
               )}
-
-              <Link
-                href="/contact"
-                className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-foreground/15 bg-background px-7 py-3.5 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:bg-muted"
-              >
-                Notify me at launch
-              </Link>
             </div>
           </Reveal>
         </div>
