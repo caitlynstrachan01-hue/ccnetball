@@ -34,27 +34,29 @@ export type ShopProduct = {
 export const SHOP_PRODUCTS: ShopProduct[] = [
   {
     slug: "court-planner",
-    name: "Netball Court Planner",
+    name: "Netball Court - Drawing",
     short:
-      "Draw drills and set plays on an interactive netball court — perfect for sideline coaching on an iPad.",
+      "An interactive netball court on your phone or tablet — draw drills in seconds at training or courtside.",
     description:
-      "An interactive netball court for iPad or any browser. Place players (attack, defence, thrower) or full position line-ups in purple and orange, draw lead runs and passes, and sketch freely with the pen. Save plays to named folders — up to five — and pull them up again at the sideline. No paper, no mess, just tap and coach.",
+      "Netball Court - Drawing is a simple drawing tool that works on any phone or tablet. Draw a drill within seconds, pull one up to give your players feedback at quarter time, half time or three-quarter time, and save your drills and set plays into folders to come back to for reflection or review at a later date. Makes game day and training a breeze.",
     features: [
-      "Interactive netball court tuned for iPad",
-      "Attack / defender / thrower tokens plus full position line-ups",
-      "Lead-run and pass arrows, plus a free-drawing pen",
-      "Undo, clear-all and drag-to-move players",
-      "Save plays to up to 5 named folders",
-      "Works courtside in any web browser",
+      "A for attacker, D for defender, T for thrower",
+      "Cones",
+      "X to mark where the drill starts",
+      "Solid line for leads",
+      "Broken line for passes",
+      "Freehand drawing",
+      "Easy undo and redo",
+      "Save drills and set plays into folders",
     ],
     price: "$9.99 AUD / year",
     pricingNote:
       "Annual subscription — one payment, full access on any device.",
     highlights: [
-      "iPad Ready",
-      "Drill Builder",
+      "Phone & Tablet",
+      "Game Day & Training",
       "Save to Folders",
-      "No Paper Needed",
+      "Easy Undo / Redo",
     ],
     icon: "target",
     href: "/court-planner",

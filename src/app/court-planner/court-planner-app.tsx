@@ -801,7 +801,7 @@ export function CourtPlannerApp() {
           <ArrowLeft className="size-4" /> Back to shop
         </Link>
         <h1 className="font-display text-sm font-bold tracking-wide sm:text-base">
-          Netball Court Planner
+          Netball Court - Drawing
         </h1>
         <span className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 sm:inline">
           Beta

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { CourtPlannerApp } from "./court-planner-app";
 
 export const metadata: Metadata = {
-  title: "Netball Court Planner",
+  title: "Netball Court - Drawing",
   description:
-    "Interactive netball court for coaches — place players, draw lead runs and passes, and save plays to folders. Built for iPad sideline use.",
+    "A simple drawing tool for phones and tablets. Draw drills in seconds, give feedback at quarter time and half time, and save your drills and set plays into folders.",
   alternates: { canonical: "https://ccnetball.com/court-planner" },
 };
 
