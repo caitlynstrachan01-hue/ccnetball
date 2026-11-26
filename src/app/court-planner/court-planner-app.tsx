@@ -758,13 +758,13 @@ export function CourtPlannerApp() {
         }`}
       >
         <aside
-          className={`flex shrink-0 overflow-y-auto border-white/10 bg-black/40 p-2 ${
+          className={`flex shrink-0 overflow-y-auto border-white/10 bg-black/40 p-1.5 ${
             toolbarOnSide
-              ? "max-h-[55dvh] border-t md:max-h-none md:w-[195px] md:border-r md:border-t-0"
-              : "max-h-[40dvh] border-t"
+              ? "max-h-[45dvh] border-t md:max-h-none md:w-[164px] md:border-r md:border-t-0"
+              : "max-h-[32dvh] border-t"
           }`}
         >
-          <div className="flex w-full flex-col gap-2">
+          <div className="flex w-full flex-col gap-1.5">
             <ToolbarGroup label="Players">
               <TokenButton
                 label="A"
@@ -814,13 +814,13 @@ export function CourtPlannerApp() {
             <div className="grid grid-cols-2 gap-1">
               <ToolButton
                 label="Side"
-                icon={<RectangleHorizontal className="size-3.5" />}
+                icon={<RectangleHorizontal className="size-3" />}
                 active={orientation === "landscape"}
                 onClick={() => setOrientation("landscape")}
               />
               <ToolButton
                 label="Up/down"
-                icon={<RectangleVertical className="size-3.5" />}
+                icon={<RectangleVertical className="size-3" />}
                 active={orientation === "portrait"}
                 onClick={() => setOrientation("portrait")}
               />
@@ -830,14 +830,14 @@ export function CourtPlannerApp() {
             <div className="grid grid-cols-3 gap-1">
               <ToolButton
                 label="Move"
-                icon={<MousePointer2 className="size-3.5" />}
+                icon={<MousePointer2 className="size-3" />}
                 active={mode.kind === "select"}
                 onClick={() => setMode({ kind: "select" })}
                 compact
               />
               <ToolButton
                 label="Pen"
-                icon={<Pencil className="size-3.5" />}
+                icon={<Pencil className="size-3" />}
                 active={mode.kind === "pen"}
                 onClick={() =>
                   setMode((m) =>
@@ -848,7 +848,7 @@ export function CourtPlannerApp() {
               />
               <ToolButton
                 label="Line"
-                icon={<Spline className="size-3.5" />}
+                icon={<Spline className="size-3" />}
                 active={mode.kind === "line"}
                 onClick={() =>
                   setMode((m) =>
@@ -945,14 +945,14 @@ export function CourtPlannerApp() {
               <div className="grid grid-cols-2 gap-1">
                 <ToolButton
                   label="Undo"
-                  icon={<Undo2 className="size-3.5" />}
+                  icon={<Undo2 className="size-3" />}
                   onClick={handleUndo}
                   disabled={!canUndo}
                   compact
                 />
                 <ToolButton
                   label="Redo"
-                  icon={<Redo2 className="size-3.5" />}
+                  icon={<Redo2 className="size-3" />}
                   onClick={handleRedo}
                   disabled={!canRedo}
                   compact
@@ -960,14 +960,14 @@ export function CourtPlannerApp() {
               </div>
               <ToolButton
                 label="Delete selected"
-                icon={<X className="size-3.5" />}
+                icon={<X className="size-3" />}
                 onClick={handleDeleteSelected}
                 disabled={!selectedId}
                 compact
               />
               <ToolButton
                 label="Clear all"
-                icon={<Trash2 className="size-3.5" />}
+                icon={<Trash2 className="size-3" />}
                 onClick={handleClearAll}
                 tone="danger"
                 disabled={items.length === 0}
@@ -978,7 +978,7 @@ export function CourtPlannerApp() {
             <div className="mt-1 flex flex-col gap-1 border-t border-white/10 pt-2">
               <ToolButton
                 label="Save"
-                icon={<Save className="size-3.5" />}
+                icon={<Save className="size-3" />}
                 onClick={() => setSaveOpen(true)}
                 tone="primary"
                 disabled={items.length === 0}
@@ -987,13 +987,13 @@ export function CourtPlannerApp() {
               <div className="grid grid-cols-2 gap-1">
                 <ToolButton
                   label="Open"
-                  icon={<FolderOpen className="size-3.5" />}
+                  icon={<FolderOpen className="size-3" />}
                   onClick={() => setLoadOpen(true)}
                   compact
                 />
                 <ToolButton
                   label="Export"
-                  icon={<Download className="size-3.5" />}
+                  icon={<Download className="size-3" />}
                   onClick={handleExport}
                   disabled={items.length === 0}
                   compact
@@ -1373,8 +1373,10 @@ function TokenButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex aspect-square items-center justify-center rounded-md border text-[10px] font-bold transition ${
-        active ? "ring-2 ring-white" : "border-white/10 hover:border-white/40"
+      className={`flex aspect-square items-center justify-center rounded text-[9px] font-bold transition ${
+        active
+          ? "ring-2 ring-white"
+          : "border border-white/10 hover:border-white/40"
       }`}
       style={{ background: PALETTE_FILL[palette], color: "white" }}
     >
@@ -1400,8 +1402,8 @@ function ToolButton({
   tone?: "primary" | "danger";
   compact?: boolean;
 }) {
-  const sizing = compact ? "px-2 py-1 text-[11px] gap-1" : "px-2.5 py-1.5 text-[11px] gap-1.5";
-  const base = `inline-flex w-full items-center justify-center rounded-md border font-semibold transition disabled:opacity-40 disabled:pointer-events-none ${sizing}`;
+  const sizing = compact ? "px-1.5 py-1 text-[10px] gap-1" : "px-2 py-1 text-[10px] gap-1";
+  const base = `inline-flex w-full items-center justify-center rounded border font-semibold transition disabled:opacity-40 disabled:pointer-events-none ${sizing}`;
   const normal = active
     ? "border-white bg-white text-black"
     : "border-white/15 bg-white/5 text-white hover:border-white/40";
