@@ -754,13 +754,13 @@ export function CourtPlannerApp() {
 
       <div
         className={`flex flex-1 overflow-hidden ${
-          toolbarOnSide ? "flex-col-reverse md:flex-row" : "flex-col-reverse"
+          toolbarOnSide ? "flex-row" : "flex-col-reverse"
         }`}
       >
         <aside
           className={`flex shrink-0 overflow-y-auto border-white/10 bg-black/40 p-1.5 ${
             toolbarOnSide
-              ? "max-h-[45dvh] border-t md:max-h-none md:w-[164px] md:border-r md:border-t-0"
+              ? "h-full w-[150px] border-r"
               : "max-h-[32dvh] border-t"
           }`}
         >
