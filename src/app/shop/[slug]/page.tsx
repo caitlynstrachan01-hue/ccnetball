@@ -101,13 +101,22 @@ export default async function ShopProductPage({
   return (
     <>
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-border/60">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute -top-40 -right-40 size-[35rem] rounded-full bg-[var(--brand-coral)]/25 blur-[120px]" />
-          <div className="absolute -bottom-40 -left-40 size-[35rem] rounded-full bg-[var(--brand-raspberry)]/20 blur-[120px]" />
+      <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-[var(--brand-coral)]/15 via-background to-[var(--brand-raspberry)]/10">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-40 -right-40 size-[40rem] rounded-full bg-[var(--brand-coral)]/30 blur-[140px]" />
+          <div className="absolute -bottom-40 -left-40 size-[40rem] rounded-full bg-[var(--brand-raspberry)]/25 blur-[140px]" />
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.035]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
+              backgroundSize: "28px 28px",
+            }}
+          />
         </div>
 
-        <div className="mx-auto max-w-4xl px-6 py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-6xl px-6 pb-16 pt-10 lg:px-10 lg:pb-20 lg:pt-14">
           <Reveal>
             <Link
               href="/shop"
@@ -117,76 +126,127 @@ export default async function ShopProductPage({
             </Link>
           </Reveal>
 
-          <Reveal delay={0.05}>
-            <div className="mt-8 flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <Icon className="size-8" />
+          <div className="mt-10 grid gap-12 lg:grid-cols-12 lg:gap-14">
+            <div className="flex flex-col lg:col-span-7">
+              <Reveal delay={0.05}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-[var(--brand-coral)]/20 text-primary shadow-md shadow-primary/10">
+                    <Icon className="size-7" />
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                    <Sparkles className="size-3" />
+                    {product.launchUrl || product.slug === "court-planner"
+                      ? "Now Live"
+                      : "Coming Soon"}
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal delay={0.1}>
+                <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
+                  Designed by Caitlyn Strachan · Elite accredited netball coach
+                </p>
+              </Reveal>
+
+              <Reveal delay={0.15}>
+                <h1 className="mt-3 font-display text-[2.75rem] font-extrabold leading-[1.02] tracking-tight md:text-6xl">
+                  {product.name}
+                </h1>
+              </Reveal>
+
+              <Reveal delay={0.2}>
+                <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+                  {product.short}
+                </p>
+              </Reveal>
+
+              {product.highlights.length > 0 && (
+                <Reveal delay={0.25}>
+                  <div className="mt-7 flex flex-wrap gap-2">
+                    {product.highlights.slice(0, 4).map((h) => (
+                      <span
+                        key={h}
+                        className="rounded-full border border-border/70 bg-background/60 px-3 py-1 text-xs font-semibold text-foreground/80 backdrop-blur-sm"
+                      >
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                </Reveal>
+              )}
+
+              <Reveal delay={0.3}>
+                <div className="mt-9 flex flex-wrap items-center gap-5">
+                  {product.price && (
+                    <div>
+                      <p className="font-display text-3xl font-extrabold leading-none text-foreground md:text-4xl">
+                        {product.price.replace(" AUD", "")}
+                      </p>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        AUD · one payment
+                      </p>
+                    </div>
+                  )}
+                  <a
+                    href="#pricing"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:shadow-primary/35"
+                  >
+                    {product.slug === "court-planner" &&
+                    courtPlannerAccess
+                      ? "Launch now"
+                      : product.slug === "court-planner"
+                        ? "Buy annual access"
+                        : product.launchUrl
+                          ? "Launch now"
+                          : "See pricing"}
+                    <ArrowRight className="size-4" />
+                  </a>
+                </div>
+              </Reveal>
             </div>
-          </Reveal>
 
-          <Reveal delay={0.1}>
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-              <Sparkles className="size-3.5" />
-              {product.launchUrl ? "Now Live" : "Coming Soon"}
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
-              {product.name}
-            </h1>
-          </Reveal>
-
-          <Reveal delay={0.2}>
-            <p className="mt-5 max-w-2xl text-lg text-muted-foreground md:text-xl">
-              {product.short}
-            </p>
-          </Reveal>
+            {product.previewImages && product.previewImages.length > 0 && (
+              <Reveal delay={0.1} className="lg:col-span-5">
+                <div className="mx-auto max-w-[320px] lg:max-w-none">
+                  <ShopPreviewCarousel slides={product.previewImages} />
+                </div>
+              </Reveal>
+            )}
+          </div>
         </div>
       </section>
 
       {/* DETAIL */}
       <section className="py-16">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-14 lg:px-10">
-          {product.previewImages && product.previewImages.length > 0 && (
-            <Reveal className="lg:col-span-5">
-              <div className="mx-auto max-w-[360px] lg:sticky lg:top-24 lg:max-w-none">
-                <ShopPreviewCarousel slides={product.previewImages} />
-              </div>
-            </Reveal>
-          )}
+          <Reveal className="lg:col-span-7">
+            <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+              About this app
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-foreground/90 md:text-lg">
+              {product.description}
+            </p>
 
-          <div
-            className={`flex flex-col gap-10 ${
-              product.previewImages && product.previewImages.length > 0
-                ? "lg:col-span-7"
-                : "lg:col-span-12"
-            }`}
-          >
-            <Reveal>
-              <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
-                About this app
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-foreground/90 md:text-lg">
-                {product.description}
-              </p>
+            <h3 className="mt-10 font-display text-xl font-bold tracking-tight">
+              What&apos;s included
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {product.features.map((feature) => (
+                <li key={feature} className="flex items-start gap-3">
+                  <Check className="mt-0.5 size-5 shrink-0 text-primary" />
+                  <span className="text-base text-foreground/90">
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
 
-              <h3 className="mt-10 font-display text-xl font-bold tracking-tight">
-                What&apos;s included
-              </h3>
-              <ul className="mt-5 space-y-3">
-                {product.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <Check className="mt-0.5 size-5 shrink-0 text-primary" />
-                    <span className="text-base text-foreground/90">
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <div className="rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5">
+          <Reveal delay={0.1} className="lg:col-span-5">
+            <div
+              id="pricing"
+              className="scroll-mt-24 rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5 md:sticky md:top-24"
+            >
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 Pricing
               </p>
@@ -303,9 +363,8 @@ export default async function ShopProductPage({
                   </Link>
                 </>
               )}
-              </div>
-            </Reveal>
-          </div>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>
