@@ -152,6 +152,58 @@ export async function POST(request: Request) {
           break;
         }
 
+        // Netball Court - Drawing — one-off 12-month access.
+        if (
+          session.mode === "payment" &&
+          session.metadata?.product_slug === "court-planner"
+        ) {
+          const userId =
+            session.metadata.supabase_user_id ||
+            session.client_reference_id ||
+            null;
+          if (!userId) break;
+
+          // Idempotency — if access already granted for this session, stop.
+          const { data: existing } = await shopDb
+            .from("court_planner_access")
+            .select("id")
+            .eq("stripe_session_id", session.id)
+            .maybeSingle();
+          if (existing) break;
+
+          const paymentIntentId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent?.id || null;
+          const customerId =
+            typeof session.customer === "string"
+              ? session.customer
+              : session.customer?.id || null;
+
+          const expiresAt = new Date(
+            Date.now() + 365 * 24 * 60 * 60 * 1000,
+          ).toISOString();
+
+          const { error: accessError } = await shopDb
+            .from("court_planner_access")
+            .insert({
+              user_id: userId,
+              stripe_customer_id: customerId,
+              stripe_session_id: session.id,
+              stripe_payment_intent: paymentIntentId,
+              expires_at: expiresAt,
+              amount_cents: session.amount_total ?? 1999,
+              currency: (session.currency ?? "aud").toLowerCase(),
+            });
+          if (accessError) {
+            console.error(
+              "Court Planner access grant failed:",
+              accessError,
+            );
+          }
+          break;
+        }
+
         // Trial registrations (one-off payment).
         if (
           session.mode === "payment" &&

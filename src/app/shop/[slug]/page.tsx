@@ -15,12 +15,14 @@ import {
 } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { CompetitionBuilderBuyButton } from "@/components/competition-builder-buy-button";
+import { CourtPlannerBuyButton } from "@/components/court-planner-buy-button";
 import { PhysicalProductDetail } from "@/components/physical-product-detail";
 import {
   getProductBySlug,
   type ShopProduct,
 } from "@/lib/shop-content";
 import { getPhysicalProductBySlug } from "@/lib/shop-physical.server";
+import { getCourtPlannerAccess } from "@/lib/court-planner-access.server";
 
 const ICONS: Record<ShopProduct["icon"], typeof Trophy> = {
   "clipboard-list": ClipboardList,
@@ -89,6 +91,11 @@ export default async function ShopProductPage({
 
   const product = digital;
   const Icon = ICONS[product.icon];
+
+  const courtPlannerAccess =
+    product.slug === "court-planner"
+      ? await getCourtPlannerAccess()
+      : null;
 
   return (
     <>
@@ -267,6 +274,22 @@ export default async function ShopProductPage({
 
               {product.slug === "competition-builder" ? (
                 <CompetitionBuilderBuyButton />
+              ) : product.slug === "court-planner" && courtPlannerAccess ? (
+                <>
+                  <Link
+                    href="/court-planner"
+                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01]"
+                  >
+                    Launch {product.name}
+                    <ArrowRight className="size-5" />
+                  </Link>
+                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                    Your access expires in {courtPlannerAccess.daysRemaining}{" "}
+                    {courtPlannerAccess.daysRemaining === 1 ? "day" : "days"}.
+                  </p>
+                </>
+              ) : product.slug === "court-planner" ? (
+                <CourtPlannerBuyButton />
               ) : product.launchUrl ? (
                 <>
                   <Link

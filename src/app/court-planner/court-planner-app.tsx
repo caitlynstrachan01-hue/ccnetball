@@ -355,7 +355,13 @@ function translateItem(item: Item, dx: number, dy: number): Item {
 
 // ---- Component ------------------------------------------------------------
 
-export function CourtPlannerApp() {
+export function CourtPlannerApp({
+  expiresAt,
+  daysRemaining,
+}: {
+  expiresAt?: string;
+  daysRemaining?: number;
+} = {}) {
   const [items, setItems] = useState<Item[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "select" });
   const [history, setHistory] = useState<Item[][]>([]);
@@ -803,9 +809,23 @@ export function CourtPlannerApp() {
         <h1 className="font-display text-sm font-bold tracking-wide sm:text-base">
           Netball Court - Drawing
         </h1>
-        <span className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 sm:inline">
-          Beta
-        </span>
+        {typeof daysRemaining === "number" ? (
+          <span
+            className={`hidden text-[11px] font-semibold uppercase tracking-[0.14em] sm:inline ${
+              daysRemaining <= 14 ? "text-amber-300" : "text-white/50"
+            }`}
+          >
+            {daysRemaining <= 0
+              ? "Expired"
+              : daysRemaining === 1
+                ? "1 day left"
+                : `${daysRemaining} days left`}
+          </span>
+        ) : (
+          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 sm:inline">
+            &nbsp;
+          </span>
+        )}
       </header>
 
       <div className="border-b border-white/10 bg-white/5 px-4 py-1 text-center text-[11px] font-medium text-white/70">

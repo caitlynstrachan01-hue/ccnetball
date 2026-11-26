@@ -27,3 +27,9 @@ export const MEMBERSHIP_PRICE_IDS: Record<
  * the checkout API refuses to create Stripe sessions.
  */
 export const DRILLS_LIBRARY_CHECKOUT_OPEN = false;
+
+/** Netball Court - Drawing — one-off annual access. */
+export const COURT_PLANNER_CHECKOUT_OPEN = true;
+export const COURT_PLANNER_PRICE_CENTS = 1999; // $19.99 AUD
+export const COURT_PLANNER_CURRENCY = "aud";
+export const COURT_PLANNER_ACCESS_DAYS = 365;
