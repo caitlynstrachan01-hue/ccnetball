@@ -90,6 +90,12 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
         alt: "A full set play with both teams positioned on the court — purple Team A and orange Team B",
         caption: "Build a full set play with both teams on the court",
       },
+      {
+        src: "/shop/court-planner/04-line-options.jpg",
+        alt: "The line tool open with options for shape, arrowhead, dotted style, thickness and colour, next to a drill full of cones, arrows and a thrower",
+        caption:
+          "Pick line shape, arrowhead, dotted style, thickness and colour",
+      },
     ],
   },
   {
