@@ -65,19 +65,19 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     launchUrl: "/court-planner",
     previewImages: [
       {
-        src: "/shop/court-planner/01-clean-canvas.jpg",
-        alt: "Netball Court - Drawing on an iPhone with a blank court ready to use",
-        caption: "Clean canvas on your phone or tablet",
+        src: "/shop/court-planner/01-cone-drill.jpg",
+        alt: "A simple netball drill set up with three cones, a starting cross, a thrower token and movement arrows",
+        caption: "Set up a drill in seconds — cones, a starting X, and arrows",
       },
       {
-        src: "/shop/court-planner/02-cone-drill.jpg",
-        alt: "Cones, a thrower and movement arrows drawn on the court",
-        caption: "Set up cones, place a thrower, draw movement arrows",
+        src: "/shop/court-planner/02-attack-defend-drill.jpg",
+        alt: "An attacker-versus-defender drill with multiple A and D player tokens and the ball marked on the court",
+        caption: "Run attacker-vs-defender drills with the ball in play",
       },
       {
         src: "/shop/court-planner/03-set-play.jpg",
-        alt: "A full set play with solid lines for leads and dashed lines for passes",
-        caption: "Draw full set plays — solid for leads, dashed for passes",
+        alt: "A full set play with both teams positioned on the court — purple Team A and orange Team B",
+        caption: "Build a full set play with both teams on the court",
       },
     ],
   },
