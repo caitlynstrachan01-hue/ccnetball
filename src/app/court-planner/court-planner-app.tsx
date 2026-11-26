@@ -23,6 +23,7 @@ import {
 type Position = "GS" | "GA" | "WA" | "C" | "WD" | "GD" | "GK";
 type Palette = "green" | "red" | "purple" | "orange";
 type TokenLabel = "A" | "D" | "T" | Position;
+type MarkerKind = "cone" | "ball" | "cross";
 type LineShape = "straight" | "curved";
 type Orientation = "landscape" | "portrait";
 
@@ -56,11 +57,20 @@ type PenItem = {
   points: Point[];
 };
 
-type Item = TokenItem | LineItem | PenItem;
+type MarkerItem = {
+  id: string;
+  kind: "marker";
+  marker: MarkerKind;
+  x: number;
+  y: number;
+};
+
+type Item = TokenItem | LineItem | PenItem | MarkerItem;
 
 type Mode =
   | { kind: "select" }
   | { kind: "place"; label: TokenLabel; palette: Palette }
+  | { kind: "place-marker"; marker: MarkerKind }
   | { kind: "line" }
   | { kind: "pen" };
 
@@ -245,6 +255,22 @@ function validateFolders(raw: unknown): Folder[] {
             thickness: clampThickness(it.thickness),
             points: pts,
           });
+        } else if (
+          it.kind === "marker" &&
+          typeof it.id === "string" &&
+          (it.marker === "cone" ||
+            it.marker === "ball" ||
+            it.marker === "cross") &&
+          typeof it.x === "number" &&
+          typeof it.y === "number"
+        ) {
+          items.push({
+            id: it.id,
+            kind: "marker",
+            marker: it.marker,
+            x: it.x,
+            y: it.y,
+          });
         }
       }
       drills.push({
@@ -319,7 +345,8 @@ function smoothedPath(points: Point[]): string {
 }
 
 function translateItem(item: Item, dx: number, dy: number): Item {
-  if (item.kind === "token") return { ...item, x: item.x + dx, y: item.y + dy };
+  if (item.kind === "token" || item.kind === "marker")
+    return { ...item, x: item.x + dx, y: item.y + dy };
   return {
     ...item,
     points: item.points.map((p) => ({ x: p.x + dx, y: p.y + dy })),
@@ -459,6 +486,20 @@ export function CourtPlannerApp() {
           y,
         };
         setItems((prev) => [...prev, token]);
+        setMode({ kind: "select" });
+        return;
+      }
+
+      if (mode.kind === "place-marker") {
+        pushHistory(items);
+        const marker: MarkerItem = {
+          id: genId(),
+          kind: "marker",
+          marker: mode.marker,
+          x,
+          y,
+        };
+        setItems((prev) => [...prev, marker]);
         setMode({ kind: "select" });
         return;
       }
@@ -705,6 +746,15 @@ export function CourtPlannerApp() {
   const modeLabel = useMemo(() => {
     if (mode.kind === "place")
       return `Tap the court to place ${mode.label}`;
+    if (mode.kind === "place-marker") {
+      const name =
+        mode.marker === "cone"
+          ? "a cone"
+          : mode.marker === "ball"
+            ? "the ball"
+            : "a cross";
+      return `Tap the court to place ${name}`;
+    }
     if (mode.kind === "line")
       return `Press and drag to draw a ${lineShape} line${lineArrow ? " with arrow" : ""}${lineDotted ? ", dotted" : ""}`;
     if (mode.kind === "pen") return "Press and drag to draw freely";
@@ -725,6 +775,16 @@ export function CourtPlannerApp() {
       m.kind === "place" && m.label === label && m.palette === palette
         ? { kind: "select" }
         : { kind: "place", label, palette },
+    );
+
+  const markerActive = (marker: MarkerKind) =>
+    mode.kind === "place-marker" && mode.marker === marker;
+
+  const toggleMarker = (marker: MarkerKind) =>
+    setMode((m) =>
+      m.kind === "place-marker" && m.marker === marker
+        ? { kind: "select" }
+        : { kind: "place-marker", marker },
     );
 
   // Toolbar layout — side (vertical) when court is up/down, bottom
@@ -846,6 +906,24 @@ export function CourtPlannerApp() {
                   onClick={() => togglePlace(pos, "orange")}
                 />
               ))}
+            </ToolbarGroup>
+
+            <ToolbarGroup label="Markers">
+              <MarkerButton
+                marker="cone"
+                active={markerActive("cone")}
+                onClick={() => toggleMarker("cone")}
+              />
+              <MarkerButton
+                marker="ball"
+                active={markerActive("ball")}
+                onClick={() => toggleMarker("ball")}
+              />
+              <MarkerButton
+                marker="cross"
+                active={markerActive("cross")}
+                onClick={() => toggleMarker("cross")}
+              />
             </ToolbarGroup>
 
             <div>
@@ -1152,6 +1230,17 @@ export function CourtPlannerApp() {
               {lineDraft && <LineRender item={lineDraft} preview />}
 
               {items
+                .filter((it): it is MarkerItem => it.kind === "marker")
+                .map((m) => (
+                  <MarkerRender
+                    key={m.id}
+                    item={m}
+                    orientation={orientation}
+                    selected={selectedId === m.id}
+                  />
+                ))}
+
+              {items
                 .filter((it): it is TokenItem => it.kind === "token")
                 .map((t) => (
                   <g key={t.id} data-item-id={t.id}>
@@ -1286,6 +1375,77 @@ function LineRender({
   );
 }
 
+function MarkerRender({
+  item,
+  orientation,
+  selected,
+}: {
+  item: MarkerItem;
+  orientation: Orientation;
+  selected?: boolean;
+}) {
+  const { x, y, marker } = item;
+  // Counter-rotate markers with a visual "up" so they still read correctly
+  // when the whole court is rendered rotated 90° CW for portrait mode.
+  const needsCounterRotate = orientation === "portrait" && marker === "cone";
+  const transform = needsCounterRotate ? `rotate(-90 ${x} ${y})` : undefined;
+
+  return (
+    <g data-item-id={item.id} transform={transform}>
+      {selected && (
+        <circle
+          cx={x}
+          cy={y}
+          r={22}
+          fill="none"
+          stroke={SELECT_HIGHLIGHT}
+          strokeWidth={3}
+          strokeDasharray="4 3"
+        />
+      )}
+      {marker === "cone" && (
+        <polygon
+          points={`${x},${y - 16} ${x - 12},${y + 10} ${x + 12},${y + 10}`}
+          fill="#F97316"
+          stroke="#334155"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
+      )}
+      {marker === "ball" && (
+        <>
+          <circle cx={x} cy={y} r={10} fill="#111111" />
+          <circle cx={x - 3} cy={y - 3} r={2.5} fill="#ffffff" opacity={0.7} />
+        </>
+      )}
+      {marker === "cross" && (
+        <>
+          <line
+            x1={x - 12}
+            y1={y - 12}
+            x2={x + 12}
+            y2={y + 12}
+            stroke="#111111"
+            strokeWidth={4}
+            strokeLinecap="round"
+          />
+          <line
+            x1={x - 12}
+            y1={y + 12}
+            x2={x + 12}
+            y2={y - 12}
+            stroke="#111111"
+            strokeWidth={4}
+            strokeLinecap="round"
+          />
+        </>
+      )}
+      {/* Transparent hit area so taps land reliably */}
+      <circle cx={x} cy={y} r={18} fill="transparent" pointerEvents="all" />
+    </g>
+  );
+}
+
 function PenRender({
   item,
   selected,
@@ -1399,6 +1559,51 @@ function TokenButton({
       style={{ background: PALETTE_FILL[palette], color: "white" }}
     >
       {label}
+    </button>
+  );
+}
+
+function MarkerButton({
+  marker,
+  active,
+  onClick,
+}: {
+  marker: MarkerKind;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={marker}
+      className={`flex size-7 shrink-0 items-center justify-center rounded bg-white/5 transition ${
+        active
+          ? "ring-2 ring-white"
+          : "border border-white/10 hover:border-white/40"
+      }`}
+    >
+      <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
+        {marker === "cone" && (
+          <polygon
+            points="12,4 4,20 20,20"
+            fill="#F97316"
+            stroke="#FFFFFF"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+          />
+        )}
+        {marker === "ball" && (
+          <circle cx={12} cy={12} r={6} fill="#FFFFFF" />
+        )}
+        {marker === "cross" && (
+          <g stroke="#FFFFFF" strokeWidth={3} strokeLinecap="round">
+            <line x1={5} y1={5} x2={19} y2={19} />
+            <line x1={5} y1={19} x2={19} y2={5} />
+          </g>
+        )}
+      </svg>
     </button>
   );
 }
