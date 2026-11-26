@@ -126,7 +126,7 @@ export default async function ShopProductPage({
             </Link>
           </Reveal>
 
-          <div className="mt-10 grid gap-12 lg:grid-cols-12 lg:gap-14">
+          <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-10">
             <div className="flex flex-col lg:col-span-7">
               <Reveal delay={0.05}>
                 <div className="flex flex-wrap items-center gap-3">
@@ -149,20 +149,36 @@ export default async function ShopProductPage({
               </Reveal>
 
               <Reveal delay={0.15}>
-                <h1 className="mt-3 font-display text-[2.75rem] font-extrabold leading-[1.02] tracking-tight md:text-6xl">
+                <h1 className="mt-3 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-tight md:text-[3.5rem]">
                   {product.name}
                 </h1>
               </Reveal>
 
               <Reveal delay={0.2}>
-                <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+                <a
+                  href="#pricing"
+                  className="group mt-7 inline-flex w-fit items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:shadow-primary/35"
+                >
+                  {product.slug === "court-planner" && courtPlannerAccess
+                    ? "Launch now"
+                    : product.slug === "court-planner"
+                      ? "Buy now"
+                      : product.launchUrl
+                        ? "Launch now"
+                        : "Buy now"}
+                  <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+                </a>
+              </Reveal>
+
+              <Reveal delay={0.25}>
+                <p className="mt-7 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
                   {product.short}
                 </p>
               </Reveal>
 
               {product.highlights.length > 0 && (
-                <Reveal delay={0.25}>
-                  <div className="mt-7 flex flex-wrap gap-2">
+                <Reveal delay={0.3}>
+                  <div className="mt-6 flex flex-wrap gap-2">
                     {product.highlights.slice(0, 4).map((h) => (
                       <span
                         key={h}
@@ -175,39 +191,26 @@ export default async function ShopProductPage({
                 </Reveal>
               )}
 
-              <Reveal delay={0.3}>
-                <div className="mt-9 flex flex-wrap items-center gap-5">
-                  {product.price && (
-                    <div>
-                      <p className="font-display text-3xl font-extrabold leading-none text-foreground md:text-4xl">
-                        {product.price.replace(" AUD", "")}
-                      </p>
-                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                        AUD · one payment
-                      </p>
-                    </div>
-                  )}
-                  <a
-                    href="#pricing"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:shadow-primary/35"
-                  >
-                    {product.slug === "court-planner" &&
-                    courtPlannerAccess
-                      ? "Launch now"
-                      : product.slug === "court-planner"
-                        ? "Buy annual access"
-                        : product.launchUrl
-                          ? "Launch now"
-                          : "See pricing"}
-                    <ArrowRight className="size-4" />
-                  </a>
-                </div>
-              </Reveal>
+              {product.price && (
+                <Reveal delay={0.35}>
+                  <div className="mt-auto pt-10">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                      Price
+                    </p>
+                    <p className="mt-2 font-display text-4xl font-extrabold leading-none text-foreground md:text-5xl">
+                      {product.price.replace(" AUD", "")}
+                    </p>
+                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      AUD
+                    </p>
+                  </div>
+                </Reveal>
+              )}
             </div>
 
             {product.previewImages && product.previewImages.length > 0 && (
               <Reveal delay={0.1} className="lg:col-span-5">
-                <div className="mx-auto max-w-[320px] lg:max-w-none">
+                <div className="mx-auto max-w-[340px] lg:max-w-none">
                   <ShopPreviewCarousel slides={product.previewImages} />
                 </div>
               </Reveal>

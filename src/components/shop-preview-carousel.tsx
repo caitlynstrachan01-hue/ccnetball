@@ -78,7 +78,7 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
       />
 
       <div
-        className="relative aspect-[1084/2000] w-full overflow-hidden rounded-2xl ring-1 ring-border/60 shadow-2xl shadow-primary/20"
+        className="relative aspect-[1084/1870] w-full overflow-hidden rounded-2xl ring-1 ring-border/60 shadow-2xl shadow-primary/20"
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       >
