@@ -35,19 +35,18 @@ export function CourtPlannerBuyButton() {
         type="button"
         onClick={buy}
         disabled={loading}
-        className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (
-          <Loader2 className="size-5 animate-spin" />
+          <Loader2 className="size-4 animate-spin" />
         ) : (
-          <ShoppingCart className="size-5" />
+          <ShoppingCart className="size-4" />
         )}
-        {loading ? "Starting checkout…" : "Buy annual access — $19.99"}
-        {!loading && <ArrowRight className="size-4" />}
+        {loading ? "Starting checkout…" : "Buy annual access"}
       </button>
-      <p className="mt-3 text-center text-xs text-muted-foreground">
-        One payment covers 12 months. You&apos;ll go to Stripe to pay, then
-        land straight in the app with your access attached.
+      <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
+        One payment covers 12 months. You&apos;ll go to Stripe, then land
+        straight in the app.
       </p>
       {error && (
         <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">

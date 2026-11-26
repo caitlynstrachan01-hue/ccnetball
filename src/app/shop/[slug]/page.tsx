@@ -204,26 +204,26 @@ export default async function ShopProductPage({
       </section>
 
       {/* PRICING */}
-      <section className="border-t border-border/60 py-16">
-        <div className="mx-auto max-w-xl px-6 lg:px-10">
+      <section className="border-t border-border/60 py-14 lg:py-16">
+        <div className="mx-auto max-w-6xl px-6 lg:px-10">
           <Reveal>
             <div
               id="pricing"
-              className="scroll-mt-24 rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5"
+              className="mx-auto max-w-sm scroll-mt-24 rounded-2xl border border-border/70 bg-card p-6 shadow-lg shadow-primary/5 lg:ml-auto lg:mr-0"
             >
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
                 Pricing
               </p>
               {product.price ? (
-                <p className="mt-2 font-display text-3xl font-extrabold text-foreground md:text-4xl">
+                <p className="mt-1.5 font-display text-2xl font-extrabold text-foreground md:text-3xl">
                   {product.price}
                 </p>
               ) : (
                 <>
-                  <p className="mt-2 font-display text-3xl font-extrabold text-foreground md:text-4xl">
+                  <p className="mt-1.5 font-display text-2xl font-extrabold text-foreground md:text-3xl">
                     Coming soon
                   </p>
-                  <p className="mt-2 text-sm italic text-muted-foreground">
+                  <p className="mt-1.5 text-xs italic text-muted-foreground">
                     Final pricing is being locked in.
                   </p>
                 </>
@@ -253,20 +253,20 @@ export default async function ShopProductPage({
               )}
 
               {product.pricingNote && (
-                <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                   {product.pricingNote}
                 </p>
               )}
 
-              <div className="mt-6 border-t border-border pt-6">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="mt-5 border-t border-border pt-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   Highlights
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-2.5 flex flex-wrap gap-1.5">
                   {product.highlights.map((h) => (
                     <span
                       key={h}
-                      className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                      className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary"
                     >
                       {h}
                     </span>
@@ -280,12 +280,12 @@ export default async function ShopProductPage({
                 <>
                   <Link
                     href="/court-planner"
-                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01]"
+                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01]"
                   >
                     Launch {product.name}
-                    <ArrowRight className="size-5" />
+                    <ArrowRight className="size-4" />
                   </Link>
-                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                  <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
                     Your access expires in {courtPlannerAccess.daysRemaining}{" "}
                     {courtPlannerAccess.daysRemaining === 1 ? "day" : "days"}.
                   </p>
@@ -296,12 +296,12 @@ export default async function ShopProductPage({
                 <>
                   <Link
                     href={product.launchUrl}
-                    className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-7 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01]"
+                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.01]"
                   >
                     Launch {product.name}
-                    <ArrowRight className="size-5" />
+                    <ArrowRight className="size-4" />
                   </Link>
-                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                  <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
                     Opens in the same tab. Works in any browser on your phone
                     or tablet.
                   </p>
