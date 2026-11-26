@@ -17,6 +17,7 @@ import { Reveal } from "@/components/motion";
 import { CompetitionBuilderBuyButton } from "@/components/competition-builder-buy-button";
 import { CourtPlannerBuyButton } from "@/components/court-planner-buy-button";
 import { PhysicalProductDetail } from "@/components/physical-product-detail";
+import { ShopPreviewCarousel } from "@/components/shop-preview-carousel";
 import {
   getProductBySlug,
   type ShopProduct,
@@ -143,40 +144,13 @@ export default async function ShopProductPage({
         </div>
       </section>
 
-      {/* PREVIEW GALLERY */}
+      {/* PREVIEW CAROUSEL */}
       {product.previewImages && product.previewImages.length > 0 && (
-        <section className="border-b border-border/60 py-14 lg:py-16">
-          <div className="mx-auto max-w-6xl px-6 lg:px-10">
+        <section className="border-b border-border/60 py-12 lg:py-16">
+          <div className="mx-auto max-w-5xl px-6 lg:px-10">
             <Reveal>
-              <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
-                See it in action
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Straight from Caitlyn&apos;s own iPhone.
-              </p>
+              <ShopPreviewCarousel slides={product.previewImages} />
             </Reveal>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {product.previewImages.map((img, i) => (
-                <Reveal key={img.src} delay={0.05 + i * 0.06}>
-                  <figure className="group overflow-hidden rounded-2xl border border-border/70 bg-card shadow-lg shadow-primary/5 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10">
-                    <div className="relative aspect-[9/16] overflow-hidden bg-[#0F1012]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={img.src}
-                        alt={img.alt}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                      />
-                    </div>
-                    {img.caption && (
-                      <figcaption className="px-4 py-3 text-sm font-semibold text-foreground/80">
-                        {img.caption}
-                      </figcaption>
-                    )}
-                  </figure>
-                </Reveal>
-              ))}
-            </div>
           </div>
         </section>
       )}
