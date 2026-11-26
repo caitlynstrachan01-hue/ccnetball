@@ -765,8 +765,10 @@ export function CourtPlannerApp() {
           }`}
         >
           <div
-            className={`flex w-full flex-col gap-1.5 ${
-              toolbarOnSide ? "" : "mx-auto max-w-[260px]"
+            className={`w-full [&>*]:mb-1.5 [&>*]:break-inside-avoid ${
+              toolbarOnSide
+                ? "flex flex-col"
+                : "mx-auto max-w-[560px] columns-3 gap-x-3"
             }`}
           >
             <ToolbarGroup label="Players">
@@ -814,53 +816,57 @@ export function CourtPlannerApp() {
               ))}
             </ToolbarGroup>
 
-            <SectionLabel>Court</SectionLabel>
-            <div className="grid grid-cols-2 gap-1">
-              <ToolButton
-                label="Side"
-                icon={<RectangleHorizontal className="size-3" />}
-                active={orientation === "landscape"}
-                onClick={() => setOrientation("landscape")}
-              />
-              <ToolButton
-                label="Up/down"
-                icon={<RectangleVertical className="size-3" />}
-                active={orientation === "portrait"}
-                onClick={() => setOrientation("portrait")}
-              />
+            <div>
+              <SectionLabel>Court</SectionLabel>
+              <div className="mt-1 grid grid-cols-2 gap-1">
+                <ToolButton
+                  label="Side"
+                  icon={<RectangleHorizontal className="size-3" />}
+                  active={orientation === "landscape"}
+                  onClick={() => setOrientation("landscape")}
+                />
+                <ToolButton
+                  label="Up/down"
+                  icon={<RectangleVertical className="size-3" />}
+                  active={orientation === "portrait"}
+                  onClick={() => setOrientation("portrait")}
+                />
+              </div>
             </div>
 
-            <SectionLabel>Drawing</SectionLabel>
-            <div className="grid grid-cols-3 gap-1">
-              <ToolButton
-                label="Move"
-                icon={<MousePointer2 className="size-3" />}
-                active={mode.kind === "select"}
-                onClick={() => setMode({ kind: "select" })}
-                compact
-              />
-              <ToolButton
-                label="Pen"
-                icon={<Pencil className="size-3" />}
-                active={mode.kind === "pen"}
-                onClick={() =>
-                  setMode((m) =>
-                    m.kind === "pen" ? { kind: "select" } : { kind: "pen" },
-                  )
-                }
-                compact
-              />
-              <ToolButton
-                label="Line"
-                icon={<Spline className="size-3" />}
-                active={mode.kind === "line"}
-                onClick={() =>
-                  setMode((m) =>
-                    m.kind === "line" ? { kind: "select" } : { kind: "line" },
-                  )
-                }
-                compact
-              />
+            <div>
+              <SectionLabel>Drawing</SectionLabel>
+              <div className="mt-1 grid grid-cols-3 gap-1">
+                <ToolButton
+                  label="Move"
+                  icon={<MousePointer2 className="size-3" />}
+                  active={mode.kind === "select"}
+                  onClick={() => setMode({ kind: "select" })}
+                  compact
+                />
+                <ToolButton
+                  label="Pen"
+                  icon={<Pencil className="size-3" />}
+                  active={mode.kind === "pen"}
+                  onClick={() =>
+                    setMode((m) =>
+                      m.kind === "pen" ? { kind: "select" } : { kind: "pen" },
+                    )
+                  }
+                  compact
+                />
+                <ToolButton
+                  label="Line"
+                  icon={<Spline className="size-3" />}
+                  active={mode.kind === "line"}
+                  onClick={() =>
+                    setMode((m) =>
+                      m.kind === "line" ? { kind: "select" } : { kind: "line" },
+                    )
+                  }
+                  compact
+                />
+              </div>
             </div>
 
             {mode.kind === "line" && (
