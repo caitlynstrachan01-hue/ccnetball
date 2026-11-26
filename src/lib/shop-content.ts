@@ -52,9 +52,9 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Easy undo and redo",
       "Save drills and set plays into folders",
     ],
-    price: "$9.99 AUD / year",
+    price: "$19.99 AUD / year",
     pricingNote:
-      "Annual subscription — one payment, full access on any device.",
+      "One yearly payment. Full access on any device for 12 months.",
     highlights: [
       "Phone & Tablet",
       "Game Day & Training",
