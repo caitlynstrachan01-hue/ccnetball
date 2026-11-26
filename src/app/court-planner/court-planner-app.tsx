@@ -764,7 +764,11 @@ export function CourtPlannerApp() {
               : "max-h-[32dvh] border-t"
           }`}
         >
-          <div className="flex w-full flex-col gap-1.5">
+          <div
+            className={`flex w-full flex-col gap-1.5 ${
+              toolbarOnSide ? "" : "mx-auto max-w-[260px]"
+            }`}
+          >
             <ToolbarGroup label="Players">
               <TokenButton
                 label="A"
@@ -1352,7 +1356,7 @@ function ToolbarGroup({
         )}
         <SectionLabel>{label}</SectionLabel>
       </div>
-      <div className="grid grid-cols-4 gap-1">{children}</div>
+      <div className="flex flex-wrap gap-1">{children}</div>
     </div>
   );
 }
@@ -1373,7 +1377,7 @@ function TokenButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex aspect-square items-center justify-center rounded text-[9px] font-bold transition ${
+      className={`flex size-7 shrink-0 items-center justify-center rounded text-[9px] font-bold transition ${
         active
           ? "ring-2 ring-white"
           : "border border-white/10 hover:border-white/40"
