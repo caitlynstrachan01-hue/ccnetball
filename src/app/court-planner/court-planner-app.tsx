@@ -732,7 +732,7 @@ export function CourtPlannerApp() {
   const toolbarOnSide = orientation === "portrait";
 
   return (
-    <div className="flex h-dvh min-h-dvh w-full flex-col bg-[#0F1012] text-white">
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-[#0F1012] text-white">
       <header className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/40 px-4 py-2">
         <Link
           href="/shop"
@@ -753,7 +753,7 @@ export function CourtPlannerApp() {
       </div>
 
       <div
-        className={`flex flex-1 overflow-hidden ${
+        className={`flex min-h-0 flex-1 overflow-hidden ${
           toolbarOnSide ? "flex-row" : "flex-col-reverse"
         }`}
       >
@@ -1013,7 +1013,7 @@ export function CourtPlannerApp() {
           </div>
         </aside>
 
-        <main className="relative flex flex-1 items-center justify-center overflow-hidden p-3">
+        <main className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden p-3">
           <svg
             ref={svgRef}
             viewBox={
@@ -1022,7 +1022,9 @@ export function CourtPlannerApp() {
                 : `0 0 ${VB_W} ${VB_H}`
             }
             preserveAspectRatio="xMidYMid meet"
-            className="max-h-full max-w-full touch-none select-none"
+            width="100%"
+            height="100%"
+            className="block max-h-full max-w-full touch-none select-none"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
