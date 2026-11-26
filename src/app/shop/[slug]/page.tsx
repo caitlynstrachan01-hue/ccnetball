@@ -191,18 +191,23 @@ export default async function ShopProductPage({
                 </Reveal>
               )}
 
-              {product.price && (
+              {product.features.length > 0 && (
                 <Reveal delay={0.35}>
                   <div className="mt-auto pt-10">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Price
+                      In the app
                     </p>
-                    <p className="mt-2 font-display text-4xl font-extrabold leading-none text-foreground md:text-5xl">
-                      {product.price.replace(" AUD", "")}
-                    </p>
-                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      AUD
-                    </p>
+                    <ul className="mt-4 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                      {product.features.slice(0, 6).map((f) => (
+                        <li
+                          key={f}
+                          className="flex items-start gap-2 text-sm text-foreground/85"
+                        >
+                          <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </Reveal>
               )}
