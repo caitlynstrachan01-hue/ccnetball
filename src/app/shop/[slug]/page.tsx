@@ -143,7 +143,7 @@ export default async function ShopProductPage({
               </Reveal>
 
               <Reveal delay={0.15}>
-                <h1 className="mt-7 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-tight md:text-[3.5rem]">
+                <h1 className="mt-7 font-display text-[2.25rem] font-extrabold leading-[1.02] tracking-tight md:text-5xl lg:whitespace-nowrap">
                   {product.name}
                 </h1>
               </Reveal>
@@ -151,7 +151,7 @@ export default async function ShopProductPage({
               <Reveal delay={0.2}>
                 <a
                   href="#pricing"
-                  className="group mt-7 inline-flex w-fit items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:shadow-primary/35"
+                  className="group mt-8 inline-flex w-fit items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:shadow-primary/35"
                 >
                   {product.slug === "court-planner" && courtPlannerAccess
                     ? "Launch now"
@@ -165,37 +165,22 @@ export default async function ShopProductPage({
               </Reveal>
 
               <Reveal delay={0.25}>
-                <p className="mt-7 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-                  {product.short}
+                <p className="mt-10 text-base leading-relaxed text-foreground/85 md:text-[1.0625rem]">
+                  {product.description}
                 </p>
               </Reveal>
 
-              {product.highlights.length > 0 && (
-                <Reveal delay={0.3}>
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {product.highlights.slice(0, 4).map((h) => (
-                      <span
-                        key={h}
-                        className="rounded-full border border-border/70 bg-background/60 px-3 py-1 text-xs font-semibold text-foreground/80 backdrop-blur-sm"
-                      >
-                        {h}
-                      </span>
-                    ))}
-                  </div>
-                </Reveal>
-              )}
-
               {product.features.length > 0 && (
-                <Reveal delay={0.35}>
-                  <div className="mt-auto pt-10">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      In the app
+                <Reveal delay={0.3}>
+                  <div className="mt-8">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+                      What&apos;s included
                     </p>
-                    <ul className="mt-4 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
-                      {product.features.slice(0, 6).map((f) => (
+                    <ul className="mt-4 space-y-2.5">
+                      {product.features.map((f) => (
                         <li
                           key={f}
-                          className="flex items-start gap-2 text-sm text-foreground/85"
+                          className="flex items-start gap-2.5 text-sm text-foreground/85 md:text-[0.9375rem]"
                         >
                           <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                           <span>{f}</span>
@@ -218,36 +203,13 @@ export default async function ShopProductPage({
         </div>
       </section>
 
-      {/* DETAIL */}
-      <section className="py-16">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-14 lg:px-10">
-          <Reveal className="lg:col-span-7">
-            <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
-              About this app
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-foreground/90 md:text-lg">
-              {product.description}
-            </p>
-
-            <h3 className="mt-10 font-display text-xl font-bold tracking-tight">
-              What&apos;s included
-            </h3>
-            <ul className="mt-5 space-y-3">
-              {product.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-3">
-                  <Check className="mt-0.5 size-5 shrink-0 text-primary" />
-                  <span className="text-base text-foreground/90">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-
-          <Reveal delay={0.1} className="lg:col-span-5">
+      {/* PRICING */}
+      <section className="border-t border-border/60 py-16">
+        <div className="mx-auto max-w-xl px-6 lg:px-10">
+          <Reveal>
             <div
               id="pricing"
-              className="scroll-mt-24 rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5 md:sticky md:top-24"
+              className="scroll-mt-24 rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5"
             >
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 Pricing
