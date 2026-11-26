@@ -101,29 +101,74 @@ export default async function ShopPage() {
               <div className="mt-6 space-y-5">
                 {visibleDigital.map((product, i) => {
                   const Icon = ICONS[product.icon];
-                  const isLaunchingSoon = product.slug === "drills-library";
+                  const isLive = product.status === "live";
+                  const isLaunchingSoon =
+                    product.status === "launching-soon";
+                  const priceDisplay = product.price
+                    ? product.price.replace(" AUD", "")
+                    : null;
                   return (
                     <Reveal key={product.slug} delay={0.05 + i * 0.04}>
-                      <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5">
+                      <article
+                        className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-card p-6 transition-all hover:-translate-y-1 hover:shadow-xl ${
+                          isLive
+                            ? "border-primary/30 shadow-md shadow-primary/5 hover:border-primary/60 hover:shadow-primary/10"
+                            : "border-border/70 hover:border-primary/40 hover:shadow-primary/5"
+                        }`}
+                      >
                         {isLaunchingSoon && (
                           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/55 backdrop-blur-[1px]">
                             <p className="rotate-[-6deg] rounded-xl bg-red-600 px-5 py-2 text-center font-display text-xl font-extrabold uppercase tracking-wide text-white shadow-xl ring-4 ring-red-600/30 md:text-2xl">
                               Launching
                               <br />
-                              January 2027
+                              {product.launchDate ?? "soon"}
                             </p>
                           </div>
                         )}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary/15">
+
+                        {/* Status + audience eyebrow row */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            {isLive && (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600 ring-1 ring-inset ring-emerald-500/30">
+                                <span className="relative flex size-1.5">
+                                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75"></span>
+                                  <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500"></span>
+                                </span>
+                                Live
+                              </span>
+                            )}
+                            {product.audience && (
+                              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                                {product.audience}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex items-start justify-between gap-4">
+                          <div
+                            className={`flex size-12 shrink-0 items-center justify-center rounded-xl text-primary transition ${
+                              isLive
+                                ? "bg-gradient-to-br from-primary/15 to-[var(--brand-coral)]/15 group-hover:from-primary/25 group-hover:to-[var(--brand-coral)]/25"
+                                : "bg-primary/10 group-hover:bg-primary/15"
+                            }`}
+                          >
                             <Icon className="size-6" />
                           </div>
-                          {product.price && product.slug !== "drills-library" && (
-                            <p className="text-right font-display text-sm font-bold text-primary">
-                              {product.price.replace(" AUD", "")}
-                            </p>
-                          )}
+                          {priceDisplay &&
+                            product.slug !== "drills-library" && (
+                              <div className="text-right">
+                                <p className="font-display text-xl font-extrabold leading-none text-foreground md:text-2xl">
+                                  {priceDisplay}
+                                </p>
+                                <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                                  AUD
+                                </p>
+                              </div>
+                            )}
                         </div>
+
                         <h3 className="mt-4 font-display text-lg font-bold leading-snug">
                           {product.name}
                         </h3>
@@ -140,12 +185,22 @@ export default async function ShopPage() {
                             </span>
                           ))}
                         </div>
-                        <Link
-                          href={`/shop/${product.slug}`}
-                          className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
-                        >
-                          See details <ArrowRight className="size-3.5" />
-                        </Link>
+                        {isLive ? (
+                          <Link
+                            href={`/shop/${product.slug}`}
+                            className="mt-5 inline-flex items-center justify-center gap-1.5 self-start rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition hover:scale-[1.02] hover:shadow-primary/30"
+                          >
+                            See details{" "}
+                            <ArrowRight className="size-3.5" />
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/shop/${product.slug}`}
+                            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition group-hover:gap-2.5"
+                          >
+                            See details <ArrowRight className="size-3.5" />
+                          </Link>
+                        )}
                       </article>
                     </Reveal>
                   );

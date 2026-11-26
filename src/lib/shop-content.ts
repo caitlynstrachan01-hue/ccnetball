@@ -32,6 +32,15 @@ export type ShopProduct = {
   launchUrl?: string;
   /** Optional preview stills shown in a gallery on the detail page. */
   previewImages?: Array<{ src: string; alt: string; caption?: string }>;
+  /** Shop tile status. "live" = green LIVE badge + prominent CTA.
+   * "launching-soon" = red diagonal "Launching …" veil.
+   * Default (undefined) renders the tile plain. */
+  status?: "live" | "launching-soon";
+  /** Required when status === "launching-soon"; shown on the veil. */
+  launchDate?: string;
+  /** Short audience eyebrow shown above the product name, e.g. "For coaches".
+   * Keeps marketing positioning consistent across the grid. */
+  audience?: string;
 };
 
 export const SHOP_PRODUCTS: ShopProduct[] = [
@@ -62,6 +71,8 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Easy Undo / Redo",
     ],
     icon: "target",
+    status: "live",
+    audience: "For coaches",
     launchUrl: "/court-planner",
     previewImages: [
       {
@@ -106,6 +117,9 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Annual Access",
     ],
     icon: "play-circle",
+    status: "launching-soon",
+    launchDate: "January 2027",
+    audience: "For coaches",
   },
   {
     slug: "trial-app",
@@ -132,6 +146,8 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Pay per participant at registration, or tick 'Association pays CC Netball fees' and get one invoice at the end of trials.",
     highlights: ["Netball Trials", "Club & Rep Teams", "Unbiased Population"],
     icon: "clipboard-list",
+    status: "live",
+    audience: "For clubs & associations",
   },
   {
     slug: "competition-builder",
@@ -157,6 +173,8 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
       "Maximise Court Availability",
     ],
     icon: "trophy",
+    status: "live",
+    audience: "For associations & leagues",
   },
   {
     slug: "game-day-standard",
