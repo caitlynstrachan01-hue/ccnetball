@@ -144,45 +144,49 @@ export default async function ShopProductPage({
         </div>
       </section>
 
-      {/* PREVIEW CAROUSEL */}
-      {product.previewImages && product.previewImages.length > 0 && (
-        <section className="border-b border-border/60 py-12 lg:py-16">
-          <div className="mx-auto max-w-5xl px-6 lg:px-10">
-            <Reveal>
-              <ShopPreviewCarousel slides={product.previewImages} />
-            </Reveal>
-          </div>
-        </section>
-      )}
-
       {/* DETAIL */}
       <section className="py-16">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:px-10">
-          <Reveal className="lg:col-span-7">
-            <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
-              About this app
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-foreground/90 md:text-lg">
-              {product.description}
-            </p>
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-14 lg:px-10">
+          {product.previewImages && product.previewImages.length > 0 && (
+            <Reveal className="lg:col-span-5">
+              <div className="mx-auto max-w-[360px] lg:sticky lg:top-24 lg:max-w-none">
+                <ShopPreviewCarousel slides={product.previewImages} />
+              </div>
+            </Reveal>
+          )}
 
-            <h3 className="mt-10 font-display text-xl font-bold tracking-tight">
-              What&apos;s included
-            </h3>
-            <ul className="mt-5 space-y-3">
-              {product.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-3">
-                  <Check className="mt-0.5 size-5 shrink-0 text-primary" />
-                  <span className="text-base text-foreground/90">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
+          <div
+            className={`flex flex-col gap-10 ${
+              product.previewImages && product.previewImages.length > 0
+                ? "lg:col-span-7"
+                : "lg:col-span-12"
+            }`}
+          >
+            <Reveal>
+              <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+                About this app
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-foreground/90 md:text-lg">
+                {product.description}
+              </p>
 
-          <Reveal delay={0.1} className="lg:col-span-5">
-            <div className="rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5 md:sticky md:top-24">
+              <h3 className="mt-10 font-display text-xl font-bold tracking-tight">
+                What&apos;s included
+              </h3>
+              <ul className="mt-5 space-y-3">
+                {product.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <Check className="mt-0.5 size-5 shrink-0 text-primary" />
+                    <span className="text-base text-foreground/90">
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <div className="rounded-3xl border border-border/70 bg-card p-8 shadow-lg shadow-primary/5">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 Pricing
               </p>
@@ -299,8 +303,9 @@ export default async function ShopProductPage({
                   </Link>
                 </>
               )}
-            </div>
-          </Reveal>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
     </>

@@ -20,7 +20,6 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
   );
   const next = useCallback(() => setActive((a) => (a + 1) % total), [total]);
 
-  // Autoplay — pauses on hover, focus, or when the tab is hidden.
   useEffect(() => {
     if (paused || total < 2) return;
     const id = window.setInterval(next, AUTOPLAY_MS);
@@ -35,7 +34,6 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  // Keyboard nav when the carousel region has focus.
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "ArrowLeft") {
       e.preventDefault();
@@ -46,7 +44,6 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
     }
   }
 
-  // Simple pointer swipe.
   function onPointerDown(e: React.PointerEvent) {
     startX.current = e.clientX;
   }
@@ -63,7 +60,7 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[380px] md:max-w-[440px]"
+      className="relative w-full"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -72,16 +69,16 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
       tabIndex={0}
       role="region"
       aria-roledescription="carousel"
-      aria-label="Netball Court - Drawing previews"
+      aria-label="Product preview carousel"
     >
-      {/* Ambient glow behind the phone */}
+      {/* Ambient glow behind the slide */}
       <div
         aria-hidden
-        className="absolute inset-x-6 bottom-0 top-6 -z-10 rounded-[3rem] bg-gradient-to-br from-primary/30 via-[var(--brand-coral)]/20 to-[var(--brand-raspberry)]/30 blur-3xl"
+        className="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/25 via-[var(--brand-coral)]/15 to-[var(--brand-raspberry)]/25 blur-3xl"
       />
 
       <div
-        className="relative aspect-[9/19] overflow-hidden rounded-[2.75rem] border-[6px] border-[#0F1012] bg-[#0F1012] shadow-2xl shadow-primary/25 ring-1 ring-border/60"
+        className="relative aspect-[1084/2000] w-full overflow-hidden rounded-2xl ring-1 ring-border/60 shadow-2xl shadow-primary/20"
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       >
@@ -97,16 +94,13 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
                 alt={s.alt}
                 draggable={false}
                 loading={i === 0 ? "eager" : "lazy"}
-                className="h-full w-full object-cover"
+                className="block h-full w-full object-contain"
               />
             </div>
           ))}
         </div>
-
-        {/* Live indicator badge (purely decorative — the phone screen itself doesn't have a status bar) */}
       </div>
 
-      {/* Side arrows — hidden on narrow screens where swipe is the primary gesture */}
       {total > 1 && (
         <>
           <button
@@ -128,7 +122,6 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
         </>
       )}
 
-      {/* Dot indicators */}
       {total > 1 && (
         <div className="mt-6 flex items-center justify-center gap-2">
           {slides.map((_, i) => (
