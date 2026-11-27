@@ -5,6 +5,11 @@ import {
   sendShopOrderCustomerConfirmation,
   sendShopOrderNotification,
 } from "@/lib/shop-order-email";
+import {
+  sendCompetitionBuilderWelcomeEmail,
+  sendCourtPlannerWelcomeEmail,
+  sendTrialRegistrationEmail,
+} from "@/lib/customer-emails.server";
 
 export const runtime = "nodejs";
 
@@ -148,6 +153,19 @@ export async function POST(request: Request) {
               "Competition Builder licence grant failed:",
               licError,
             );
+            break;
+          }
+
+          // Welcome email to the buyer.
+          const compEmail =
+            session.customer_details?.email ||
+            session.customer_email ||
+            null;
+          if (compEmail) {
+            await sendCompetitionBuilderWelcomeEmail({
+              customerEmail: compEmail,
+              customerName: session.customer_details?.name ?? null,
+            });
           }
           break;
         }
@@ -200,6 +218,20 @@ export async function POST(request: Request) {
               "Court Planner access grant failed:",
               accessError,
             );
+            break;
+          }
+
+          // Welcome email to the buyer.
+          const customerEmail =
+            session.customer_details?.email ||
+            session.customer_email ||
+            null;
+          if (customerEmail) {
+            await sendCourtPlannerWelcomeEmail({
+              customerEmail,
+              customerName: session.customer_details?.name ?? null,
+              expiresAt,
+            });
           }
           break;
         }
@@ -237,6 +269,81 @@ export async function POST(request: Request) {
               stripe_payment_intent: paymentIntentId,
             })
             .eq("id", participantId);
+
+          // Confirmation email to the registering parent/guardian.
+          try {
+            const { data: p } = await supabase
+              .from("trial_participants")
+              .select(
+                "first_name, last_name, parent_name, parent_email, trial_id, age_group_id",
+              )
+              .eq("id", participantId)
+              .maybeSingle();
+            if (!p || !p.parent_email) break;
+
+            const [{ data: trial }, { data: ageGroup }, { data: sessions }] =
+              await Promise.all([
+                supabase
+                  .from("trials")
+                  .select("name, club_email")
+                  .eq("id", p.trial_id)
+                  .maybeSingle(),
+                supabase
+                  .from("trial_age_groups")
+                  .select("name")
+                  .eq("id", p.age_group_id)
+                  .maybeSingle(),
+                supabase
+                  .from("trial_sessions")
+                  .select("session_date, start_time, end_time, venue")
+                  .eq("age_group_id", p.age_group_id)
+                  .order("session_date", { ascending: true }),
+              ]);
+
+            type SessionRow = {
+              session_date: string;
+              start_time: string | null;
+              end_time: string | null;
+              venue: string | null;
+            };
+            const sessionRows: SessionRow[] = (sessions ?? []) as SessionRow[];
+
+            const whenText = sessionRows
+              .map((s) => {
+                const date = new Date(s.session_date).toLocaleDateString(
+                  "en-AU",
+                  { weekday: "short", day: "numeric", month: "long" },
+                );
+                const time = [s.start_time, s.end_time]
+                  .filter(Boolean)
+                  .join(" - ");
+                return time ? `${date}, ${time}` : date;
+              })
+              .join(" · ") || "TBA";
+
+            const venues = Array.from(
+              new Set(
+                sessionRows
+                  .map((s) => s.venue)
+                  .filter((v): v is string => Boolean(v)),
+              ),
+            );
+            const venueText = venues.length > 0 ? venues.join(" · ") : "TBA";
+
+            await sendTrialRegistrationEmail({
+              parentEmail: p.parent_email,
+              parentName: p.parent_name ?? null,
+              participantFirstName: p.first_name,
+              participantFullName: `${p.first_name} ${p.last_name}`.trim(),
+              ageGroupName: ageGroup?.name ?? "TBA",
+              trialName: trial?.name ?? "trial",
+              whenText,
+              venueText,
+              clubContactEmail: trial?.club_email ?? "TBA",
+            });
+          } catch (err) {
+            console.error("Trial registration email dispatch failed:", err);
+          }
           break;
         }
 
