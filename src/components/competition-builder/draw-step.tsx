@@ -473,13 +473,13 @@ function PreflightPanel({
               {analysis.divisions.map((d) => (
                 <li
                   key={d.divisionId}
-                  className="flex items-center justify-between gap-2"
+                  className="flex items-baseline justify-between gap-3"
                 >
-                  <span className="font-semibold">{d.name}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="shrink-0 font-semibold">{d.name}</span>
+                  <span className="min-w-0 text-right text-xs text-muted-foreground">
                     {d.teamCount} teams · {d.matchesPerRound} matches
                     {d.hasBye && (
-                      <span className="ml-1 font-semibold text-amber-700">
+                      <span className="ml-1 whitespace-nowrap font-semibold text-amber-700">
                         · bye each round
                       </span>
                     )}
