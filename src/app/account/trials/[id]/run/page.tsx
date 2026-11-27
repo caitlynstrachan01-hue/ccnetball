@@ -43,7 +43,7 @@ export default async function RunTrialPage({
       supabase
         .from("trial_participants")
         .select(
-          "id, age_group_id, player_number, first_name, last_name, position_1, position_2, status, manual_entry, draft_team, draft_bucket, purged",
+          "id, age_group_id, player_number, first_name, last_name, position_1, position_2, status, manual_entry, draft_team, draft_bucket, purged, amount_cents, fee_breakdown",
         )
         .eq("trial_id", id)
         .order("player_number", { ascending: true }),
@@ -70,7 +70,11 @@ export default async function RunTrialPage({
       id: trial.id,
       name: trial.name,
       club: trial.club,
-      display_mode: trial.display_mode === "initial_surname" ? "initial_surname" : "number",
+      display_mode: (["number", "initial_surname", "first_initial"] as const).includes(
+        trial.display_mode as "number" | "initial_surname" | "first_initial",
+      )
+        ? (trial.display_mode as "number" | "initial_surname" | "first_initial")
+        : "number",
       status: trial.status,
     },
     divisions: (groups ?? []).map((g) => ({
@@ -99,6 +103,8 @@ export default async function RunTrialPage({
       draft_team: (p.draft_team as number) ?? null,
       draft_bucket: (p.draft_bucket as RunData["participants"][number]["draft_bucket"]) ?? null,
       purged: Boolean(p.purged),
+      amount_cents: (p.amount_cents as number) ?? 0,
+      fee_breakdown: (p.fee_breakdown as RunData["participants"][number]["fee_breakdown"]) ?? null,
     })),
     attendance: (attendance ?? []).map((a) => ({
       session_id: a.session_id as string,

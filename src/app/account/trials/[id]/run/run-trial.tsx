@@ -13,6 +13,7 @@ import {
   X,
   RefreshCw,
   Loader2,
+  Receipt,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { POSITIONS, type Position } from "@/lib/trial-fees";
@@ -55,6 +56,18 @@ export type RunData = {
     draft_team: number | null;
     draft_bucket: "shooters" | "midcourt" | "defenders" | null;
     purged: boolean;
+    amount_cents: number;
+    fee_breakdown: {
+      platformToParticipant?: number;
+      addons?: { label: string; amount_cents: number }[];
+      addonsTotal?: number;
+      subtotal?: number;
+      surcharge?: number;
+      total?: number;
+      associationPays?: boolean;
+      billedToClub?: number;
+      manual?: boolean;
+    } | null;
   }[];
   attendance: { session_id: string; participant_id: string; present: boolean }[];
   games: {
@@ -104,7 +117,7 @@ export function RunTrial({ initial }: { initial: RunData }) {
   const supabase = createClient();
   const [data, setData] = useState<RunData>(initial);
   const [tab, setTab] = useState<
-    "attendance" | "games" | "teams" | "court" | "schedule"
+    "attendance" | "games" | "teams" | "court" | "schedule" | "payments"
   >("attendance");
   const [divId, setDivId] = useState(initial.divisions[0]?.id ?? "");
 
@@ -305,6 +318,8 @@ export function RunTrial({ initial }: { initial: RunData }) {
           draft_team: null,
           draft_bucket: null,
           purged: false,
+          amount_cents: p.amount_cents ?? d.billedToClub ?? 0,
+          fee_breakdown: p.fee_breakdown ?? null,
         },
       ],
     }));
@@ -362,6 +377,9 @@ export function RunTrial({ initial }: { initial: RunData }) {
         </TabBtn>
         <TabBtn active={tab === "schedule"} onClick={() => setTab("schedule")} icon={<ClipboardList className="size-4" />}>
           Player schedule
+        </TabBtn>
+        <TabBtn active={tab === "payments"} onClick={() => setTab("payments")} icon={<Receipt className="size-4" />}>
+          Payments
         </TabBtn>
       </div>
 
@@ -440,9 +458,175 @@ export function RunTrial({ initial }: { initial: RunData }) {
               divisionName={divisions.find((d) => d.id === divId)?.name ?? ""}
             />
           )}
+          {tab === "payments" && (
+            <PaymentsTab
+              divisions={divisions}
+              participants={data.participants}
+              club={data.trial.club}
+            />
+          )}
         </div>
       )}
     </section>
+  );
+}
+
+/* ============================ Payments ============================
+ * Money summary for the trial. In the current (pre-Connect) model the club
+ * owner collects every payment, so this shows: what parents paid, the split
+ * between the CC Netball fee (yours) and each add-on (the club's share), the
+ * card surcharge, and the amount still to remit to the club. Manually-added
+ * players took no card — the club is billed for those instead. */
+const money = (cents: number) =>
+  `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function PaymentsTab({
+  divisions,
+  participants,
+  club,
+}: {
+  divisions: RunData["divisions"];
+  participants: RunData["participants"];
+  club: string;
+}) {
+  type Row = {
+    name: string;
+    paidCount: number;
+    manualCount: number;
+    ccFee: number; // CC Netball platform fee collected from parents (yours)
+    surcharge: number; // card surcharge collected
+    addons: Record<string, number>; // add-on label -> cents (club's share)
+    gross: number; // total collected from parents
+    clubBilled: number; // owed BY the club to you (manual / association-covered)
+  };
+
+  const rows: Row[] = divisions.map((d) => {
+    const row: Row = {
+      name: d.name,
+      paidCount: 0,
+      manualCount: 0,
+      ccFee: 0,
+      surcharge: 0,
+      addons: {},
+      gross: 0,
+      clubBilled: 0,
+    };
+    for (const p of participants) {
+      if (p.age_group_id !== d.id) continue;
+      const fb = p.fee_breakdown;
+      if (p.status === "manual" || p.manual_entry) {
+        row.manualCount++;
+        row.clubBilled += fb?.billedToClub ?? p.amount_cents ?? 0;
+        continue;
+      }
+      if (p.status !== "paid") continue; // only count money actually in
+      row.paidCount++;
+      row.ccFee += fb?.platformToParticipant ?? 0;
+      row.surcharge += fb?.surcharge ?? 0;
+      row.gross += fb?.total ?? p.amount_cents ?? 0;
+      for (const a of fb?.addons ?? [])
+        row.addons[a.label] = (row.addons[a.label] ?? 0) + a.amount_cents;
+    }
+    return row;
+  });
+
+  const totals = rows.reduce(
+    (t, r) => {
+      t.paidCount += r.paidCount;
+      t.manualCount += r.manualCount;
+      t.ccFee += r.ccFee;
+      t.surcharge += r.surcharge;
+      t.gross += r.gross;
+      t.clubBilled += r.clubBilled;
+      for (const [k, v] of Object.entries(r.addons))
+        t.addons[k] = (t.addons[k] ?? 0) + v;
+      return t;
+    },
+    { paidCount: 0, manualCount: 0, ccFee: 0, surcharge: 0, gross: 0, clubBilled: 0, addons: {} as Record<string, number> },
+  );
+  const addonTotal = Object.values(totals.addons).reduce((a, b) => a + b, 0);
+
+  if (totals.paidCount === 0 && totals.manualCount === 0)
+    return <Empty>No paid registrations yet — payment totals will appear here as parents register.</Empty>;
+
+  return (
+    <div className="space-y-5">
+      {/* Headline */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Stat value={money(totals.gross)} label={`Collected from parents (${totals.paidCount} paid)`} />
+        <Stat value={money(totals.ccFee + totals.surcharge)} label="Your CC Netball fee + surcharge" />
+        <Stat value={money(addonTotal)} label={`To remit to ${club}`} />
+      </div>
+
+      {/* Breakdown */}
+      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+        <table className="w-full text-sm">
+          <tbody>
+            <tr className="border-b border-border/50">
+              <td className="px-4 py-3">CC Netball fee (yours)</td>
+              <td className="px-4 py-3 text-right font-semibold">{money(totals.ccFee)}</td>
+            </tr>
+            {Object.entries(totals.addons).map(([label, cents]) => (
+              <tr key={label} className="border-b border-border/50">
+                <td className="px-4 py-3">
+                  {label} <span className="text-muted-foreground">— owed to {club}</span>
+                </td>
+                <td className="px-4 py-3 text-right font-semibold">{money(cents)}</td>
+              </tr>
+            ))}
+            <tr className="border-b border-border/50">
+              <td className="px-4 py-3">Card surcharge</td>
+              <td className="px-4 py-3 text-right font-semibold">{money(totals.surcharge)}</td>
+            </tr>
+            <tr className="bg-muted/40">
+              <td className="px-4 py-3 font-bold">Total collected</td>
+              <td className="px-4 py-3 text-right font-bold">{money(totals.gross)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Remit callout */}
+      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm">
+        <span className="font-bold text-emerald-700 dark:text-emerald-400">To pay {club}: {money(addonTotal)}</span>{" "}
+        — the add-on fees you collected on their behalf. You keep {money(totals.ccFee)} (plus the surcharge
+        covers card costs).
+        {totals.manualCount > 0 && (
+          <div className="mt-2">
+            {totals.manualCount} manually-added player(s): <b>{money(totals.clubBilled)}</b> billed to {club}
+            {" "}(no card taken).
+          </div>
+        )}
+      </div>
+
+      {/* Per-division (only when more than one) */}
+      {rows.length > 1 && (
+        <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-2">Age group</th>
+                <th className="px-4 py-2 text-center">Paid</th>
+                <th className="px-4 py-2 text-right">Collected</th>
+                <th className="px-4 py-2 text-right">Owed to club</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.name} className="border-b border-border/40">
+                  <td className="px-4 py-2 font-semibold">{r.name}</td>
+                  <td className="px-4 py-2 text-center">{r.paidCount}</td>
+                  <td className="px-4 py-2 text-right">{money(r.gross)}</td>
+                  <td className="px-4 py-2 text-right">
+                    {money(Object.values(r.addons).reduce((a, b) => a + b, 0))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }
 

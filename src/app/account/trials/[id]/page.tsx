@@ -47,7 +47,11 @@ export default async function EditTrialPage({
     name: trial.name,
     club: trial.club,
     club_email: trial.club_email,
-    display_mode: trial.display_mode === "initial_surname" ? "initial_surname" : "number",
+    display_mode: (["number", "initial_surname", "first_initial"] as const).includes(
+      trial.display_mode as "number" | "initial_surname" | "first_initial",
+    )
+      ? (trial.display_mode as "number" | "initial_surname" | "first_initial")
+      : "number",
     status: trial.status,
     registration_open: Boolean(trial.registration_open),
     divisions: (groups ?? []).map((g) => ({
