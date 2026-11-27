@@ -193,7 +193,10 @@ export default async function ShopProductPage({
             </div>
 
             {product.previewImages && product.previewImages.length > 0 && (
-              <Reveal delay={0.1} className="lg:col-span-6">
+              <Reveal
+                delay={0.1}
+                className="lg:col-span-6 lg:self-center"
+              >
                 <div className="mx-auto max-w-[420px] lg:max-w-none">
                   <ShopPreviewCarousel
                     slides={product.previewImages}
