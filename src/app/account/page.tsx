@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Bell, Crown, Package, ShoppingBag, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  ClipboardList,
+  Crown,
+  Package,
+  ShoppingBag,
+  Trophy,
+} from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -136,6 +144,14 @@ export default async function AccountPage() {
                 Competition Builder (beta)
                 <ArrowRight className="size-4" />
               </Link>
+              <Link
+                href="/account/trials"
+                className="inline-flex items-center gap-2 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/5"
+              >
+                <ClipboardList className="size-4" />
+                Trial App
+                <ArrowRight className="size-4" />
+              </Link>
             </div>
           </Reveal>
         )}
@@ -186,7 +202,7 @@ export default async function AccountPage() {
                     href={
                       product.slug === "drills-library"
                         ? "/library"
-                        : `/shop/${product.slug}`
+                        : (product.launchUrl ?? `/shop/${product.slug}`)
                     }
                     className="mt-auto inline-flex items-center gap-2 pt-6 text-sm font-semibold text-primary transition hover:gap-3"
                   >
