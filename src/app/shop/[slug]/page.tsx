@@ -195,7 +195,11 @@ export default async function ShopProductPage({
             {product.previewImages && product.previewImages.length > 0 && (
               <Reveal
                 delay={0.1}
-                className="lg:col-span-6 lg:self-center"
+                className={
+                  product.slug === "court-planner"
+                    ? "lg:col-span-6 lg:self-center lg:mt-24"
+                    : "lg:col-span-6 lg:self-center"
+                }
               >
                 <div
                   className={
