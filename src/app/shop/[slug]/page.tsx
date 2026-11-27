@@ -276,6 +276,21 @@ export default async function ShopProductPage({
 
               {product.slug === "competition-builder" ? (
                 <CompetitionBuilderBuyButton />
+              ) : product.slug === "court-planner" &&
+                courtPlannerAccess &&
+                courtPlannerAccess.suspended ? (
+                <>
+                  <Link
+                    href="/court-planner/suspended"
+                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-6 py-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-500/20"
+                  >
+                    Account on hold
+                    <ArrowRight className="size-4" />
+                  </Link>
+                  <p className="mt-2.5 text-center text-[11px] text-muted-foreground">
+                    Email Caitlyn and she&apos;ll reactivate your access.
+                  </p>
+                </>
               ) : product.slug === "court-planner" && courtPlannerAccess ? (
                 <>
                   <Link

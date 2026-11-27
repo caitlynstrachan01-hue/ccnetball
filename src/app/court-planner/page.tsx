@@ -28,6 +28,10 @@ export default async function CourtPlannerPage() {
     redirect("/shop/court-planner?checkout=required");
   }
 
+  if (access.suspended) {
+    redirect("/court-planner/suspended");
+  }
+
   return (
     <CourtPlannerApp
       expiresAt={access.expiresAt}
