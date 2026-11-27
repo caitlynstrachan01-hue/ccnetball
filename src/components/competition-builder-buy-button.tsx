@@ -42,12 +42,11 @@ export function CompetitionBuilderBuyButton() {
         ) : (
           <ShoppingCart className="size-5" />
         )}
-        {loading ? "Starting checkout…" : "Buy a licence — $19.99"}
+        {loading ? "Starting checkout…" : "Buy a licence"}
         {!loading && <ArrowRight className="size-4" />}
       </button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
-        One flat payment covers one competition. You&apos;ll go to Stripe to
-        pay, then land in the builder with your licence attached.
+        Pay through Stripe and land back in the builder, licence attached.
       </p>
       {error && (
         <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">

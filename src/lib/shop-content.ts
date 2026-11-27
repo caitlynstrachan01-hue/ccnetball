@@ -176,7 +176,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     ],
     price: "$19.99 per competition",
     pricingNote:
-      "One flat payment per competition — no tiers, no per-team charges. A licence covers you right up until the start date of the competition. Each new competition needs a fresh licence.",
+      "No tiers, no per-team charges. One licence per competition.",
     highlights: [
       "Unlimited Rules Engine",
       "Full Season Fixture",
