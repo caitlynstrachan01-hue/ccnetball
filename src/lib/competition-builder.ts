@@ -92,6 +92,8 @@ export type Rule = {
   ruleType: RuleType;
   params: Omit<RuleParams, "type">;
   plainEnglish: string;
+  /** Lower number = more important, less willing to compromise. */
+  priority: number;
   createdAt: string;
 };
 

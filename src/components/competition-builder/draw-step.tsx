@@ -45,11 +45,15 @@ export function DrawStep({
   const [report, setReport] = useState<{
     totalGames: number;
     unplaced: number;
+    compromiseCount: number;
     issues: string[];
     ruleOutcomes: Array<{
       ruleId: string;
       plainEnglish: string;
       ruleType: string;
+      priority: number;
+      compromises: number;
+      blocksUnplaced: number;
       contributedToUnplaced: number;
     }>;
   } | null>(null);
@@ -98,6 +102,7 @@ export function DrawStep({
       setReport({
         totalGames: data.totalGames,
         unplaced: data.unplaced,
+        compromiseCount: data.compromiseCount ?? 0,
         issues: data.issues ?? [],
         ruleOutcomes: data.ruleOutcomes ?? [],
       });
@@ -238,20 +243,22 @@ export function DrawStep({
       {report && (
         <div
           className={`rounded-2xl border p-4 text-sm ${
-            report.unplaced === 0
+            report.compromiseCount === 0 && report.unplaced === 0
               ? "border-primary/30 bg-primary/5"
               : "border-amber-300 bg-amber-50"
           }`}
         >
           <p className="flex items-center gap-2 font-display text-base font-bold">
-            {report.unplaced === 0 ? (
+            {report.compromiseCount === 0 && report.unplaced === 0 ? (
               <CheckCircle2 className="size-5 text-primary" />
             ) : (
               <AlertTriangle className="size-5 text-amber-600" />
             )}
-            {report.unplaced === 0
-              ? `Done — all ${report.totalGames} games placed across every round.`
-              : `${report.totalGames - report.unplaced} of ${report.totalGames} games placed. ${report.unplaced} game${report.unplaced === 1 ? "" : "s"} will need a forfeit called in advance — no legal cell existed for them this round.`}
+            {report.compromiseCount === 0 && report.unplaced === 0
+              ? `This draw honours every rule — 0 compromises across all ${report.totalGames} games.`
+              : report.unplaced === 0
+                ? `This is the draw with the least compromises possible under your current rule priority — ${report.compromiseCount} game${report.compromiseCount === 1 ? "" : "s"} marked. See the starred games below.`
+                : `${report.compromiseCount} compromise${report.compromiseCount === 1 ? "" : "s"} and ${report.unplaced} forfeit${report.unplaced === 1 ? "" : "s"} — the least possible under your current rule priority. Re-rank your rules in Step 4 if a different trade-off would suit you better.`}
           </p>
           {report.ruleOutcomes.length > 0 && (
             <div className="mt-3 border-t border-amber-200/60 pt-3">
@@ -259,28 +266,52 @@ export function DrawStep({
                 How your rules fared
               </p>
               <ul className="mt-2 space-y-1 text-xs">
-                {report.ruleOutcomes.map((r) => (
-                  <li key={r.ruleId} className="flex items-start gap-2">
-                    {r.contributedToUnplaced === 0 ? (
-                      <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" />
-                    ) : (
-                      <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-700" />
-                    )}
-                    <span>
-                      <span className="font-semibold">{r.plainEnglish}</span>{" "}
-                      {r.contributedToUnplaced === 0 ? (
-                        <span className="text-foreground/70">— honoured on every game.</span>
+                {report.ruleOutcomes.map((r) => {
+                  const hadIssue =
+                    r.compromises > 0 || r.blocksUnplaced > 0;
+                  return (
+                    <li key={r.ruleId} className="flex items-start gap-2">
+                      {!hadIssue ? (
+                        <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-primary" />
                       ) : (
-                        <span className="text-amber-900">
-                          — I did my best to accommodate it, but it cost{" "}
-                          <strong>{r.contributedToUnplaced}</strong> game
-                          {r.contributedToUnplaced === 1 ? "" : "s"} that
-                          couldn&apos;t be placed.
-                        </span>
+                        <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-700" />
                       )}
-                    </span>
-                  </li>
-                ))}
+                      <span>
+                        <span className="inline-block rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-bold text-foreground/70">
+                          #{r.priority}
+                        </span>{" "}
+                        <span className="font-semibold">{r.plainEnglish}</span>{" "}
+                        {!hadIssue ? (
+                          <span className="text-foreground/70">
+                            — honoured on every game.
+                          </span>
+                        ) : (
+                          <span className="text-amber-900">
+                            {r.compromises > 0 && (
+                              <>
+                                — bent on{" "}
+                                <strong>{r.compromises}</strong> game
+                                {r.compromises === 1 ? "" : "s"}
+                              </>
+                            )}
+                            {r.compromises > 0 && r.blocksUnplaced > 0 && (
+                              <>, </>
+                            )}
+                            {r.blocksUnplaced > 0 && (
+                              <>
+                                {r.compromises > 0 ? " and " : "— "}contributed
+                                to <strong>{r.blocksUnplaced}</strong>{" "}
+                                unplaceable game
+                                {r.blocksUnplaced === 1 ? "" : "s"}
+                              </>
+                            )}
+                            .
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

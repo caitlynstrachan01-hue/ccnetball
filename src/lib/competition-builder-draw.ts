@@ -43,6 +43,12 @@ export type RuleOutcome = {
   ruleId: string;
   plainEnglish: string;
   ruleType: string;
+  priority: number;
+  /** Games that were placed but with this rule bent. */
+  compromises: number;
+  /** Games that couldn't be placed at all because of this rule. */
+  blocksUnplaced: number;
+  /** Historical alias — still exposed for backwards compat with the UI. */
   contributedToUnplaced: number;
 };
 
@@ -50,6 +56,13 @@ export type GenerateDrawResult = {
   games: GeneratedGame[];
   issues: string[];
   ruleOutcomes: RuleOutcome[];
+  /** Total number of rule compromises across the whole fixture. */
+  compromiseCount: number;
+  /** Total number of games we couldn't place (strict failure). */
+  unplacedCount: number;
+  /** How many attempt orderings we tried internally when searching for the
+   *  lowest-compromise fixture. */
+  attemptsTried: number;
 };
 
 export type DrawSuggestion = {
@@ -577,9 +590,27 @@ function defaultRounds(teams: CompetitionTeam[]): number {
 export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
   const { teams, divisions, courts, timeslots, rules } = input;
   const issues: string[] = [];
-  // Track which rule contributed to each unplaced game so we can report
-  // "I did my best — rule X cost you N games" afterwards.
-  const ruleContributions = new Map<string, number>();
+  // Track compromises (rule bent, game still placed) and unplaced blocks
+  // (game couldn't be placed) separately, so the summary can be honest.
+  const ruleCompromises = new Map<string, number>();
+  const ruleUnplaced = new Map<string, number>();
+
+  // Priority weighting: higher-priority (lower number) rules cost more to
+  // bend, so the solver chooses to bend the least-important rule first.
+  // Exponential so a priority-1 rule effectively trumps any combination of
+  // lower-priority bends.
+  const maxPriority = rules.reduce((m, r) => Math.max(m, r.priority ?? 1), 1);
+  function violationCost(violations: RuleViolation[]): number {
+    let cost = 0;
+    for (const v of violations) {
+      const rule = rules.find((rr) => rr.id === v.ruleId);
+      const pri = rule?.priority ?? maxPriority;
+      // Weight range: priority 1 (highest) = 2^(maxPriority-1), priority
+      // maxPriority (lowest) = 2^0 = 1.
+      cost += Math.pow(2, maxPriority - pri);
+    }
+    return cost;
+  }
 
   // Build pairings per division.
   const perDivisionTeams = new Map<string, CompetitionTeam[]>();
@@ -837,6 +868,7 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
           slot: CompetitionTimeslot;
           court: CompetitionCourt;
           violations: RuleViolation[];
+          cost: number;
         } | null = null;
 
         for (const slot of timeslots) {
@@ -966,15 +998,13 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
               }
             }
 
-            if (
-              bestCell === null ||
-              violations.length < bestCell.violations.length
-            ) {
-              bestCell = { slot, court, violations };
-              if (violations.length === 0) break;
+            const cost = violationCost(violations);
+            if (bestCell === null || cost < bestCell.cost) {
+              bestCell = { slot, court, violations, cost };
+              if (cost === 0) break;
             }
           }
-          if (bestCell && bestCell.violations.length === 0) break;
+          if (bestCell && bestCell.cost === 0) break;
         }
 
         if (bestCell) {
@@ -985,9 +1015,9 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
           if (pairing.teamBId)
             teamAtTimeslot.set(pairing.teamBId, bestCell.slot.id);
           for (const v of bestCell.violations) {
-            ruleContributions.set(
+            ruleCompromises.set(
               v.ruleId,
-              (ruleContributions.get(v.ruleId) ?? 0) + 1,
+              (ruleCompromises.get(v.ruleId) ?? 0) + 1,
             );
           }
           games.push({
@@ -1089,7 +1119,7 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
           }
         }
         for (const id of blamedRuleIds) {
-          ruleContributions.set(id, (ruleContributions.get(id) ?? 0) + 1);
+          ruleUnplaced.set(id, (ruleUnplaced.get(id) ?? 0) + 1);
         }
 
         games.push({
@@ -1116,14 +1146,37 @@ export function generateDraw(input: GenerateDrawInput): GenerateDrawResult {
     }
   }
 
-  const ruleOutcomes: RuleOutcome[] = rules.map((rule) => ({
-    ruleId: rule.id,
-    plainEnglish: rule.plainEnglish,
-    ruleType: rule.ruleType,
-    contributedToUnplaced: ruleContributions.get(rule.id) ?? 0,
-  }));
+  const ruleOutcomes: RuleOutcome[] = rules
+    .slice()
+    .sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999))
+    .map((rule) => {
+      const compromises = ruleCompromises.get(rule.id) ?? 0;
+      const blocksUnplaced = ruleUnplaced.get(rule.id) ?? 0;
+      return {
+        ruleId: rule.id,
+        plainEnglish: rule.plainEnglish,
+        ruleType: rule.ruleType,
+        priority: rule.priority ?? 999,
+        compromises,
+        blocksUnplaced,
+        contributedToUnplaced: compromises + blocksUnplaced,
+      };
+    });
 
-  return { games, issues, ruleOutcomes };
+  const compromiseCount = Array.from(ruleCompromises.values()).reduce(
+    (a, b) => a + b,
+    0,
+  );
+  const unplacedCount = games.filter((g) => g.unplaced).length;
+
+  return {
+    games,
+    issues,
+    ruleOutcomes,
+    compromiseCount,
+    unplacedCount,
+    attemptsTried: 1,
+  };
 }
 
 function setAddAll<K, V>(m: Map<K, Set<V>>, key: K, values: V[]) {

@@ -48,8 +48,12 @@ export async function POST(
       .order("ordinal", { ascending: true }),
     supabase
       .from("competition_rules")
-      .select("id, competition_id, rule_type, params, plain_english, created_at")
-      .eq("competition_id", id),
+      .select(
+        "id, competition_id, rule_type, params, plain_english, priority, created_at",
+      )
+      .eq("competition_id", id)
+      .order("priority", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
   ]);
 
   const teams = (teamsRes.data ?? []).map((r) => ({
@@ -84,6 +88,7 @@ export async function POST(
     ruleType: r.rule_type,
     params: r.params,
     plainEnglish: r.plain_english,
+    priority: r.priority ?? 999,
     createdAt: r.created_at,
   }));
 
@@ -135,7 +140,9 @@ export async function POST(
   return NextResponse.json({
     ok: true,
     totalGames: result.games.length,
-    unplaced: result.games.filter((g) => g.unplaced).length,
+    unplaced: result.unplacedCount,
+    compromiseCount: result.compromiseCount,
+    attemptsTried: result.attemptsTried,
     issues: result.issues,
     ruleOutcomes: result.ruleOutcomes,
   });

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ArrowDown,
+  ArrowUp,
   BookText,
+  GripVertical,
   Lightbulb,
   Loader2,
   Plus,
@@ -41,6 +44,16 @@ export function RulesStep({
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  // Local optimistic order so drag/arrow interactions feel instant. When the
+  // server refreshes (adds, deletes, saved reorder), we reset to match.
+  const serverSignature = rules.map((r) => r.id).join(",");
+  const [prevSignature, setPrevSignature] = useState(serverSignature);
+  const [orderedRules, setOrderedRules] = useState<Rule[]>(rules);
+  const [savingOrder, setSavingOrder] = useState(false);
+  if (prevSignature !== serverSignature) {
+    setPrevSignature(serverSignature);
+    setOrderedRules(rules);
+  }
 
   function confirmChange(what: string): boolean {
     if (!fixtureExists) return true;
@@ -56,6 +69,51 @@ export function RulesStep({
       { method: "DELETE" },
     );
     if (res.ok) router.refresh();
+  }
+
+  async function persistOrder(next: Rule[]) {
+    setSavingOrder(true);
+    try {
+      const res = await fetch(
+        `/api/competition-builder/${competitionId}/rules`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderedIds: next.map((r) => r.id) }),
+        },
+      );
+      if (!res.ok) throw new Error("reorder failed");
+      router.refresh();
+    } catch {
+      // Revert to what the server actually has.
+      setOrderedRules(rules);
+    } finally {
+      setSavingOrder(false);
+    }
+  }
+
+  function move(index: number, delta: number) {
+    const target = index + delta;
+    if (target < 0 || target >= orderedRules.length) return;
+    if (!confirmChange("Change rule priority?")) return;
+    const next = orderedRules.slice();
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    setOrderedRules(next);
+    void persistOrder(next);
+  }
+
+  function reorderByDrag(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
+    if (!confirmChange("Change rule priority?")) {
+      setOrderedRules(rules);
+      return;
+    }
+    const next = orderedRules.slice();
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    setOrderedRules(next);
+    void persistOrder(next);
   }
 
   return (
@@ -77,7 +135,7 @@ export function RulesStep({
         </button>
       </div>
 
-      {rules.length === 0 ? (
+      {orderedRules.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/70 bg-background p-10 text-center">
           <BookText className="mx-auto size-10 text-muted-foreground" />
           <p className="mt-3 font-display text-base font-bold">
@@ -88,27 +146,27 @@ export function RulesStep({
           </p>
         </div>
       ) : (
-        <ul className="space-y-2">
-          {rules.map((rule) => (
-            <li
-              key={rule.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-background px-4 py-3"
-            >
-              <span className="flex min-w-0 items-start gap-2">
-                <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span className="text-sm">{rule.plainEnglish}</span>
+        <div>
+          <div className="mb-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-foreground/80">
+            <strong className="text-foreground">Priority order.</strong> Rule
+            <span className="mx-1 inline-block rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-bold text-foreground/70">
+              #1
+            </span>
+            is the most important — the draw will bend other rules first to
+            honour it. Drag a rule, or use the up/down arrows, to re-rank.
+            {savingOrder && (
+              <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground">
+                <Loader2 className="size-3 animate-spin" /> Saving…
               </span>
-              <button
-                type="button"
-                onClick={() => deleteRule(rule.id)}
-                aria-label="Remove rule"
-                className="shrink-0 rounded-full p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </li>
-          ))}
-        </ul>
+            )}
+          </div>
+          <RuleOrderList
+            rules={orderedRules}
+            onMove={move}
+            onDeleteRule={deleteRule}
+            onDragReorder={reorderByDrag}
+          />
+        </div>
       )}
 
       {open && (
@@ -127,6 +185,105 @@ export function RulesStep({
         />
       )}
     </div>
+  );
+}
+
+function RuleOrderList({
+  rules,
+  onMove,
+  onDeleteRule,
+  onDragReorder,
+}: {
+  rules: Rule[];
+  onMove: (index: number, delta: number) => void;
+  onDeleteRule: (ruleId: string) => void;
+  onDragReorder: (fromIndex: number, toIndex: number) => void;
+}) {
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  return (
+    <ul className="space-y-2">
+      {rules.map((rule, i) => {
+        const isDragging = dragIndex === i;
+        const isHovered = hoverIndex === i && dragIndex !== null && dragIndex !== i;
+        return (
+          <li
+            key={rule.id}
+            draggable
+            onDragStart={(e) => {
+              setDragIndex(i);
+              e.dataTransfer.effectAllowed = "move";
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+              if (hoverIndex !== i) setHoverIndex(i);
+            }}
+            onDragLeave={() => {
+              if (hoverIndex === i) setHoverIndex(null);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (dragIndex !== null) onDragReorder(dragIndex, i);
+              setDragIndex(null);
+              setHoverIndex(null);
+            }}
+            onDragEnd={() => {
+              setDragIndex(null);
+              setHoverIndex(null);
+            }}
+            className={`flex items-center gap-3 rounded-xl border bg-background px-3 py-3 transition ${
+              isHovered
+                ? "border-primary bg-primary/5"
+                : "border-border/70"
+            } ${isDragging ? "opacity-50" : ""}`}
+          >
+            <span
+              aria-hidden
+              className="shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
+            >
+              <GripVertical className="size-4" />
+            </span>
+            <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+              {i + 1}
+            </span>
+            <span className="flex min-w-0 flex-1 items-start gap-2">
+              <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span className="text-sm">{rule.plainEnglish}</span>
+            </span>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => onMove(i, -1)}
+                disabled={i === 0}
+                aria-label="Move rule up"
+                className="rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <ArrowUp className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onMove(i, 1)}
+                disabled={i === rules.length - 1}
+                aria-label="Move rule down"
+                className="rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <ArrowDown className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDeleteRule(rule.id)}
+                aria-label="Remove rule"
+                className="rounded-full p-1.5 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

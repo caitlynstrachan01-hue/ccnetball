@@ -133,8 +133,11 @@ export async function getCompetition(id: string): Promise<{
       .order("name", { ascending: true }),
     supabase
       .from("competition_rules")
-      .select("id, competition_id, rule_type, params, plain_english, created_at")
+      .select(
+        "id, competition_id, rule_type, params, plain_english, priority, created_at",
+      )
       .eq("competition_id", id)
+      .order("priority", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: true }),
     supabase
       .from("competition_fixture_games")
@@ -180,6 +183,7 @@ export async function getCompetition(id: string): Promise<{
         ruleType: r.rule_type as RuleType,
         params: r.params,
         plainEnglish: r.plain_english,
+        priority: r.priority ?? 999,
         createdAt: r.created_at,
       }),
     ),
