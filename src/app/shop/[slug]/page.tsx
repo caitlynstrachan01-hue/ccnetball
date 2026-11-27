@@ -197,7 +197,7 @@ export default async function ShopProductPage({
                 delay={0.1}
                 className={
                   product.slug === "court-planner"
-                    ? "lg:col-span-6 lg:self-center lg:mt-24"
+                    ? "lg:col-span-6 lg:self-end"
                     : "lg:col-span-6 lg:self-center"
                 }
               >
