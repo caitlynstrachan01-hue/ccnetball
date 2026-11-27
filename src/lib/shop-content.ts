@@ -165,7 +165,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     short:
       "For messy netball competitions. Unlimited rules, so the quirks that break a spreadsheet draw just become part of the fixture.",
     description:
-      "Competition Builder brings clarity to the messy real-world netball draw. Give it your courts, timeslots, teams and start date, and it builds the full season fixture — including grading rounds and byes — in minutes. Its point of difference is the unlimited rules engine: write any constraint you have as a plain sentence and the fixture is built around it, not patched afterwards. Rules can be anything — a team in Division 1 that cannot play at the same timeslot as a team in Division 3 because they share a coach, a court that is out of play for one specific game, a division that must always play on a certain court, a team that can only play early timeslots, and so on. It recommends team-per-division splits that maximise court time, but always defers to what you and your organisers decide.",
+      "Competition Builder brings clarity to the messy real-world netball draw. Give it your courts, timeslots, teams and start date, and the full season fixture is ready in minutes — grading rounds and byes included. Its point of difference is the unlimited rules engine: write any constraint as a plain sentence and the fixture is built around it, not patched afterwards. A shared coach, a court out for one game, a division locked to one court, a team that only plays early — write it in, and it holds. It recommends team-per-division splits that maximise court time, and always defers to your call.",
     features: [
       "Full season fixture in an afternoon",
       "Unlimited rules — any constraint you can describe",

@@ -127,7 +127,7 @@ export default async function ShopProductPage({
           </Reveal>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-10">
-            <div className="flex flex-col lg:col-span-7">
+            <div className="flex flex-col lg:col-span-6">
               <Reveal delay={0.05}>
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-[var(--brand-coral)]/20 text-primary shadow-md shadow-primary/10">
@@ -143,7 +143,7 @@ export default async function ShopProductPage({
               </Reveal>
 
               <Reveal delay={0.15}>
-                <h1 className="mt-7 font-display text-[2.25rem] font-extrabold leading-[1.02] tracking-tight md:text-5xl lg:whitespace-nowrap">
+                <h1 className="mt-7 font-display text-[2.25rem] font-extrabold leading-[1.02] tracking-tight md:text-5xl">
                   {product.name}
                 </h1>
               </Reveal>
@@ -193,8 +193,8 @@ export default async function ShopProductPage({
             </div>
 
             {product.previewImages && product.previewImages.length > 0 && (
-              <Reveal delay={0.1} className="lg:col-span-5">
-                <div className="mx-auto max-w-[340px] lg:max-w-none">
+              <Reveal delay={0.1} className="lg:col-span-6">
+                <div className="mx-auto max-w-[420px] lg:max-w-none">
                   <ShopPreviewCarousel
                     slides={product.previewImages}
                     aspect={product.previewAspect}
