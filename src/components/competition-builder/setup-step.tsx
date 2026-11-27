@@ -260,7 +260,7 @@ export function SetupStep({
           <div>
             <h2 className="font-display text-xl font-bold">Courts</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Every court you can play on. Example names: Court 1, Court 2…
+              List all courts available (eg. Court 1, Court 2 etc).
             </p>
           </div>
           <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
@@ -313,8 +313,7 @@ export function SetupStep({
           <div>
             <h2 className="font-display text-xl font-bold">Timeslots</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              The repeating slots on game day. Add a label (e.g. &quot;8:30
-              AM&quot;) and optionally a time.
+              List all timeslots available (eg. 4.00pm, 4.50pm, 5.40pm etc).
             </p>
           </div>
           <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
