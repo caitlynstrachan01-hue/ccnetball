@@ -207,6 +207,11 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
         alt: "Competition Builder — pre-flight check before generating the draw showing division sizes, byes and suggested options",
         caption: "Pre-flight check surfaces issues before the fixture is generated",
       },
+      {
+        src: "/shop/competition-builder/05-draw-generated.png",
+        alt: "Competition Builder — generated draw with the headline 'This draw honours every rule — 0 compromises across all 198 games' above the round-by-round fixture",
+        caption: "The generated draw with every rule honoured across the full season",
+      },
     ],
   },
   {
