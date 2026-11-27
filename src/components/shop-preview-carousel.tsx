@@ -8,7 +8,18 @@ type Slide = { src: string; alt: string; caption?: string };
 const AUTOPLAY_MS = 5000;
 const SWIPE_THRESHOLD = 40;
 
-export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
+/**
+ * `aspect` controls the frame around each slide. Images are object-contain
+ * inside the frame, so slides smaller than the frame get a neutral letterbox
+ * on the sides (or top/bottom). Default suits phone portrait screenshots.
+ */
+export function ShopPreviewCarousel({
+  slides,
+  aspect = "1084/1870",
+}: {
+  slides: Slide[];
+  aspect?: string;
+}) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const total = slides.length;
@@ -78,7 +89,8 @@ export function ShopPreviewCarousel({ slides }: { slides: Slide[] }) {
       />
 
       <div
-        className="relative aspect-[1084/1870] w-full overflow-hidden rounded-2xl ring-1 ring-border/60 shadow-2xl shadow-primary/20"
+        className="relative w-full overflow-hidden rounded-2xl bg-[#FBF3EC] ring-1 ring-border/60 shadow-2xl shadow-primary/20"
+        style={{ aspectRatio: aspect }}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
       >

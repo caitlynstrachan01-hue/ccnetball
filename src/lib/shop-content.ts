@@ -32,6 +32,10 @@ export type ShopProduct = {
   launchUrl?: string;
   /** Optional preview stills shown in a gallery on the detail page. */
   previewImages?: Array<{ src: string; alt: string; caption?: string }>;
+  /** Aspect ratio for the preview carousel frame, written as "W/H"
+   *  (e.g. "1084/1870" for phone screenshots, "4/3" for laptop ones).
+   *  Images are object-contain so smaller aspects get a neutral letterbox. */
+  previewAspect?: string;
   /** Shop tile status. "live" = green LIVE badge + prominent CTA.
    * "launching-soon" = red diagonal "Launching …" veil.
    * Default (undefined) renders the tile plain. */
@@ -181,6 +185,29 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     icon: "trophy",
     status: "live",
     audience: "For associations & leagues",
+    previewAspect: "4/3",
+    previewImages: [
+      {
+        src: "/shop/competition-builder/01-teams-and-divisions.png",
+        alt: "Competition Builder — adding teams and setting up new divisions on the Teams & divisions step",
+        caption: "Add every team and set up the divisions that hold them",
+      },
+      {
+        src: "/shop/competition-builder/02-rules.png",
+        alt: "Competition Builder — plain-English rules for the fixture, including specific court and timeslot restrictions and bye rounds",
+        caption: "Write any constraint in plain English and the draw works around it",
+      },
+      {
+        src: "/shop/competition-builder/03-divisions-filled.png",
+        alt: "Competition Builder — teams dragged into three divisions with a live round-cell check at the bottom",
+        caption: "Drag teams into divisions with live round-cell checks as you go",
+      },
+      {
+        src: "/shop/competition-builder/04-draw-preflight.png",
+        alt: "Competition Builder — pre-flight check before generating the draw showing division sizes, byes and suggested options",
+        caption: "Pre-flight check surfaces issues before the fixture is generated",
+      },
+    ],
   },
   {
     slug: "game-day-standard",

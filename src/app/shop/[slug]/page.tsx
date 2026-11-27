@@ -195,7 +195,10 @@ export default async function ShopProductPage({
             {product.previewImages && product.previewImages.length > 0 && (
               <Reveal delay={0.1} className="lg:col-span-5">
                 <div className="mx-auto max-w-[340px] lg:max-w-none">
-                  <ShopPreviewCarousel slides={product.previewImages} />
+                  <ShopPreviewCarousel
+                    slides={product.previewImages}
+                    aspect={product.previewAspect}
+                  />
                 </div>
               </Reveal>
             )}
