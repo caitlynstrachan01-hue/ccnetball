@@ -197,7 +197,13 @@ export default async function ShopProductPage({
                 delay={0.1}
                 className="lg:col-span-6 lg:self-center"
               >
-                <div className="mx-auto max-w-[420px] lg:max-w-none">
+                <div
+                  className={
+                    product.slug === "court-planner"
+                      ? "mx-auto max-w-[315px] lg:max-w-[75%]"
+                      : "mx-auto max-w-[420px] lg:max-w-none"
+                  }
+                >
                   <ShopPreviewCarousel
                     slides={product.previewImages}
                     aspect={product.previewAspect}
