@@ -520,15 +520,17 @@ function DivisionColumn({
               onDragStart(team.id);
             }}
             onDragEnd={onDragEnd}
-            className={`group flex cursor-grab items-center justify-between gap-2 rounded-lg border border-border/70 bg-background px-2.5 py-2 text-sm transition active:cursor-grabbing ${
+            className={`group flex cursor-grab items-center justify-between gap-1 rounded-lg border border-border/70 bg-background px-2 py-1.5 text-xs transition active:cursor-grabbing ${
               draggingTeamId === team.id ? "opacity-50" : ""
             }`}
           >
-            <span className="flex min-w-0 items-center gap-2">
-              <GripVertical className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="truncate">{team.name}</span>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <GripVertical className="size-3 shrink-0 text-muted-foreground" />
+              <span className="truncate font-medium" title={team.name}>
+                {team.name}
+              </span>
             </span>
-            <span className="flex items-center gap-0.5 opacity-0 transition group-hover:opacity-100">
+            <span className="hidden items-center gap-0.5 transition group-hover:flex">
               <button
                 type="button"
                 onClick={() => onRenameTeam(team.id, team.name)}
